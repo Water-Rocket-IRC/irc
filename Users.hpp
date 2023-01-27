@@ -13,7 +13,7 @@ enum mod
 };
 
 /// @brief 개별 클라이언트에서 접속한 유저의 정보
-struct User
+struct user
 {
 	std::string	nickname_;
 	std::string username_;
@@ -31,7 +31,7 @@ struct User
 class Users
 {
 	private:
-		std::vector<User> user_list_;
+		std::vector<user> user_list_;
 	public:
 		Users();
 		void addnick(std::stringstream &line_ss, uintptr_t sock);
@@ -46,9 +46,9 @@ Users::Users()
 
 void	Users::addnick(std::stringstream &line_ss, uintptr_t sock)
 {
-	User tmp_usr;
+	user tmp_usr;
 	std::string nickname;
-	std::vector<User>::iterator it;
+	std::vector<user>::iterator it;
 	bool flag = true;
 
 	line_ss >> nickname;
@@ -77,8 +77,8 @@ https://datatracker.ietf.org/doc/html/rfc1459#section-4.1.3
 */
 void Users::adduser(std::stringstream &line_ss, uintptr_t sock)
 {
-	std::vector<User>::iterator it;
-	User tmp_user;
+	std::vector<user>::iterator it;
+	user tmp_user;
 
 	 for (it = user_list_.begin(); it != user_list_.end(); ++it)
 	 {
@@ -104,9 +104,7 @@ void Users::adduser(std::stringstream &line_ss, uintptr_t sock)
 			std::cout << "server " << servername << std::endl;
 			std::cout << "real " << realname << std::endl;
 
-			//welcome message.. 그냥 지금 해야겠다
-			std::string welcome_message = ":localhost 001 " + tmp_user.nickname_ + " :Welcome to the server lee!lee@127.0.0.1\r\n";
-			send(tmp_user.client_sock_, welcome_message.c_str(), welcome_message.length(), 0);
+			Sender::welcome_message(it->client_sock_, it->servername_);
 			break;
 		}
 

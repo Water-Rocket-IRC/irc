@@ -182,6 +182,7 @@ void Receiver::start()
 					}
 					else if (command_type == "PING")
 					{
+						//for debug
 						std::cout << "PING received" << std::endl;
 						Sender::pong(events[i].ident, "localhost");
 					}
