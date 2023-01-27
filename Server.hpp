@@ -26,7 +26,7 @@ static bool	_int_checker(std::string &str)
 
 static bool _pw_checker(std::string &str)
 {
-	if (str.empty())
+	if (str.empty() || str.length() > 16)
 		return (true);
 	for (size_t i = 0; i < str.length(); ++i)
 		if (std::isspace(str.at(i)) || !std::isprint(str.at(i)))
