@@ -14,7 +14,7 @@ class Server
 
 };
 
-static bool	_int_checker(std::string str)
+static bool	_int_checker(std::string &str)
 {
 	if (str.empty())
 		return (true);
@@ -24,9 +24,19 @@ static bool	_int_checker(std::string str)
 	return (false);
 }
 
+static bool _pw_checker(std::string &str)
+{
+	if (str.empty())
+		return (true);
+	for (size_t i = 0; i < str.length(); ++i)
+		if (std::isspace(str.at(i)) && !std::isprint(str.at(i)))
+			return (true);
+	return (false);
+}
+
 Server::Server(std::string port, std::string password)
 {
-	if (_int_checker(port))
+	if (_int_checker(port) && _pw_checker(password))
 		exit_with_perror("input port invaild");
 	port_ = stoi(port);
 	password_ = password;
