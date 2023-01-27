@@ -155,7 +155,6 @@ void Receiver::start()
 			}
 			// else
 			// {
-			std::cout << "flare" << std::endl;
 
 			memset(buffer, 0, sizeof(buffer));
 			int byte_received = recv(client_sock_, buffer, sizeof(buffer), 0);
@@ -164,7 +163,7 @@ void Receiver::start()
 				std::cerr << "Error receiving data" << std::endl;
 				continue ;
 			}
-			std::cout << "Received: " << std::endl;
+			std::cout << "Received: " << buffer << std::endl;
 			std::string			command(buffer, byte_received);
 			std::stringstream	ss(command);
 			std::string			line;
