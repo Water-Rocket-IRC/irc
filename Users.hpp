@@ -104,12 +104,11 @@ void Users::adduser(std::stringstream &line_ss, uintptr_t sock)
 			std::cout << "server " << servername << std::endl;
 			std::cout << "real " << realname << std::endl;
 
-			Sender::welcome_message(it->client_sock_, it->servername_);
+			Sender::welcome_message(tmp_user.client_sock_, tmp_user.servername_, tmp_user.nickname_, tmp_user.hostname_);
+
 			break;
 		}
-
 		// nick없이 user만 들어왔으면 sender로 에러 메시지 출력? 실제 클라이언트와 서버가 어떻게 행동하는지 살펴보고 행동 결정해야함
 	 }
-
 
 }

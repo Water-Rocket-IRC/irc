@@ -182,9 +182,12 @@ void Receiver::start()
 					}
 					else if (command_type == "PING")
 					{
+						std::string serv_add;
+
+						line_ss >> serv_add;
 						//for debug
 						std::cout << "PING received" << std::endl;
-						Sender::pong(events[i].ident, "localhost");
+						Sender::pong(events[i].ident, serv_add);
 					}
 					else
 					{
