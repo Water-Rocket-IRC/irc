@@ -38,7 +38,7 @@ Server::Server(std::string port, std::string password)
 {
 	if (_port_checker(port) && _pw_checker(password))
 		exit_with_perror("input port invaild");
-	port_ = stoi(port);
+	port_ = atoi(port.c_str());
 	if (port_ > 65535)
 		exit_with_perror("Port number is out of range");
 	password_ = password;

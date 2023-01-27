@@ -4,7 +4,6 @@
 #include "Sender.hpp"
 
 #include <iostream>
-#include <sstream>
 #include <string>
 #include <cstring>
 #include <vector>
@@ -47,7 +46,7 @@ class Receiver
 		std::string		password_;
 
 	public:
-		Users	users;
+		Users	Users;
 		Receiver(int port);
 		~Receiver();
 		void	init();
@@ -175,22 +174,16 @@ void Receiver::start()
 					line_ss >> command_type;
 					if (command_type == "NICK")
 					{
+						Users.addnick(line_ss, events[i].ident);
 					}
 					else if (command_type == "USER") 
 					{
-						std::string nickname, username, ip, realname;
-						line_ss >> nickname >> username >> ip;
-						std::getline(line_ss, realname);
-
-						realname.erase(0, 1);
-
-						std::string welcome_message = ":localhost 001 " + nickname + " :Welcome to the server lee!lee@127.0.0.1\r\n";
-						send(client_sock_, welcome_message.c_str(), welcome_message.length(), 0);
+						Users.adduser(line_ss, events[i].ident);
 					}
 					else if (command_type == "PING")
 					{
 						std::cout << "PING received" << std::endl;
-						Sender::pong(client_sock_, "localhost");
+						Sender::pong(events[i].ident, "localhost");
 					}
 					else
 					{
