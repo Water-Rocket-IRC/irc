@@ -21,8 +21,8 @@ class Sender
 */
 void Sender::pong(int usr_sock, std::string server_addr)
 {
-	std::string pong_reply = ":" + server_addr + " " + "PONG" + \
-	" " + server_addr + " :" + server_addr;
+	std::string pong_reply = ":" + server_addr + " PONG " \
+	+ server_addr + " :" + server_addr + "\r\n"; 
 	std::cout << RED << pong_reply << RESET << std::endl;
 	send(usr_sock, pong_reply.c_str(), pong_reply.length(), 0);
 }

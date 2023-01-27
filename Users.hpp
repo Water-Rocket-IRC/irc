@@ -37,6 +37,8 @@ class Users
 		void addnick(std::stringstream &line_ss, uintptr_t sock);
 		void adduser(std::stringstream &line_ss, uintptr_t sock);
 
+		void print_all_user(); //debug
+
 };
 
 Users::Users()
@@ -53,15 +55,15 @@ void	Users::addnick(std::stringstream &line_ss, uintptr_t sock)
 
 	line_ss >> nickname;
 
-	 for (it = user_list_.begin(); it != user_list_.end(); ++it)
-	 {
+	for (it = user_list_.begin(); it != user_list_.end(); ++it)
+	{
 		//client_sock_이 중복되지 않을 것이란건 내 뇌피셜. sesim 이거 보면 확인해줄 것.
 		if (it->nickname_ == nickname || it->client_sock_ == sock)
 		{
 			//sender의 에러메시지 메소드 호출
 			flag = false;
 		}
-	 }
+	}
 	if (flag == true)
 	{
 		tmp_usr.nickname_ = nickname;
@@ -109,6 +111,17 @@ void Users::adduser(std::stringstream &line_ss, uintptr_t sock)
 			break;
 		}
 		// nick없이 user만 들어왔으면 sender로 에러 메시지 출력? 실제 클라이언트와 서버가 어떻게 행동하는지 살펴보고 행동 결정해야함
+		// USER의 매개변수가 부족할때 들어오면? nc로 쌩으로 보내면 그럴 수 있다.
 	 }
+}
 
+void Users::print_all_user()
+{
+	std::vector<user>::iterator it;
+
+	for (it = user_list_.begin(); it != user_list_.end(); ++it)
+	{
+		std::cout << "user " << it->nickname_ << std::endl; 
+		std::cout << "socket " << it->client_sock_ << std::endl;
+	}
 }

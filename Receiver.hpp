@@ -185,8 +185,8 @@ void Receiver::start()
 						std::string serv_add;
 
 						line_ss >> serv_add;
-						//for debug
 						std::cout << "PING received" << std::endl;
+						Users.print_all_user(); //for debug
 						Sender::pong(events[i].ident, serv_add);
 					}
 					else
