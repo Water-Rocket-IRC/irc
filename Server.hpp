@@ -14,7 +14,7 @@ class Server
 
 };
 
-static bool	_int_checker(std::string &str)
+static bool	_port_checker(std::string &str)
 {
 	if (str.empty())
 		return (true);
@@ -36,9 +36,11 @@ static bool _pw_checker(std::string &str)
 
 Server::Server(std::string port, std::string password)
 {
-	if (_int_checker(port) && _pw_checker(password))
+	if (_port_checker(port) && _pw_checker(password))
 		exit_with_perror("input port invaild");
 	port_ = stoi(port);
+	if (port_ > 65535)
+		exit_with_perror("Port number is out of range");
 	password_ = password;
 }
 
