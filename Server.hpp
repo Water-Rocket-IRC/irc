@@ -29,7 +29,7 @@ static bool _pw_checker(std::string &str)
 	if (str.empty())
 		return (true);
 	for (size_t i = 0; i < str.length(); ++i)
-		if (std::isspace(str.at(i)) && !std::isprint(str.at(i)))
+		if (std::isspace(str.at(i)) || !std::isprint(str.at(i)))
 			return (true);
 	return (false);
 }
