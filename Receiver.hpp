@@ -153,51 +153,50 @@ void Receiver::start()
 					continue;
 				}
 			}
-			// else
-			// {
-
-			memset(buffer, 0, sizeof(buffer));
-			int byte_received = recv(client_sock_, buffer, sizeof(buffer), 0);
-			if (byte_received < 0)
+			else
 			{
-				std::cerr << "Error receiving data" << std::endl;
-				continue ;
+				memset(buffer, 0, sizeof(buffer));
+				int byte_received = recv(client_sock_, buffer, sizeof(buffer), 0);
+				if (byte_received < 0)
+				{
+					std::cerr << "Error receiving data" << std::endl;
+					continue ;
+				}
+				std::cout << "Received: " << buffer << std::endl;
+				std::string			command(buffer, byte_received);
+				std::stringstream	ss(command);
+				std::string			line;
+
+				while (std::getline(ss, line, '\n'))
+				{
+					std::stringstream	line_ss(line);
+					std::string			command_type;
+					
+					line_ss >> command_type;
+					if (command_type == "NICK")
+					{
+					}
+					else if (command_type == "USER") 
+					{
+						std::string nickname, username, ip, realname;
+						line_ss >> nickname >> username >> ip;
+						std::getline(line_ss, realname);
+
+						realname.erase(0, 1);
+
+						std::string welcome_message = ":localhost 001 " + nickname + " :Welcome to the server lee!lee@127.0.0.1\r\n";
+						send(client_sock_, welcome_message.c_str(), welcome_message.length(), 0);
+					}
+					else if (command_type == "PING")
+					{
+						std::cout << "PING received" << std::endl;
+						Sender::pong(client_sock_, "localhost");
+					}
+					else
+					{
+					}
+				}
 			}
-			std::cout << "Received: " << buffer << std::endl;
-			std::string			command(buffer, byte_received);
-			std::stringstream	ss(command);
-			std::string			line;
-
-			while (std::getline(ss, line, '\n'))
-			{
-				std::stringstream	line_ss(line);
-				std::string			command_type;
-				
-				line_ss >> command_type;
-				if (command_type == "NICK")
-				{
-				}
-				else if (command_type == "USER") 
-				{
-					std::string nickname, username, ip, realname;
-					line_ss >> nickname >> username >> ip;
-					std::getline(line_ss, realname);
-
-					realname.erase(0, 1);
-
-					std::string welcome_message = ":localhost 001 " + nickname + " :Welcome to the server lee!lee@127.0.0.1\r\n";
-					send(client_sock_, welcome_message.c_str(), welcome_message.length(), 0);
-				}
-				else if (command_type == "PING")
-				{
-					std::cout << "PING received" << std::endl;
-					Sender::pong(client_sock_, "localhost");
-				}
-				else
-				{
-				}
-			// }
-		}
 		
 		
 //====================================
