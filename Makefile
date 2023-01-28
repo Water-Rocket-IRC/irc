@@ -6,12 +6,12 @@
 #    By: sesim <sesim@student.42seoul.kr>           +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/01/27 10:57:54 by sesim             #+#    #+#              #
-#    Updated: 2023/01/27 23:08:25 by sesim            ###   ########.fr        #
+#    Updated: 2023/01/28 22:52:47 by sesim            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 CXX			=	c++
-CXXFLAGS	=	-Wall -Wextra -Werror -std=c++98
+CXXFLAGS	=	-g3
 RM			=	rm -rf
 
 OBJS_DIR	:=	objs/
@@ -26,14 +26,14 @@ NAME		:=	ircserv
 all : $(NAME)
 
 $(NAME) : $(OBJS)
-#	$(CXX) $(CXXFLAGS) $^ -o $@
-	$(CXX) $^ -o $@
+	$(CXX) $(CXXFLAGS) $^ -o $@
+# $(CXX) $^ -o $@
 
 $(OBJS_DIR)%.o : %.cpp
 	@mkdir -p $(dir $@)
 	@mkdir -p $(DEPS_DIR)
-#	$(CXX) $(CXXFLAGS) $< -c -o $@ -MMD
-	$(CXX) $< -c -o $@ -MMD
+	$(CXX) $(CXXFLAGS) $< -c -o $@ -MMD
+# $(CXX) $< -c -o $@ -MMD
 	mv $(@:.o=.d) $(DEPS_DIR)
 
 clean:

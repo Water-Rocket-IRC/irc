@@ -1,0 +1,51 @@
+./Sender.hpp:37:1: warning: non-void function does not return a value [-Wreturn-type]
+}
+^
+./Sender.hpp:52:35: error: variable has incomplete type 'struct user'
+udata Sender::privmsg(struct user sender, struct user receiver, std::string msg)
+                                  ^
+./Sender.hpp:12:8: note: forward declaration of 'user'
+struct user;
+       ^
+./Sender.hpp:52:55: error: variable has incomplete type 'struct user'
+udata Sender::privmsg(struct user sender, struct user receiver, std::string msg)
+                                                      ^
+./Sender.hpp:12:8: note: forward declaration of 'user'
+struct user;
+       ^
+./Sender.hpp:64:36: error: variable has incomplete type 'struct user'
+udata Sender::send_err(struct user sender, struct user receiver, std::string msg)
+                                   ^
+./Sender.hpp:12:8: note: forward declaration of 'user'
+struct user;
+       ^
+./Sender.hpp:64:56: error: variable has incomplete type 'struct user'
+udata Sender::send_err(struct user sender, struct user receiver, std::string msg)
+                                                       ^
+./Sender.hpp:12:8: note: forward declaration of 'user'
+struct user;
+       ^
+In file included from main.cpp:1:
+In file included from ./Server.hpp:3:
+In file included from ./Receiver_working.hpp:3:
+./Users.hpp:25:16: error: field has incomplete type 'struct kevent'
+        struct kevent event;
+                      ^
+./Users.hpp:25:9: note: forward declaration of 'kevent'
+        struct kevent event;
+               ^
+./Users.hpp:48:8: error: definition of implicitly declared default constructor
+Users::Users()
+       ^
+./Users.hpp:53:63: error: variable has incomplete type 'struct kevent'
+void    Users::addnick(std::stringstream &line_ss, struct kevent event)
+                                                                 ^
+./Users.hpp:25:9: note: forward declaration of 'kevent'
+        struct kevent event;
+               ^
+./Users.hpp:125:45: error: variable has incomplete type 'struct kevent'
+user Users::search_user_event(struct kevent event)
+                                            ^
+./Users.hpp:25:9: note: forward declaration of 'kevent'
+        struct kevent event;
+               ^
