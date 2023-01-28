@@ -14,22 +14,6 @@
 #include <unistd.h>
 #include <sys/event.h>
 
-enum 
-{
-	PONG,
-	WELCOME_MESSAGE,
-	PRIVMSG,
-	SEND_ERR
-};
-
-struct event_info
-{
-	int command;
-	user sender;
-	user receiver;
-	std::string msg;
-};
-
 class Receiver
 {
 	class SocketCreateFail : public std::exception
@@ -49,9 +33,8 @@ class Receiver
 	};
 
 	private:
-		std::vector<struct kevent> events_;
-		struct kevent		tmp_;
 		struct kevent		change_list_;
+		// std::vector<struct kevent> events_;
 		sockaddr_in		server_addr_;
 		sockaddr_in		client_addr_;
 		int				client_addr_size_;
@@ -68,9 +51,6 @@ class Receiver
 		~Receiver();
 		void	init();
 		void 	start();
-
-		user who_is_sender(struct kevent event)
-
 };
 
 /*    Throw Class     */
@@ -92,7 +72,7 @@ class Receiver
 // 	return ("err: Kqueue creating fail");
 // }
 
-void exit_with_perror(const std::string& msg)
+static void exit_with_perror(const std::string& msg)
 {
 	system("clear");
 	std::cerr << msg << std::endl;
@@ -134,6 +114,19 @@ void Receiver::init()
 	ret_ = kevent(kq_, &change_list_, 1, NULL, 0, NULL);
 	if (ret_ < 0)
 		std::cerr << "err: adding server socket to kqueue" << std::endl;
+}
+
+
+/// @brief who_is_sender : kqueue의 event를 통해 서버에 메시지를 전송한 유저를 식별하는 함수
+/// @param event 서버가 listen한 event
+/// @return user
+user who_is_sender(struct kevent event)
+{
+	user sender;
+	
+	
+
+	return sender;
 }
 
 
@@ -195,7 +188,7 @@ void Receiver::start()
 					line_ss >> command_type;
 					if (command_type == "NICK")
 					{
-						Users.addnick(line_ss, events[i]);
+						Users.addnick(line_ss, events[i].ident);
 					}
 					else if (command_type == "USER") 
 					{
@@ -210,125 +203,17 @@ void Receiver::start()
 						Users.print_all_user(); //for debug
 						Sender::pong(events[i].ident, serv_add);
 					}
-					else if (command_type == "PRIVMSG")
+					else if (command_type = "PRIVMSG")
 					{
 						std::string target, msg;
+
 						line_ss >> target >> msg;
-
 						//1. send한 user identify
-						user sender = Users.search_user_event(events[i]);
 
-						//2. receive할 user find
-						user receiver = Users.search_user_nick(target);
-
-						//
-						if (receiver.client_sock_ == -433)
-						{
-
-							Sender::send_err(sender, msg);
-						}
-						else
-						{
-							Sender::privmsg(sender, receiver, msg);
-						}
+						//2. receive할 user find한 후, 전송 
 					}
 				}
 			}
-
-
-
-		while (true) {
-        // Wait for events
-        int nev = kevent(kq_, NULL, 0, &tmp_, 1, NULL);
-
-        for (int i = 0; i < nev; i++) {
-			int	fd = (int) tmp_.ident;
-            if (fd == server_sock_) {
-				// Accept new client
-				client_sock_ = accept(server_sock_, (sockaddr *) &client_addr_, (socklen_t*) &client_addr_size_);
-				EV_SET(&change_list_, client_sock_, EVFILT_READ, EV_ADD, 0, 0, 0);
-				ret_ = kevent(kq_, &change_list_, 1, NULL, 0, NULL);
-				if (ret_ < 0)
-				{
-					std::cerr << "err: Adding client socket to kqueue fail" << std::endl;
-					continue;
-				}
-				events_.push_back(change_list_);
-            }
-            else {
-				for (int j = 0; j < events_.size(); j++) {
-				    if (events_[j].ident == tmp_.ident) {
-				        if (events_[j].filter == EVFILT_READ) {
-							memset(buffer, 0, sizeof(buffer));
-							int byte_received = recv(client_sock_, buffer, sizeof(buffer), 0);
-							if (byte_received < 0)
-							{
-								std::cerr << "Error receiving data" << std::endl;
-								continue ;
-							}
-							std::cout << "Received: " << buffer << std::endl;
-							std::string			command(buffer, byte_received);
-							std::stringstream	ss(command);
-							std::string			line;
-
-							while (std::getline(ss, line, '\n'))
-							{
-								std::stringstream	line_ss(line);
-								std::string			command_type;
-								
-								line_ss >> command_type;
-								if (command_type == "NICK")
-								{
-									Users.addnick(line_ss, events[i].ident);
-								}
-								else if (command_type == "USER") 
-								{
-									Users.adduser(line_ss, events[i].ident);
-								}
-								else if (command_type == "PING")
-								{
-									std::string serv_add;
-
-									line_ss >> serv_add;
-									std::cout << "PING received" << std::endl;
-									Users.print_all_user(); //for debug
-									/////////////
-									Sender::pong(events[i].ident, serv_add);
-								}
-								else if (command_type == "PRIVMSG")
-								{
-									std::string target, msg;
-									line_ss >> target >> msg;
-
-									//1. send한 user identify
-									user sender = Users.search_user_event(events[i]);
-
-									//2. receive할 user find
-									user receiver = Users.search_user_nick(target);
-
-									//여기서 write로 바꿔버린 다음에 보내면 안되냐?
-									// receive의 Event를 write
-									if (events_[j].filter == EVFILT_WRITE) 
-									{
-										if (receiver.client_sock_ == -433)
-										{
-											Sender::send_err(sender, receiver, msg);
-										}
-										else
-										{
-											Sender::privmsg(sender, receiver, msg);
-										}
-									//Read로 바꿈 되잖아 
-									}
-								}
-							}
-							}
-				        break;
-				    }
-				}
-            }
-        }
-    }
 		
 		
 //====================================

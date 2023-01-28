@@ -21,11 +21,11 @@ struct user
 	std::string servername_;
 	std::string realname_;
 
-	int			client_sock_;
+	struct kevent event;
+	int			client_sock_; //legacy variable, 곧 kevent로 대체해야 함
 	int			mod;
 	//그 외 기타등등
 };
-
 
 /// @brief 유저들을 관리하고, sender에게 적절한 응답을 요청한다.
 class Users
@@ -34,8 +34,12 @@ class Users
 		std::vector<user> user_list_;
 	public:
 		Users();
-		void addnick(std::stringstream &line_ss, uintptr_t sock);
+		void addnick(std::stringstream &line_ss, struct kevent event);
 		void adduser(std::stringstream &line_ss, uintptr_t sock);
+
+		user search_user_event(struct kevent event);
+		user search_user_nick(std::string nick);
+
 
 		void print_all_user(); //debug
 
@@ -46,7 +50,7 @@ Users::Users()
 	
 }
 
-void	Users::addnick(std::stringstream &line_ss, uintptr_t sock)
+void	Users::addnick(std::stringstream &line_ss, struct kevent event)
 {
 	user tmp_usr;
 	std::string nickname;
@@ -57,8 +61,7 @@ void	Users::addnick(std::stringstream &line_ss, uintptr_t sock)
 
 	for (it = user_list_.begin(); it != user_list_.end(); ++it)
 	{
-		//client_sock_이 중복되지 않을 것이란건 내 뇌피셜. sesim 이거 보면 확인해줄 것.
-		if (it->nickname_ == nickname || it->client_sock_ == sock)
+		if (it->nickname_ == nickname)
 		{
 			//sender의 에러메시지 메소드 호출
 			flag = false;
@@ -67,7 +70,7 @@ void	Users::addnick(std::stringstream &line_ss, uintptr_t sock)
 	if (flag == true)
 	{
 		tmp_usr.nickname_ = nickname;
-		tmp_usr.client_sock_ = (int)sock;
+		tmp_usr.event = event;
 		user_list_.push_back(tmp_usr);
 	}
 }
@@ -85,7 +88,7 @@ void Users::adduser(std::stringstream &line_ss, uintptr_t sock)
 	 for (it = user_list_.begin(); it != user_list_.end(); ++it)
 	 {
 		//접속한 소켓을 찾아 정보를 추가한다
-		if (it->client_sock_ == sock)
+		if (it->event.ident == sock)
 		{
 			tmp_user = *it;
 
@@ -110,11 +113,46 @@ void Users::adduser(std::stringstream &line_ss, uintptr_t sock)
 
 			break;
 		}
+		// 예외처리 할 부분
+
 		// nick없이 user만 들어왔으면 sender로 에러 메시지 출력? 실제 클라이언트와 서버가 어떻게 행동하는지 살펴보고 행동 결정해야함
 		// USER의 매개변수가 부족할때 들어오면? nc로 쌩으로 보내면 그럴 수 있다.
 	 }
 }
 
+
+/// @brief kqueue의 event를 통해 서버에 메시지를 전송한 유저를 식별하는 함수
+/// @param event 서버가 listen한 event
+/// @return user
+user Users::search_user_event(struct kevent event)
+{
+	std::vector<user>::iterator it;
+	user usr;
+
+	for (it = user_list_.begin(); it != user_list_.end(); it++)
+	{
+		if (it->event.ident == event.ident)
+			return *it;
+	}
+	std::cout << "Error : Unknown User accessed to the server" << std::endl;
+	return usr;
+}
+
+user Users::search_user_nick(std::string nick)
+{
+	std::vector<user>::iterator it;
+	user usr;
+
+	for (it = user_list_.begin(); it != user_list_.end(); it++)
+	{
+		if (it->nickname_ == nick)
+			return *it;
+	}
+	usr.client_sock_ = -433;
+	return usr;
+}
+
+//debug 함수
 void Users::print_all_user()
 {
 	std::vector<user>::iterator it;
