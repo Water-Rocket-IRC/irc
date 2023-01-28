@@ -8,7 +8,7 @@
 
 enum mod
 {
-	NORMAL,
+	NORMAL, 
 	ADMIN
 };
 
