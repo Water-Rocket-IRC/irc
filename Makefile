@@ -6,7 +6,7 @@
 #    By: sesim <sesim@student.42seoul.kr>           +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/01/27 10:57:54 by sesim             #+#    #+#              #
-#    Updated: 2023/01/27 12:38:55 by sesim            ###   ########.fr        #
+#    Updated: 2023/01/27 23:08:25 by sesim            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,7 +17,8 @@ RM			=	rm -rf
 OBJS_DIR	:=	objs/
 DEPS_DIR	:=	deps/
 
-SRCS		:=	$(wildcard *.cpp)
+# SRCS		:=	$(wildcard *.cpp)
+SRCS		:=	main.cpp
 OBJS		:=	$(addprefix $(OBJS_DIR), $(SRCS:.cpp=.o))
 DEPS		:=	$(addprefix $(DEPS_DIR), $(SRCS:.cpp=.d))
 NAME		:=	ircserv

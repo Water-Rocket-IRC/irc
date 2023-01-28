@@ -69,7 +69,7 @@ void	KeventHandler::SetWrite(uintptr_t ident, void *udata)
 
 void	KeventHandler::DeleteEvent(const struct kevent &event)
 {
-	struct kevent new;
-	EV_SET(&new, event.ident, event.filter, EV_DELETE, 0, 0, 0);
-	kevent(kq_, &new, 1, NULL, 0, NULL);
+	struct kevent	tmp;
+	EV_SET(&tmp, event.ident, event.filter, EV_DELETE, 0, 0, 0);
+	kevent(kq_, &tmp, 1, NULL, 0, NULL);
 }
