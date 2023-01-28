@@ -155,7 +155,6 @@ void Receiver::start()
 	}
 }
 
-
 int	Receiver::clientReadEventHandler(struct kevent &cur_event)
 {
 	char buffer[512];
