@@ -144,10 +144,13 @@ void Receiver::start()
 				}
 				else if (cur_event.filter == EVFILT_WRITE)
 				{
+					// TODO: LEAK CHECK
 					if (clientWriteEventHandler(cur_event))
 					{
+						Udata	*tmp = reinterpret_cast<Udata *>(cur_event.udata);
 						int	tmp_fd = cur_event.ident;
 						kq_.DeleteEvent(cur_event);
+						delete tmp;
 						kq_.SetRead(tmp_fd, 0);
 					}
 				}
@@ -160,7 +163,16 @@ int	Receiver::clientReadEventHandler(struct kevent &cur_event)
 {
 	char buffer[512];
 
+
 	memset(buffer, 0, sizeof(buffer));
+	// TODO: LEAK CHECK
+	if (cur_event.flags & EV_EOF)
+	{
+		std::cout << "sock was fucked!" << std::endl;
+		Udata	*tmp = reinterpret_cast<Udata *>(cur_event.udata);
+		kq_.DeleteEvent(cur_event);
+		delete tmp;
+	}
 	int byte_received = recv(cur_event.ident, buffer, sizeof(buffer), 0);
 	if (byte_received < 0)
 	{
@@ -231,7 +243,5 @@ int	Receiver::clientWriteEventHandler(struct kevent &cur_event)
 
 	std::cout << "socket: " << udata->sock_fd << " msg: " << udata->msg << std::endl;
 	send(udata->sock_fd, udata->msg.c_str(), udata->msg.length(), 0);
-	// delete cur_event.udata;
-	// kq_.SetRead(cur_event.ident, 0); // TODO: have to add udata
 	return (1);
 }

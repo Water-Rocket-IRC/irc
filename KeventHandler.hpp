@@ -71,7 +71,7 @@ std::vector<struct kevent>	KeventHandler::SetMonitor()
 
 void	KeventHandler::SetRead(uintptr_t ident, void *udata)
 {
-	KeventInit_(ident, EVFILT_READ, EV_ADD, 0, 0, udata);
+	KeventInit_(ident, EVFILT_READ, EV_ADD, 0, 20000, udata);
 }
 
 void	KeventHandler::SetWrite(uintptr_t ident, void *udata)
