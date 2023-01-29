@@ -2,7 +2,7 @@
 
 #include <string>
 
-struct udata
+struct Udata
 {
 	int			sock_fd;
 	std::string	msg;

@@ -25,7 +25,7 @@ class Users
 		std::vector<struct user> user_list_;
 	public:
 		void addnick(std::stringstream &line_ss, struct kevent event);
-		udata adduser(std::stringstream &line_ss, uintptr_t sock);
+		Udata *adduser(std::stringstream &line_ss, uintptr_t sock);
 
 		user search_user_event(struct kevent event);
 		user search_user_nick(std::string nick);
@@ -65,11 +65,11 @@ https://datatracker.ietf.org/doc/html/rfc1459#section-4.1.3
 에 따르면, 이건 서버에 처음 접속할때 사용되는 명령어다. NICK과 USER 모두 접수되어야, 서버에 레지스터 된 것이다.
 중간에 유저 명령어 전송이 가능한지 확인해야 하고, 그에 따라 처리해야 한다.
 */
-udata Users::adduser(std::stringstream &line_ss, uintptr_t sock)
+Udata *Users::adduser(std::stringstream &line_ss, uintptr_t sock)
 {
 	std::vector<user>::iterator it;
 	user tmp_user;
-	udata ret;
+	Udata *ret = new Udata;
 
 
 	 for (it = user_list_.begin(); it != user_list_.end(); ++it)

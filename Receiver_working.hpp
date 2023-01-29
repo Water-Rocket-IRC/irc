@@ -188,11 +188,11 @@ int	Receiver::clientReadEventHandler(struct kevent &cur_event)
 		}
 		else if (command_type == "USER") 
 		{
-			struct udata	u_data = Users.adduser(line_ss, cur_event.ident);
+			struct Udata	*u_data = Users.adduser(line_ss, cur_event.ident);
 
-			std::cout << "user udata : " << cur_event.ident << u_data.sock_fd << std::endl;
+			std::cout << "user udata : " << cur_event.ident << u_data->sock_fd << std::endl;
 
-			kq_.SetWrite(cur_event.ident, &u_data);
+			kq_.SetWrite(cur_event.ident, u_data);
 		}
 		else if (command_type == "PING")
 		{
@@ -201,8 +201,8 @@ int	Receiver::clientReadEventHandler(struct kevent &cur_event)
 			line_ss >> serv_add;
 			std::cout << "PING received" << std::endl;
 			Users.print_all_user(); //for debug
-			struct udata	u_data = Sender::pong(cur_event.ident, serv_add);
-			kq_.SetWrite(cur_event.ident, &u_data);
+			struct Udata	*u_data = Sender::pong(cur_event.ident, serv_add);
+			kq_.SetWrite(cur_event.ident, u_data);
 			// Sender::pong(cur_event.ident, serv_add); // MOVE TO WRITE PART
 		}
 		// else if (command_type == "PRIVMSG")
@@ -234,10 +234,11 @@ int	Receiver::clientReadEventHandler(struct kevent &cur_event)
 
 int	Receiver::clientWriteEventHandler(struct kevent &cur_event)
 {
-	struct udata	*u_data = reinterpret_cast<udata *>(cur_event.udata);
+	//struct udata	*u_data = reinterpret_cast<udata *>(cur_event.udata);
+	Udata *udata = static_cast<Udata*>(cur_event.udata);
 
-	
-	send(u_data->sock_fd, u_data->msg.c_str(), u_data->msg.length(), 0);
+	std::cout << udata->msg << " " << udata->sock_fd << std::endl;
+	send(udata->sock_fd, udata->msg.c_str(), udata->msg.length(), 0);
 	kq_.SetRead(cur_event.ident, 0); // TODO: have to add udata
 	return (0);
 }

@@ -12,8 +12,8 @@ struct user;
 class Sender 
 {
 	public:
-		static udata pong(int usr_sock, std::string server_addr);		
-		static udata welcome_message(int usr_sock, std::string server, std::string nick, std::string host);
+		static Udata *pong(int usr_sock, std::string server_addr);		
+		static Udata *welcome_message(int usr_sock, std::string server, std::string nick, std::string host);
 		//static udata privmsg(struct user sender, struct user receiver, std::string msg);
 		//static udata send_err(struct user sender, struct user receiver, std::string msg);
 };
@@ -23,33 +23,33 @@ class Sender
  @param usr_sock 클라이언트 소켓
  @param server_addr 서버 주소
 */
-udata Sender::pong(int usr_sock, std::string server_addr)
+Udata *Sender::pong(int usr_sock, std::string server_addr)
 {
-	udata ret;
+	Udata *ret = new Udata;
 
 	std::string pong_reply = ":" + server_addr + " PONG " \
 		+ server_addr + " :" + server_addr + "\r\n"; 
 	std::cout << RED << pong_reply << RESET << std::endl;
 
-	ret.sock_fd = usr_sock;
-	ret.msg = pong_reply;
+	ret->sock_fd = usr_sock;
+	ret->msg = pong_reply;
 	return ret;
 }
 
-udata Sender::welcome_message(int usr_sock, std::string server, std::string nick, std::string host)
+Udata *Sender::welcome_message(int usr_sock, std::string server, std::string nick, std::string host)
 {
-	udata ret;
+	Udata *ret = new Udata;
 
 	std::string msg001 = ":" + server + " 001 " + nick +" Welcome to the 42's irc network " \
 		+ nick + "!" + host + "\r\n";
 	std::cout << usr_sock << " " << msg001 << std::endl;
 	
-	ret.sock_fd = usr_sock;
-	ret.msg = msg001;
+	ret->sock_fd = usr_sock;
+	ret->msg = msg001;
 	return ret;
 }
 
-// udata Sender::privmsg(struct user sender, struct user receiver, std::string msg)
+// Udata Sender::privmsg(struct user sender, struct user receiver, std::string msg)
 // {
 // 	std::string privmsg;
 
