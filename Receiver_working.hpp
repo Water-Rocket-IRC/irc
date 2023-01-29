@@ -189,6 +189,9 @@ int	Receiver::clientReadEventHandler(struct kevent &cur_event)
 		else if (command_type == "USER") 
 		{
 			struct udata	u_data = Users.adduser(line_ss, cur_event.ident);
+
+			std::cout << "user udata : " << cur_event.ident << u_data.sock_fd << std::endl;
+
 			kq_.SetWrite(cur_event.ident, &u_data);
 		}
 		else if (command_type == "PING")
@@ -232,6 +235,8 @@ int	Receiver::clientReadEventHandler(struct kevent &cur_event)
 int	Receiver::clientWriteEventHandler(struct kevent &cur_event)
 {
 	struct udata	*u_data = reinterpret_cast<udata *>(cur_event.udata);
+
+	
 	send(u_data->sock_fd, u_data->msg.c_str(), u_data->msg.length(), 0);
 	kq_.SetRead(cur_event.ident, 0); // TODO: have to add udata
 	return (0);

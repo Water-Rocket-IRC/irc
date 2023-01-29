@@ -96,7 +96,7 @@ udata Users::adduser(std::stringstream &line_ss, uintptr_t sock)
 			std::cout << "server " << servername << std::endl;
 			std::cout << "real " << realname << std::endl;
 
-			ret = Sender::welcome_message(tmp_user.client_sock_, tmp_user.servername_, tmp_user.nickname_, tmp_user.hostname_);
+			ret = Sender::welcome_message(tmp_user.event.ident, tmp_user.servername_, tmp_user.nickname_, tmp_user.hostname_);
 			return (ret);
 		}
 		// 예외처리 할 부분
