@@ -30,9 +30,7 @@ class Users
 		user search_user_event(struct kevent event);
 		user search_user_nick(std::string nick);
 
-
 		void print_all_user(); //debug
-
 };
 
 void	Users::addnick(std::stringstream &line_ss, struct kevent event)
