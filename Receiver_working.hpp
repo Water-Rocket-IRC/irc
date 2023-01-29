@@ -108,7 +108,6 @@ void Receiver::bindSocket()
 		std::cerr << "error" << std::endl;
 	} // TODO: Have to arrange 5 (Max queue)
 
-	std::cout << server_sock_ << std::endl;
 	kq_.SetRead(server_sock_, 0);
 }
 
@@ -132,17 +131,12 @@ void Receiver::start()
 					std::cerr << "err: accepting connection fail" << std::endl;
 					continue ;
 				}
-				std::cout << "accept client : " << client_sock_ << std::endl;
 				kq_.SetRead(client_sock_, 0); // ADD udata or not
 			}
 			else	// event occur with users
 			{
-				// std::cout << "aa client : " << cur_event.ident << std::endl;
 				if (cur_event.filter == EVFILT_READ)
 				{
-					std::cout << "testset" << std::endl;
-					std::cout << cur_event.ident << std::endl;
-					std::cout << server_sock_ << std::endl;
 					if (clientReadEventHandler(cur_event))
 					{
 						continue ;
@@ -152,7 +146,9 @@ void Receiver::start()
 				{
 					if (clientWriteEventHandler(cur_event))
 					{
-						continue ;
+						int	tmp_fd = cur_event.ident;
+						kq_.DeleteEvent(cur_event);
+						kq_.SetRead(tmp_fd, 0);
 					}
 				}
 			}
@@ -189,9 +185,6 @@ int	Receiver::clientReadEventHandler(struct kevent &cur_event)
 		else if (command_type == "USER") 
 		{
 			struct Udata	*u_data = Users.adduser(line_ss, cur_event.ident);
-
-			std::cout << "user udata : " << cur_event.ident << u_data->sock_fd << std::endl;
-
 			kq_.SetWrite(cur_event.ident, u_data);
 		}
 		else if (command_type == "PING")
@@ -199,8 +192,7 @@ int	Receiver::clientReadEventHandler(struct kevent &cur_event)
 			std::string serv_add;
 
 			line_ss >> serv_add;
-			std::cout << "PING received" << std::endl;
-			Users.print_all_user(); //for debug
+
 			struct Udata	*u_data = Sender::pong(cur_event.ident, serv_add);
 			kq_.SetWrite(cur_event.ident, u_data);
 			// Sender::pong(cur_event.ident, serv_add); // MOVE TO WRITE PART
@@ -237,8 +229,9 @@ int	Receiver::clientWriteEventHandler(struct kevent &cur_event)
 	//struct udata	*u_data = reinterpret_cast<udata *>(cur_event.udata);
 	Udata *udata = static_cast<Udata*>(cur_event.udata);
 
-	std::cout << udata->msg << " " << udata->sock_fd << std::endl;
+	std::cout << "socket: " << udata->sock_fd << " msg: " << udata->msg << std::endl;
 	send(udata->sock_fd, udata->msg.c_str(), udata->msg.length(), 0);
-	kq_.SetRead(cur_event.ident, 0); // TODO: have to add udata
-	return (0);
+	// delete cur_event.udata;
+	// kq_.SetRead(cur_event.ident, 0); // TODO: have to add udata
+	return (1);
 }

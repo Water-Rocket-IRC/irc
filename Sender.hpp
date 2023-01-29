@@ -29,7 +29,6 @@ Udata *Sender::pong(int usr_sock, std::string server_addr)
 
 	std::string pong_reply = ":" + server_addr + " PONG " \
 		+ server_addr + " :" + server_addr + "\r\n"; 
-	std::cout << RED << pong_reply << RESET << std::endl;
 
 	ret->sock_fd = usr_sock;
 	ret->msg = pong_reply;
@@ -41,9 +40,7 @@ Udata *Sender::welcome_message(int usr_sock, std::string server, std::string nic
 	Udata *ret = new Udata;
 
 	std::string msg001 = ":" + server + " 001 " + nick +" Welcome to the 42's irc network " \
-		+ nick + "!" + host + "\r\n";
-	std::cout << usr_sock << " " << msg001 << std::endl;
-	
+		+ nick + "!" + host + "\r\n";	
 	ret->sock_fd = usr_sock;
 	ret->msg = msg001;
 	return ret;
@@ -56,7 +53,6 @@ Udata *Sender::welcome_message(int usr_sock, std::string server, std::string nic
 // 	privmsg = ":" + sender.nickname_ + "@" + sender.servername_ + " PRIVMSG " + \
 // 		receiver.nickname_ + " :" + msg + "\r\n";
 
-// 	std::cout << "Message Sent : " << privmsg << std::endl;
 // 	send(receiver.event.ident, privmsg.c_str(), privmsg.length(), 0);
 // }
 

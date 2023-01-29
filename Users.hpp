@@ -91,10 +91,10 @@ Udata *Users::adduser(std::stringstream &line_ss, uintptr_t sock)
 			tmp_user.realname_ = realname;
 
 			//for debug
-			std::cout << "user " << username << std::endl; 
-			std::cout << "host " << hostname << std::endl;
-			std::cout << "server " << servername << std::endl;
-			std::cout << "real " << realname << std::endl;
+			// std::cout << "user " << username << std::endl; 
+			// std::cout << "host " << hostname << std::endl;
+			// std::cout << "server " << servername << std::endl;
+			// std::cout << "real " << realname << std::endl;
 
 			ret = Sender::welcome_message(tmp_user.event.ident, tmp_user.servername_, tmp_user.nickname_, tmp_user.hostname_);
 			return (ret);
