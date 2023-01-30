@@ -205,7 +205,7 @@ int	Receiver::clientReadEventHandler(struct kevent &cur_event)
 
 			line_ss >> serv_add;
 
-			struct Udata	*u_data = Sender::pong(cur_event.ident, serv_add);
+			//struct Udata	*u_data = Sender::pong(cur_event.ident, serv_add);
 			kq_.SetWrite(cur_event.ident, u_data);
 			// Sender::pong(cur_event.ident, serv_add); // MOVE TO WRITE PART
 		}

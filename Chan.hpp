@@ -5,6 +5,8 @@
 #include "Users.hpp"
 #include "Udata.hpp"
 
+enum e_send_switch { NORMAL, PART };
+
 class Chan
 {
 	private:
@@ -26,15 +28,17 @@ class Chan
 		void 		set_channel_name(std::string& chan_name);
 		void		delete_user(user& user_name);
 
-		std::vector<Udata> send_all(user& sender, std::string& msg);
+		std::vector<Udata> send_all(user& sender, std::string msg, int remocon);
 
 		std::vector<user>& get_users();
 		bool operator==(const Chan& t) const;	
 		void seterror();
 		int geterror();
 };
-
-std::vector<Udata> send_all(user& sender, std::string& msg)
+/*
+///@ brief 기본형 : 나 빼고 다 보냄, flag 1 -> PART
+*/
+std::vector<Udata> Chan::send_all(user& sender, std::string msg, int remocon)
 {
 	std::vector<Udata> ret;
 	std::vector<user>::iterator it;
@@ -43,30 +47,38 @@ std::vector<Udata> send_all(user& sender, std::string& msg)
 	{
 		Udata packet;
 
-		if (sender == *it)
+		switch (remocon)
 		{
-			continue;
+			case NORMAL:
+				if (sender == *it)
+				{
+					continue ;
+				}
+				packet.msg = msg; //sender func
+				break ;
+			case PART:
+				packet.msg = msg; //sender func
+				break ;
 		}
-		packet = //sender로 호출;
 		ret.push_back(packet);
 	}
 	return ret;
 }
 
-//int플래그가 추가되었으면, part메시지 전용. 만들기 귀찮아서 복붙함
-std::vector<Udata> send_all(user& sender, std::string& msg, int i)
-{
-    std::vector<Udata> ret;
-    std::vector<user>::iterator it;
+// //int플래그가 추가되었으면, part메시지 전용. 만들기 귀찮아서 복붙함
+// std::vector<Udata> Chan::send_all(user& sender, std::string& msg, std::string string == "PART")
+// {
+//     std::vector<Udata> ret;
+//     std::vector<user>::iterator it;
 
-    for (it = connectors_.begin(); it != connectors_.end(); it++)
-    {
-        Udata packet;
-        packet = //sender로 호출->part 메시지 전송
-                ret.push_back(packet);
-    }
-    return ret;
-}
+//     for (it = connectors_.begin(); it != connectors_.end(); it++)
+//     {
+//         Udata packet;
+//         packet = //sender로 호출->part 메시지 전
+//                 ret.push_back(packet);
+//     }
+//     return ret;
+// }
 
 std::string Chan::get_name()
 {

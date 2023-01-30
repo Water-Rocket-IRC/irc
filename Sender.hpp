@@ -12,8 +12,8 @@ struct user;
 class Sender 
 {
 	public:
-		static Udata *pong(int usr_sock, std::string server_addr);		
-		static Udata *welcome_message(int usr_sock, std::string server, std::string nick, std::string host);
+		static Udata pong(int usr_sock, std::string server_addr);		
+		static Udata welcome_message(int usr_sock, std::string server, std::string nick, std::string host);
 		//static udata privmsg(struct user sender, struct user receiver, std::string msg);
 		//static udata send_err(struct user sender, struct user receiver, std::string msg);
 };
@@ -25,24 +25,24 @@ class Sender
 */
 Udata Sender::pong(int usr_sock, std::string server_addr)
 {
-	Udata ret =  Udata;
+	Udata ret;
 
-	std::string pong_reply = ":" + server_addr + " PONG " \
-		+ server_addr + " :" + server_addr + "\r\n"; 
+	// std::string pong_reply = ":" + server_addr + " PONG " \
+	// 	+ server_addr + " :" + server_addr + "\r\n"; 
 
-	ret->sock_fd = usr_sock;
-	ret->msg = pong_reply;
+	// // ret->sock_fd = usr_sock;
+	// // ret->msg = pong_reply;
 	return ret;
 }
 
 Udata Sender::welcome_message(int usr_sock, std::string server, std::string nick, std::string host)
 {
-	Udata ret = Udata;
+	Udata ret;
 
 	std::string msg001 = ":" + server + " 001 " + nick +" Welcome to the 42's irc network " \
 		+ nick + "!" + host + "\r\n";	
-	ret->sock_fd = usr_sock;
-	ret->msg = msg001;
+	// ret->sock_fd = usr_sock;
+	// ret->msg = msg001;
 	return ret;
 }
 

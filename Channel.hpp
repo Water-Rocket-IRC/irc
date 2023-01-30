@@ -2,15 +2,14 @@
 
 #include "Chan.hpp"
 
-
 class Channels
 {
 	private:
 		std::vector<Chan> Channels_;
 
 	public:
-	//메시지를 전송하는 모든 명령은 std::vector<Udata>로 리턴할 것.
-		std::vector<Udata> channel_msg(user& sender, std::string& msg);
+	//메시지를 전송하는 모든 명령은 std::vector<Udata>로 리턴할 것
+		std::vector<Udata> channel_msg(user& sender, std::string chan_name, std::string& msg);
 
 		bool		is_channel(std::string& chan_name);
 		void 		create_channel(user& joiner, std::string& chan_name);
@@ -74,10 +73,12 @@ Chan&	Channels::select_channel(std::string& chan_name)
 
 std::vector<Udata> Channels::join_channel(user& joiner, std::string& chan_name)
 {
-	std::vector<Udata> msg;
+	Udata				gift;
+	std::vector<Udata>	res;
 
 	if (is_channel(chan_name) == false)
 	{
+		gift.msg = "Channel Created by " + joiner.nickname_;
 		this->create_channel(joiner, chan_name);
 	}
 	else
@@ -85,22 +86,27 @@ std::vector<Udata> Channels::join_channel(user& joiner, std::string& chan_name)
 		Chan& chan = select_channel(chan_name);
 		if (chan.is_user(joiner) == true)
 		{
-			std::cerr << "ERROR" << std::endl;
+			gift.msg = "Already in channel, " + joiner.nickname_;
 		}
 		else
 		{
+			gift.msg = "Join \"" + chan_name + "\" channel, " + joiner.nickname_;
 			chan.add_user(joiner);
 		}
 	}
-
+	res.push_back(gift);
 	//유저가 채널에 성공적으로 입장했다는 메시지 전송 + 서버 정보 전송
-	return msg;
+	return res;
 }
 
 std::vector<Udata>	Channels::leave_channel(user&leaver, std::string& chan_name)
 {
+	Udata				gift;
+	std::vector<Udata>	res;
+	
 	if (is_channel(chan_name) == false)
 	{
+		gift.msg = "There is no channel" + leaver.nickname_;
 		//채널이 없을 경우, 오류 메시지 유저에게 전송, 이건 클라이언트를 통해 들어올 수 있음
 	}
 	else
@@ -117,7 +123,7 @@ std::vector<Udata>	Channels::leave_channel(user&leaver, std::string& chan_name)
 		std::vector<user> users = chan.get_users();
 
 		//PART하면, 그 내역은 모두에게 보내진다. 나간 사람 포함한다.
-        chan.send_all(sender, msg, 1);
+        chan.send_all(leaver, "I'm leaving idiots!" ,PART);
 		chan.delete_user(leaver);
 		if (users.size() == 0)
 		{
@@ -131,18 +137,20 @@ std::vector<Udata>	Channels::leave_channel(user&leaver, std::string& chan_name)
 			}
 		}
 	}
+	res.push_back(gift);
+	return res;
 }
 
 /// @brief 채널 전체 유저에게 메시지 전달. 내외부 모두 사용됨
-std::vector<Udata> channel_msg(user& sender, std::string chan_name, std::string& msg)
+std::vector<Udata> Channels::channel_msg(user& sender, std::string chan_name, std::string& msg)
 {
-	if (is_channel(chan_name) == false)
-	{
-		//채널이 없을 경우, 오류 메시지 유저에게 전송
-		return ;
-	}
-	chan channel = select_channel(chan_name);
+	// if (is_channel(chan_name) == false)
+	// {
+	// 	//채널이 없을 경우, 오류 메시지 유저에게 전송
+	// 	return ;
+	// }
+	Chan	channel = select_channel(chan_name);
 
 	//본인에겐 빼고 보내야함
-	return channel.send_msg(sender, msg);
+	return channel.send_all(sender, msg, NORMAL);
 }

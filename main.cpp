@@ -1,6 +1,6 @@
-#include "Server.hpp"
-
 #include "Channel.hpp"
+#include "color.hpp"
+//#include "Channel.hpp"
 #include <iostream>
 
 void	showUsers(std::vector<user>& target) {
@@ -10,7 +10,6 @@ void	showUsers(std::vector<user>& target) {
 	}
 	std::cout << YELLOW << "(end)" << RESET << std::endl;
 }
-
 void	showChannels(std::vector<Chan>& target) {
 	std::cout << YELLOW << "(begin) " << RESET << " ➜ ";
 	for (std::vector<Chan>::iterator it = target.begin(); it != target.end(); ++it) {
@@ -19,43 +18,97 @@ void	showChannels(std::vector<Chan>& target) {
 	std::cout << YELLOW << "(end)" << RESET << std::endl;
 }
 
+// static void _test1(Channel& channels, user& user1, user& user2) {
+// 	channels.join_channel(user, name1);
+	
+// 	std::cout << BOLDCYAN << " channels name  : " << RESET;
+
+// 	std::cout << channels.get_channels().at(0).get_name() << std::endl;
+
+// 	std::cout << BOLDCYAN << " channels user2  : " << RESET;
+// 	channels.join_channel(user2, name1);
+// 	std::cout << std::endl; 
+// 	showUsers(channels.get_channels().at(0).get_users());
+
+// 	channels.join_channel(user, name2);
+// 	showUsers(channels.get_channels().at(1).get_users());
+
+// 	std::cout << BOLDWHITE << channels.get_channels().at(0).get_info() << RESET << std::endl << std::endl;
+	
+// 	channels.leave_channel(user, name1);
+
+// 	std::cout << BOLDWHITE << channels.get_channels().at(0).get_info() << RESET << std::endl << std::endl;
+// 	std::cout << BOLDWHITE << channels.get_channels().at(1).get_info() << RESET << std::endl;
+
+// 	showChannels(channels.get_channels());
+// 	channels.delete_channel(name2);
+// 	showChannels(channels.get_channels());
+// }
+
 int main(int argc, char **argv)
 {
+	std::vector<Udata> events;
+	std::vector<Udata> join1;
+	std::vector<Udata> join2;
+	std::vector<Udata> join3;
+	std::vector<Udata> join4;
+	std::vector<Udata> leave1;
+
+
+	
 	Channels	channels;
-	user		user, user2;
-	std::string name1, name2;
+	user		user1, user2, user3, user4;
+	std::string chan1, chan2;
 
-	name1 = "chan1";
-	name2 = "chan2";
-
-	user.nickname_ = "lee";
-
-	channels.join_channel(user, name1);
-	
-
-	std::cout << BOLDCYAN << " channels name  : " << RESET;
-	std::cout << channels.get_channels().at(0).get_name() << std::endl;
-
+	chan1 = "chan1";
+	chan2 = "chan2";
+	user1.nickname_ = "lee";
 	user2.nickname_ = "token";
-	std::cout << BOLDCYAN << " channels user2  : " << RESET;
-	channels.join_channel(user2, name1);
-	std::cout << std::endl; 
-	showUsers(channels.get_channels().at(0).get_users());
+	user3.nickname_ = "three";
+	user4.nickname_ = "whatever";
 
-	channels.join_channel(user, name2);
-	showUsers(channels.get_channels().at(1).get_users());
+	join1 = channels.join_channel(user1, chan1);
+	join2 = channels.join_channel(user2, chan1);
+	join3 = channels.join_channel(user3, chan1);
+	join4 = channels.join_channel(user4, chan1);
 
-	std::cout << BOLDWHITE << channels.get_channels().at(0).get_info() << RESET << std::endl << std::endl;
+	std::cout << BOLDCYAN << " --- JOIN --- " << RESET << std::endl;
+
+	std::cout << join1[0].msg << std::endl;
+	std::cout << join2[0].msg << std::endl;
+	std::cout << join3[0].msg << std::endl;
+	std::cout << join4[0].msg << std::endl;
+
+	std::cout << BOLDCYAN << " --- Send --- " << RESET << std::endl;
+	events = channels.select_channel(chan1).send_all(user1, "This is the message", NORMAL);
+
+ 	showUsers(channels.select_channel(chan1).get_users());
+
+	std::cout << events[0].msg << std::endl;
+	std::cout << events[1].msg << std::endl;
+	std::cout << events[2].msg << std::endl;
+
+	std::memset(&events, 0, sizeof(events));
+	std::memset(&leave1, 0, sizeof(events));
+
+
+	std::cout << BOLDCYAN << " --- LEAVE --- " << RESET << std::endl;
+	leave1 = channels.leave_channel(user2, chan1);
+ 	showUsers(channels.select_channel(chan1).get_users());
+	std::cout <<leave1[0].msg << std::endl;
+	std::cout <<leave1[1].msg << std::endl;
+	std::cout <<leave1[2].msg << std::endl;
+
+	events = channels.select_channel(chan1).send_all(user1, "This is the message", NORMAL);		// user2 leave... user1 send all
+	std::cout << BOLDCYAN << " --- SEND --- " << RESET << std::endl;
+
+ 	showUsers(channels.select_channel(chan1).get_users());
+
+
+	std::cout << events[0].msg << std::endl;
+	std::cout << events[1].msg << std::endl;
+	std::cout << events[2].msg << std::endl;
 	
-	channels.leave_channel(user, name1);
-
-	std::cout << BOLDWHITE << channels.get_channels().at(0).get_info() << RESET << std::endl << std::endl;
-	std::cout << BOLDWHITE << channels.get_channels().at(1).get_info() << RESET << std::endl;
-
-	showChannels(channels.get_channels());
-	channels.delete_channel(name2);
-	showChannels(channels.get_channels());
-
 
 	// if (argc != 3)
 	// {
