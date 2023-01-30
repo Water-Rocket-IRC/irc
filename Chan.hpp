@@ -2,8 +2,8 @@
 
 #include <vector>
 #include <algorithm>
-#include "Users.hpp"
 #include "Udata.hpp"
+#include "Sender.hpp"
 
 enum e_send_switch { JOIN, PART, PRIV, KICK, QUIT, NOTICE, TOPIC };
 /*
