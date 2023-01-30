@@ -17,8 +17,6 @@ class Users
 	private:
 		std::vector<struct user> user_list_;
 	public:
-
-        // Udata*  
 		Udata											command_nick(std::stringstream &line_ss, struct kevent event);
 		Udata											command_user(std::stringstream &line_ss, uintptr_t sock);
 		Udata											command_quit(std::stringstream &line_ss, uintptr_t sock);
@@ -26,15 +24,10 @@ class Users
 
 		std::vector<user>::iterator						search_user_by_ident(uintptr_t sock);
 		std::vector<user>::iterator						search_user_by_nick(std::string nickname)
-
 		std::pair<std::vector<user>::iterator, bool>	check_dup_nick(std::string nickname);
-
-
-        bool    check_dup_username(std::string username);
 
 		void print_all_user(); //debug
 };
-
 
 // ident 즉 socket을 이용해 지금 명령어 친 user가 누군 지 알아낸다. 
 std::vector<user>::iterator	Users::search_user_by_ident(uintptr_t sock)
@@ -181,6 +174,7 @@ Udata	Users::command_privmsg(std::stringstream &line_ss, uintptr_t sock)
 	if (towho[0] == '#')
 	{
 		// 채널에게 보냄 
+		// 근데 채널이 없을 때 처리 ?! 
 	}
 	else
 	{
@@ -194,19 +188,6 @@ Udata	Users::command_privmsg(std::stringstream &line_ss, uintptr_t sock)
 		}
 		return (Sender::privmsg(*user_who_sent, towho, message)); // 정상 작동! 
 	}
-}
-
-
-bool    Users::check_dup_username(std::string username)
-{
-	std::vector<user>::iterator it;
-
-	for (it = user_list_.begin(); it != user_list_.end(); it++)
-	{
-		if (it->username_ == username)
-            return (true);    
-	}
-	return (false);
 }
 
 //debug 함수
