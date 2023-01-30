@@ -1,19 +1,18 @@
 #pragma once
 
-#include "Users.hpp"
-#include "Sender.hpp"
 #include "KeventHandler.hpp"
+#include "Users.hpp"
 
-#include <iostream>
-#include <string>
 #include <cstring>
-#include <vector>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <sys/event.h>
+
+#include <sys/types.h>
+#include <netdb.h>
 
 class Receiver
 {
@@ -37,7 +36,6 @@ class Receiver
 		KeventHandler	kq_;
 		std::vector<struct kevent> events_;
 		sockaddr_in		server_addr_;
-		sockaddr_in		client_addr_;
 		int				client_sock_;
 		int				server_sock_;
 		std::string		port_;
@@ -47,7 +45,6 @@ class Receiver
 		Users	Users;
 		Receiver(int port);
 		~Receiver();
-		void	init();
 		void	initSocket(int &port);
 		void	bindSocket();
 		void 	start();
@@ -76,13 +73,6 @@ class Receiver
 // 	system("clear");
 // 	return ("err: Kqueue creating fail");
 // }
-
-void exit_with_perror(const std::string& msg)
-{
-	system("clear");
-	std::cerr << msg << std::endl;
-	exit(EXIT_FAILURE);
-}
 
 /*    Receiver Class     */
 /// @brief Receiver 생성자
@@ -114,10 +104,15 @@ void Receiver::bindSocket()
 	if (bind(server_sock_, (sockaddr *) &server_addr_, sizeof(server_addr_)) < 0)
 		exit_with_perror("err: Socket Binding Fail");
 		// throw SocketBindFail();
-
-	listen(server_sock_, 5); // TODO: Have to arrange 5 (Max queue)
+	if (listen(server_sock_, 5) < 0) {
+		std::cerr << "error" << std::endl;
+	} // TODO: Have to arrange 5 (Max queue)
 
 	kq_.SetRead(server_sock_, 0);
+}
+
+void hi() {
+	std::cout << "hi" << std::endl;
 }
 
 void Receiver::start()
@@ -130,7 +125,7 @@ void Receiver::start()
 			struct kevent	cur_event = events_[i];	// event occur with new accept
 			if (cur_event.ident == server_sock_)
 			{
-				client_sock_ = accept(server_sock_, (sockaddr *) &client_addr_, (socklen_t*) sizeof(client_addr_));
+				client_sock_ = accept(server_sock_, NULL, NULL);
 				if (client_sock_ < 0)
 				{
 					std::cerr << "err: accepting connection fail" << std::endl;
@@ -143,12 +138,21 @@ void Receiver::start()
 				if (cur_event.filter == EVFILT_READ)
 				{
 					if (clientReadEventHandler(cur_event))
+					{
 						continue ;
+					}
 				}
 				else if (cur_event.filter == EVFILT_WRITE)
 				{
+					// TODO: LEAK CHECK
 					if (clientWriteEventHandler(cur_event))
-						continue ;
+					{
+						Udata	*tmp = reinterpret_cast<Udata *>(cur_event.udata);
+						int	tmp_fd = cur_event.ident;
+						kq_.DeleteEvent(cur_event);
+						delete tmp;
+						kq_.SetRead(tmp_fd, 0);
+					}
 				}
 			}
 		}
@@ -159,7 +163,16 @@ int	Receiver::clientReadEventHandler(struct kevent &cur_event)
 {
 	char buffer[512];
 
+
 	memset(buffer, 0, sizeof(buffer));
+	// TODO: LEAK CHECK
+	if (cur_event.flags & EV_EOF)
+	{
+		std::cout << "sock was fucked!" << std::endl;
+		Udata	*tmp = reinterpret_cast<Udata *>(cur_event.udata);
+		kq_.DeleteEvent(cur_event);
+		delete tmp;
+	}
 	int byte_received = recv(cur_event.ident, buffer, sizeof(buffer), 0);
 	if (byte_received < 0)
 	{
@@ -183,47 +196,52 @@ int	Receiver::clientReadEventHandler(struct kevent &cur_event)
 		}
 		else if (command_type == "USER") 
 		{
-			Users.adduser(line_ss, cur_event.ident);
+			struct Udata	*u_data = Users.adduser(line_ss, cur_event.ident);
+			kq_.SetWrite(cur_event.ident, u_data);
 		}
 		else if (command_type == "PING")
 		{
 			std::string serv_add;
 
 			line_ss >> serv_add;
-			std::cout << "PING received" << std::endl;
-			Users.print_all_user(); //for debug
-			kq_.SetWrite(cur_event.ident, 0); // TODO: have to add udata
+
+			struct Udata	*u_data = Sender::pong(cur_event.ident, serv_add);
+			kq_.SetWrite(cur_event.ident, u_data);
 			// Sender::pong(cur_event.ident, serv_add); // MOVE TO WRITE PART
 		}
-		else if (command_type == "PRIVMSG")
-		{
-			std::string target, msg;
-			line_ss >> target >> msg;
+		// else if (command_type == "PRIVMSG")
+		// {
+		// 	std::string target, msg;
+		// 	line_ss >> target >> msg;
 
-			//1. send한 user identify
-			user sender = Users.search_user_event(cur_event[i]);
+		// 	//1. send한 user identify
+		// 	user sender = Users.search_user_event(cur_event[i]);
 
-			//2. receive할 user find
-			user receiver = Users.search_user_nick(target);
+		// 	//2. receive할 user find
+		// 	user receiver = Users.search_user_nick(target);
 
-			//여기서 write로 바꿔버린 다음에 보내면 안되냐?
-			// receive의 Event를 write
-			if (receiver.client_sock_ == -433)
-			{
-				Sender::send_err(sender, receiver, msg);
-			}
-			else
-			{
-				Sender::privmsg(sender, receiver, msg);
-			}
-			//Read로 바꿈 되잖아 
-		}
+		// 	//여기서 write로 바꿔버린 다음에 보내면 안되냐?
+		// 	// receive의 Event를 write
+		// 	if (receiver.client_sock_ == -433)
+		// 	{
+		// 		Sender::send_err(sender, receiver, msg);
+		// 	}
+		// 	else
+		// 	{
+		// 		Sender::privmsg(sender, receiver, msg);
+		// 	}
+		// 	//Read로 바꿈 되잖아 
+		// }
 	}
 	return (0);
 }
 
 int	Receiver::clientWriteEventHandler(struct kevent &cur_event)
 {
-	kq_.SetRead(cur_event.ident, 0); // TODO: have to add udata
-	return (0);
+	//struct udata	*u_data = reinterpret_cast<udata *>(cur_event.udata);
+	Udata *udata = static_cast<Udata*>(cur_event.udata);
+
+	std::cout << "socket: " << udata->sock_fd << " msg: " << udata->msg << std::endl;
+	send(udata->sock_fd, udata->msg.c_str(), udata->msg.length(), 0);
+	return (1);
 }

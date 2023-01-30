@@ -1,5 +1,3 @@
-#pragma once
-
 #include "Receiver_working.hpp"
 
 class Server
@@ -53,6 +51,5 @@ void Server::start()
 {
 	Receiver receiver(port_);
 
-	receiver.init();
 	receiver.start();
 }
