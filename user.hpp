@@ -1,7 +1,7 @@
 #include <iostream>
 #include <sys/event.h>
 
-struct user
+struct user 
 {
 	std::string	nickname_;
 	std::string username_;

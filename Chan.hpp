@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <algorithm>
+#include <sstream>
 #include "Udata.hpp"
 #include "Sender.hpp"
 
@@ -71,7 +72,7 @@ std::vector<Udata> Chan::send_all(user& sender, std::string msg, int remocon)
 				packet.msg = msg; //sender func
 				break ;
 			case JOIN:
-				packet.msg = msg; //sender func
+				packet = Sender::join_message(sender, this->get_name());
 				break ;
 			case KICK:
 				packet.msg = msg;

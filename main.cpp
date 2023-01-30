@@ -56,10 +56,10 @@ int main(int argc, char **argv)
 
 	chan1 = "chan1";
 	chan2 = "chan2";
-	user1.nickname_ = "lee";
-	user2.nickname_ = "token";
-	user3.nickname_ = "three";
-	user4.nickname_ = "whatever";
+	user1.nickname_ = "lee"; user1.username_ = "userlee"; user1.realname_ = "reallee";
+	user2.nickname_ = "token"; user2.realname_ = "kim token";
+	user3.nickname_ = "three"; user3.realname_ = "lee three";
+	user4.nickname_ = "whatever"; user4.realname_ = "park whatever";
 
 	join1 = channels.join_channel(user1, chan1);
 	join2 = channels.join_channel(user2, chan1);
