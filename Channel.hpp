@@ -10,13 +10,17 @@ class Channels
 	public:
 	//메시지를 전송하는 모든 명령은 std::vector<Udata>로 리턴할 것
 		std::vector<Udata> channel_msg(user& sender, std::string chan_name, std::string& msg);
+		std::vector<Udata> channel_notice(user& sender, std::string chan_name, std::string& msg);
+		Udata			   channel_wall(user& sender, std::string chan_name, std::string& msg);
+
 
 		bool		is_channel(std::string& chan_name);
 		void 		create_channel(user& joiner, std::string& chan_name);
 		void 		delete_channel(std::string& chan_name);
 		Chan&		select_channel(std::string& chan_name);
 		Chan&		select_channel(user& connector);
-		
+
+		std::vector<Udata>		set_topic(user& sender, std::string& chan_name, std::string& topic);
 		std::vector<Udata>		kick_channel(user& host, user& target, std::string& chan_name);
 		std::vector<Udata>		quit_channel(user& target);
 
@@ -70,7 +74,7 @@ Chan&	Channels::select_channel(std::string& chan_name)
 	tmp.set_channel_name(chan_name);
 	std::vector<Chan>::iterator result = std::find(Channels_.begin(), \
 	Channels_.end(), tmp);
-
+	//result != Channels_.end() ? true : false; //throw NoMatchChannelsException();
 	return *result;
 }
 
@@ -161,25 +165,72 @@ std::vector<Udata>	Channels::leave_channel(user&leaver, std::string& chan_name)
 /// @brief 채널 전체 유저에게 메시지 전달. 내외부 모두 사용됨
 std::vector<Udata> Channels::channel_msg(user& sender, std::string chan_name, std::string& msg)
 {
-	// if (is_channel(chan_name) == false)
-	// {
-	// 	//채널이 없을 경우, 오류 메시지 유저에게 전송
-	// 	return ;
-	// }
-	Chan	channel = select_channel(chan_name);
+	std::vector<Udata>	ret;
+	Udata				tmp;
+
+	if (is_channel(chan_name) == false)
+	{
+		tmp.msg = "No such Channel";
+		ret.push_back(tmp);
+		//채널이 없을 경우, 오류 메시지 유저에게 전송
+		return ret;
+	}
+	Chan&	channel = select_channel(chan_name);
+	ret = channel.send_all(sender, msg, PRIV);
+	//본인에겐 빼고 보내야함
+	return ret;
+}
+
+std::vector<Udata>	Channels::channel_notice(user& sender, std::string chan_name, std::string& msg)
+{
+	std::vector<Udata>	ret;
+	Udata				tmp;
+
+	if (is_channel(chan_name) == false)
+	{
+		tmp.msg = "No such Channel";
+		ret.push_back(tmp);
+		//채널이 없을 경우, 오류 메시지 유저에게 전송
+		return ret;
+	}
+	Chan&	channel = select_channel(chan_name);
 
 	//본인에겐 빼고 보내야함
-	return channel.send_all(sender, msg, PRIV);
+	ret = channel.send_all(sender, msg, PRIV);
+	return ret;
+}
+
+Udata	Channels::channel_wall(user& sender, std::string chan_name, std::string& msg)
+{
+	Udata				ret;
+
+	if (is_channel(chan_name) == false)
+	{
+		ret.msg = "No such Channel";
+		//채널이 없을 경우, 오류 메시지 유저에게 전송
+	}
+	Chan&	channel = select_channel(chan_name);
+	user				host;
+	host = channel.get_host();
+
+	if (host == sender)
+	{
+		std::cout << "[Debug] " << "host == sender" << std::endl;
+		return ret;
+	}
+	ret.msg = sender.nickname_ + " need to " + chan_name + "\'s host, " + host.nickname_;
+	return ret;
 }
 
 std::vector<Udata>	Channels::kick_channel(user& host, user& target, std::string& chan_name)
 {
-	std::vector<Udata> ret;
-	Udata tmp;
+	std::vector<Udata>	ret;
+	Udata 				tmp;
 
 	if (is_channel(chan_name) == false)
 	{
 		tmp.msg = "No such Channel"; //sender
+		ret.push_back(tmp);
 	}
 	Chan& channel = select_channel(chan_name);
 	if (channel.get_host() == host)
@@ -192,20 +243,21 @@ std::vector<Udata>	Channels::kick_channel(user& host, user& target, std::string&
 		else
 		{
 			tmp.msg = "No such User";
+			ret.push_back(tmp);
 		}
 	}
 	else
 	{
 		tmp.msg = "Your authority is ugly as your face.";
+		ret.push_back(tmp);
 	}
-	ret.push_back(tmp);
 	return ret;
 }
 
 std::vector<Udata>	Channels::quit_channel(user& target)
 {
-	Udata 	tmp;
-	std::vector<Udata> ret;
+	std::vector<Udata>	ret;
+	Udata 				tmp;
 	try
 	{
 		//어떤 채널도 없으면 catch로 감
@@ -219,4 +271,32 @@ std::vector<Udata>	Channels::quit_channel(user& target)
 		ret.push_back(tmp);
 	}
 	return ret;
+}
+
+std::vector<Udata>		Channels::set_topic(user& sender, std::string& chan_name, std::string& topic)
+{
+	std::vector<Udata> ret;
+
+	try
+	{
+		Chan& channel = select_channel(chan_name);
+		if (channel.get_host() == sender)
+		{
+			std::string topic_msg = "Topic was changed to " + topic;
+			channel.set_topic(topic);
+			ret = channel.send_all(sender,topic_msg, TOPIC);	
+		}
+		else
+		{
+			std::string topic_msg = "You do not have access to change the topic on this channel";
+			ret = channel.send_all(sender, topic_msg, TOPIC);
+		}
+	}
+	catch (std::exception& e)
+	{
+		Udata 	tmp;
+		tmp.msg = e.what();
+		ret.push_back(tmp);
+	}
+	return	ret;
 }

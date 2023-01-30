@@ -5,7 +5,7 @@
 #include "Users.hpp"
 #include "Udata.hpp"
 
-enum e_send_switch { JOIN, PART, PRIV, KICK, QUIT };
+enum e_send_switch { JOIN, PART, PRIV, KICK, QUIT, NOTICE, TOPIC };
 /*
  * JOIN : 나를 포함해서 모두에게 보여주는 메세지(메세지가 다름)
  * PART : 나를 포함해서 모두에게 보여주는 메세지(메세지가 다름)
@@ -28,6 +28,7 @@ class Chan
 		std::string	get_name();
 		user		get_host();
 		void 		set_host();
+		void		set_topic(std::string& topic);
 		bool 		is_user(user& usr);
 		void 		add_user(user& joiner);
 		void 		set_channel_name(std::string& chan_name);
@@ -47,6 +48,11 @@ std::vector<Udata> Chan::send_all(user& sender, std::string msg, int remocon)
 {
 	std::vector<Udata> ret;
 	std::vector<user>::iterator it;
+
+	if (is_user(sender) == false)
+	{
+		//throw noUserException();
+	}
 
 	for (it = connectors_.begin(); it != connectors_.end(); it++)
 	{
@@ -69,10 +75,16 @@ std::vector<Udata> Chan::send_all(user& sender, std::string msg, int remocon)
 				break ;
 			case KICK:
 				packet.msg = msg;
-				break;
+				break ;
 			case QUIT:
 				packet.msg = msg;
-				break;
+				break ;
+			case NOTICE:
+				packet.msg = msg;
+				break ;
+			case TOPIC:
+				packet.msg = msg;
+				break ;
 		}
 		ret.push_back(packet);
 	}
@@ -124,6 +136,12 @@ void Chan::set_channel_name(std::string& chan_name)
 {
 	this->name_ = chan_name;
 }
+
+void Chan::set_topic(std::string& topic)
+{
+	this->topic_ = topic;
+}
+
 std::vector<user>& Chan::get_users()
 {
 	return this->connectors_;

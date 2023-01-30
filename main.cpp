@@ -48,15 +48,8 @@ void	showChannels(std::vector<Chan>& target) {
 int main(int argc, char **argv)
 {
 	std::vector<Udata> events;
-	std::vector<Udata> join1;
-	std::vector<Udata> join2;
-	std::vector<Udata> join3;
-	std::vector<Udata> join4;
-	std::vector<Udata> kick1;
-	std::vector<Udata> quit1;
+	std::vector<Udata> join1, join2, join3, join4, kick1, quit1, priv1, notice1, wall1;
 
-
-	
 	Channels	channels;
 	user		user1, user2, user3, user4;
 	std::string chan1, chan2;
@@ -90,20 +83,31 @@ int main(int argc, char **argv)
 	std::cout << kick1[0].msg << std::endl;
 	std::cout << kick1[1].msg << std::endl;
 	std::cout << kick1[2].msg << std::endl;
-	std::cout << kick1[3].msg << std::endl;
 
-	std::cout << BOLDCYAN << " --- QUIT --- " << RESET << std::endl;
-	showUsers(channels.select_channel(chan1).get_users());
-	quit1 = channels.quit_channel(user4);
-	showUsers(channels.select_channel(chan1).get_users());
+	std::string priv = "This is MSG man";
+	std::cout << BOLDCYAN << " --- PRIV --- " << RESET << std::endl;
+	std::memset(&priv1, 0, sizeof(priv1));
+	priv1 = channels.channel_msg(user1, chan1, priv);
+	std::cout << priv1[0].msg << std::endl;
+	std::cout << priv1[1].msg << std::endl;
 
-	std::cout << quit1[0].msg << std::endl;
-	std::cout << quit1[1].msg << std::endl;
-	std::cout << quit1[2].msg << std::endl;
-	std::cout << quit1[3].msg << std::endl;
-
-
+	std::string notice = "This is Wall man";
+	std::cout << BOLDCYAN << " --- Wall --- " << RESET << std::endl;
+	// wall1.push_back(channels.channel_wall(user1, chan1, notice));
+	// std::cout << wall1[0].msg << std::endl;
+	wall1.push_back(channels.channel_wall(user3, chan1, notice));
+	std::cout << wall1[0].msg << std::endl;
 	
+ 	std::cout << BOLDWHITE << channels.get_channels().at(0).get_info() << RESET << std::endl;
+
+	notice = "Crazzy topic";
+	std::memset(&priv1, 0, sizeof(priv1));
+	priv1 = channels.set_topic(user1, chan1, notice);
+	std::cout << BOLDWHITE << " ------------------- " << RESET << std::endl;
+ 	std::cout << BOLDWHITE << channels.get_channels().at(0).get_info() << RESET << std::endl;
+	std::cout << priv1[0].msg << std::endl;
+	std::cout << priv1[1].msg << std::endl;
+	std::cout << priv1[2].msg << std::endl;
 
 	// if (argc != 3)
 	// {

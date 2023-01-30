@@ -11,7 +11,7 @@
 # **************************************************************************** #
 
 CXX			=	c++
-CXXFLAGS	=	-g3
+CXXFLAGS	=	-g3 #-fsanitize=address
 RM			=	rm -rf
 
 OBJS_DIR	:=	objs/
@@ -44,5 +44,7 @@ fclean: clean
 	$(RM) $(NAME)
 
 re: | fclean all
+
+-include $(DEPS)
 
 .PHONY: all clean fclean re
