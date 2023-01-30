@@ -9,13 +9,6 @@
 #include <sys/event.h>
 #include <sys/time.h>
 
-
-// enum mod
-// {
-// 	NORMAL,
-// 	ADMIN
-// };
-
 struct user;
 
 /// @brief 유저들을 관리하고, sender에게 적절한 응답을 요청한다.
@@ -28,8 +21,9 @@ class Users
         // Udata*  
 		Udata											command_nick(std::stringstream &line_ss, struct kevent event);
 		Udata											command_user(std::stringstream &line_ss, uintptr_t sock);
+		Udata											command_quit(std::stringstream &line_ss, uintptr_t sock);
 
-		std::vector<user>::iterator						Users::search_user_by_ident(struct kevent event);
+		std::vector<user>::iterator						Users::search_user_by_ident(uintptr_t sock);
 		std::pair<std::vector<user>::iterator, bool>	Users::check_dup_nick(std::string nickname);
 
         bool    check_dup_username(std::string username);
@@ -37,13 +31,13 @@ class Users
 		void print_all_user(); //debug
 };
 
-std::vector<user>::iterator	Users::search_user_by_ident(struct kevent event)
+std::vector<user>::iterator	Users::search_user_by_ident(uintptr_t sock)
 {
 	std::vector<user>::iterator	it;
 
 	for (it = user_list_.begin(); it != user_list_.end(); it++)
 	{
-		if (it->event.ident == event.ident) // 닉네임 바꿔야할 유저를 찾을 상태 !!! 
+		if (it->event.ident == sock) // 닉네임 바꿔야할 유저를 찾을 상태 !!! 
 		{
 			return (it);
 		}
@@ -67,7 +61,7 @@ std::pair<std::vector<user>::iterator, bool>	Users::check_dup_nick(std::string n
 	return (pair);
 }
 
-std::vector<Udata>	Users::command_nick(std::stringstream &line_ss, struct kevent event)
+Udata	Users::command_nick(std::stringstream &line_ss, struct kevent event)
 {
 	struct user			tmp_usr;
 	std::vector<Udata>	ret;
@@ -81,17 +75,17 @@ std::vector<Udata>	Users::command_nick(std::stringstream &line_ss, struct kevent
 	std::vector<user>::iterator my_user;
 
 	pair = check_dup_nick(nickname);
-	my_user = search_user_by_ident(event);
+	my_user = search_user_by_ident(event.ident);
 
 	if (pair.second) // 중복 O
 	{
-		return (Sender::nick_error_message(my_user))
+		return (Sender::nick_error_message(my_user, nickname))
 	}
 	else
 	{
 		my_user->nickname_ = nickname;
 		my_user->event = event;
-		return (Sender::nick_well_message(my_user));
+		return (Sender::nick_well_message(my_user, nickname));
 	}
 }
 
@@ -141,7 +135,7 @@ https://datatracker.ietf.org/doc/html/rfc1459#section-4.1.3
 에 따르면, 이건 서버에 처음 접속할때 사용되는 명령어다. NICK과 USER 모두 접수되어야, 서버에 레지스터 된 것이다.
 중간에 유저 명령어 전송이 가능한지 확인해야 하고, 그에 따라 처리해야 한다.
 */
-std::vector<Udata> Users::command_user(std::stringstream &line_ss, uintptr_t sock)
+Udata	Users::command_user(std::stringstream &line_ss, uintptr_t sock)
 {
 	std::vector<user>::iterator it;
 	user tmp_user;
@@ -198,6 +192,59 @@ std::vector<Udata> Users::command_user(std::stringstream &line_ss, uintptr_t soc
 // }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+Udata	Users::command_quit(std::stringstream &line_ss, uintptr_t sock)
+{
+	std::vector<user>::iterator	my_user;
+	std::string					leave_message;
+
+	line_ss >> leave_message;
+	my_user = search_user_by_ident(sock);
+	// static Udata quit_channel_message(struct user sender, std::string leave_message);
+
+	for (std::vector<user>::iterator it = user_list_.begin(); it != user_list_.end(); it++)
+	{
+		if (my_user->nickname_ == it->nickname_)
+		{
+			user_list_.erase(it);
+		}
+	}
+
+	return (Sender::quit_channel_message(my_user, leave_message));
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 bool    Users::check_dup_username(std::string username)
 {
 	std::vector<user>::iterator it;
@@ -209,6 +256,11 @@ bool    Users::check_dup_username(std::string username)
 	}
 	return (false);
 }
+
+
+
+
+
 
 //debug 함수
 void Users::print_all_user()
