@@ -63,7 +63,6 @@ std::pair<std::vector<user>::iterator, bool>	Users::check_dup_nick(std::string n
 
 Udata	Users::command_nick(std::stringstream &line_ss, struct kevent event)
 {
-	struct user			tmp_usr;
 	std::vector<Udata>	ret;
 	std::string			nickname;
 	line_ss >> nickname;
@@ -76,16 +75,28 @@ Udata	Users::command_nick(std::stringstream &line_ss, struct kevent event)
 
 	pair = check_dup_nick(nickname);
 	my_user = search_user_by_ident(event.ident);
-
-	if (pair.second) // 중복 O
-	{
-		return (Sender::nick_error_message(my_user, nickname))
-	}
-	else
+	if (my_user == user_list_.end()) // 처음 들어온 경우
 	{
 		my_user->nickname_ = nickname;
 		my_user->event = event;
-		return (Sender::nick_well_message(my_user, nickname));
+	}
+	if (pair.second) // 중복 O
+	{
+		return (Sender::nick_error_message(*my_user, nickname))
+	}
+	else // 중복 X, 바꾸면 된다. 
+	{
+		if (my_user == user_list_.end()) // 처음 들어온 경우
+		{
+			struct user			tmp_usr;
+			tmp_usr.nickname_ = nickname;
+			tmp_usr.event = event;
+			user_list_.push_back(tmp_usr);
+			return (Sender::nick_well_message(tmp_usr, nickname));
+		}
+		my_user->nickname_ = nickname;
+		my_user->event = event;
+		return (Sender::nick_well_message(*my_user, nickname));
 	}
 }
 
@@ -137,40 +148,22 @@ https://datatracker.ietf.org/doc/html/rfc1459#section-4.1.3
 */
 Udata	Users::command_user(std::stringstream &line_ss, uintptr_t sock)
 {
-	std::vector<user>::iterator it;
-	user tmp_user;
+	std::vector<user>::iterator my_user = search_user_by_ident(sock);
+	std::string username, username, hostname, realname;
 	
-    std::vector<Udata> ret;
-    
-    // Udata *ret = new Udata;
+	line_ss >> username >> hostname >> hostname >> realname;
+	
+	
+	if (my_user->nickname_.empty())
+		break;
+	realname.erase(0, 1); //prefix 제거 ':' <- 이거 제거
 
-    for (it = user_list_.begin(); it != user_list_.end(); ++it)
-    {
-        //접속한 소켓을 찾아 정보를 추가한다
-        if (it->event.ident == sock)
-        {
-            tmp_user = *it;
+	my_user->username_ = username;
+	my_user->hostname_ = hostname;
+	my_user->hostname_ = hostname;
+	my_user->realname_ = realname;
 
-            if (tmp_user.nickname_.empty())
-                break;
-            std::string username, username, hostname, realname;
-            line_ss >> username >> hostname >> hostname >> realname;
-            realname.erase(0, 1); //prefix 제거 ':' <- 이거 제거
-
-            tmp_user.username_ = username;
-            tmp_user.hostname_ = hostname;
-            tmp_user.hostname_ = hostname;
-            tmp_user.realname_ = realname;
-
-            ret = Sender::welcome_message(tmp_user.event.ident, tmp_user.hostname_, tmp_user.nickname_, tmp_user.hostname_);
-            return (ret);
-}
-    // 예외처리 할 부분
-
-    // nick없이 user만 들어왔으면 sender로 에러 메시지 출력? 실제 클라이언트와 서버가 어떻게 행동하는지 살펴보고 행동 결정해야함
-    // USER의 매개변수가 부족할때 들어오면? nc로 쌩으로 보내면 그럴 수 있다.
-    }
-    return (ret);
+	return(Sender::welcome_message(my_user));
 }
 
 
