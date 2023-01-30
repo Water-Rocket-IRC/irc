@@ -26,7 +26,7 @@ class Chan
 		void 		set_channel_name(std::string& chan_name);
 		void		delete_user(user& user_name);
 
-		std::vector<Udata> send_msg(user& sender, std::string& msg);
+		std::vector<Udata> send_all(user& sender, std::string& msg);
 
 		std::vector<user>& get_users();
 		bool operator==(const Chan& t) const;	
@@ -34,7 +34,7 @@ class Chan
 		int geterror();
 };
 
-std::vector<Udata> send_msg(user& sender, std::string& msg)
+std::vector<Udata> send_all(user& sender, std::string& msg)
 {
 	std::vector<Udata> ret;
 	std::vector<user>::iterator it;
@@ -51,6 +51,21 @@ std::vector<Udata> send_msg(user& sender, std::string& msg)
 		ret.push_back(packet);
 	}
 	return ret;
+}
+
+//int플래그가 추가되었으면, part메시지 전용. 만들기 귀찮아서 복붙함
+std::vector<Udata> send_all(user& sender, std::string& msg, int i)
+{
+    std::vector<Udata> ret;
+    std::vector<user>::iterator it;
+
+    for (it = connectors_.begin(); it != connectors_.end(); it++)
+    {
+        Udata packet;
+        packet = //sender로 호출->part 메시지 전송
+                ret.push_back(packet);
+    }
+    return ret;
 }
 
 std::string Chan::get_name()
@@ -102,6 +117,7 @@ user Chan::get_host()
 {
 	return this->host_;
 }
+
 std::string Chan::get_info()
 {
 	std::string ret;

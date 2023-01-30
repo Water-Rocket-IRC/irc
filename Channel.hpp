@@ -116,9 +116,8 @@ std::vector<Udata>	Channels::leave_channel(user&leaver, std::string& chan_name)
 		//Msg전송 : PART 내용에 따라 전송 -> 아마 채널의 다른 유저들에게 떠났다고 알려줘야
 		std::vector<user> users = chan.get_users();
 
-		//PART 명령어는
-
-
+		//PART하면, 그 내역은 모두에게 보내진다. 나간 사람 포함한다.
+        chan.send_all(sender, msg, 1);
 		chan.delete_user(leaver);
 		if (users.size() == 0)
 		{
@@ -147,4 +146,3 @@ std::vector<Udata> channel_msg(user& sender, std::string chan_name, std::string&
 	//본인에겐 빼고 보내야함
 	return channel.send_msg(sender, msg);
 }
-
