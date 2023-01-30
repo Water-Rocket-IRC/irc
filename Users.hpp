@@ -22,9 +22,13 @@ class Users
 		Udata											command_nick(std::stringstream &line_ss, struct kevent event);
 		Udata											command_user(std::stringstream &line_ss, uintptr_t sock);
 		Udata											command_quit(std::stringstream &line_ss, uintptr_t sock);
+		Udata											command_privmsg(std::stringstream &line_ss, uintptr_t sock)
 
-		std::vector<user>::iterator						Users::search_user_by_ident(uintptr_t sock);
-		std::pair<std::vector<user>::iterator, bool>	Users::check_dup_nick(std::string nickname);
+		std::vector<user>::iterator						search_user_by_ident(uintptr_t sock);
+		std::vector<user>::iterator						search_user_by_nick(std::string nickname)
+
+		std::pair<std::vector<user>::iterator, bool>	check_dup_nick(std::string nickname);
+
 
         bool    check_dup_username(std::string username);
 
@@ -40,6 +44,21 @@ std::vector<user>::iterator	Users::search_user_by_ident(uintptr_t sock)
 	for (it = user_list_.begin(); it != user_list_.end(); it++)
 	{
 		if (it->event.ident == sock) // 닉네임 바꿔야할 유저를 찾을 상태 !!! 
+		{
+			return (it);
+		}
+	}
+	return (it);
+}
+
+// nick 이용해 user가 누군 지 알아낸다. 
+std::vector<user>::iterator	Users::search_user_by_nick(std::string nickname)
+{
+	std::vector<user>::iterator	it;
+
+	for (it = user_list_.begin(); it != user_list_.end(); it++)
+	{
+		if (it->event.nick == nickname) // 닉네임 바꿔야할 유저를 찾을 상태 !!! 
 		{
 			return (it);
 		}
@@ -84,7 +103,7 @@ Udata	Users::command_nick(std::stringstream &line_ss, struct kevent event)
 	my_user = search_user_by_ident(event.ident);
 	if (pair.second) // 중복 O
 	{
-		return (Sender::nick_error_message(*my_user, nickname))
+		return (Sender::nick_error_message(*my_user, nickname));
 	}
 	else // 중복 X, 바꾸면 된다. 
 	{
@@ -133,7 +152,7 @@ Udata	Users::command_user(std::stringstream &line_ss, uintptr_t sock)
 	
 	if (my_user->nickname_.empty()) // nick을 안달고 온 것! 오류사항
 		return (Udata());
-	if (my_user->username_.empty())
+	if (my_user->username_.empty()) // 넣기 전에 비어있는 지 검사를 해야한다.
 	{
 		realname.erase(0, 1); //prefix 제거 ':' <- 이거 제거
 		my_user->username_ = username;
@@ -149,6 +168,34 @@ Udata	Users::command_user(std::stringstream &line_ss, uintptr_t sock)
 	my_user->realname_ = realname;
 	return (Udata());
 }
+
+Udata	Users::command_privmsg(std::stringstream &line_ss, uintptr_t sock)
+{
+	std::string					towho, message;
+	std::vector<user>::iterator	user_who_get;
+	std::vector<user>::iterator	user_who_sent;
+
+	line_ss >> towho >> message;
+	user_who_sent = search_user_by_ident(sock);
+
+	if (towho[0] == '#')
+	{
+		// 채널에게 보냄 
+	}
+	else
+	{
+		// 사람에게 보냄
+		user_who_get = search_user_by_nick(towho);
+		if (user_who_get == user_list_.end())
+		{
+			// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+			return (Sender::privmsg(*user_who_sent, towho, message)); // @@@@@@@@@ Sender랑 이야기해야함 노션에 포맷없음 @@@@@@@@@
+			// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+		}
+		return (Sender::privmsg(*user_who_sent, towho, message)); // 정상 작동! 
+	}
+}
+
 
 bool    Users::check_dup_username(std::string username)
 {
