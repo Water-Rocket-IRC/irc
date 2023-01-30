@@ -29,7 +29,9 @@ int main(int argc, char **argv)
 	name2 = "chan2";
 
 	user.nickname_ = "lee";
+
 	channels.join_channel(user, name1);
+	
 
 	std::cout << BOLDCYAN << " channels name  : " << RESET;
 	std::cout << channels.get_channels().at(0).get_name() << std::endl;
@@ -48,7 +50,6 @@ int main(int argc, char **argv)
 	channels.leave_channel(user, name1);
 
 	std::cout << BOLDWHITE << channels.get_channels().at(0).get_info() << RESET << std::endl << std::endl;
-
 	std::cout << BOLDWHITE << channels.get_channels().at(1).get_info() << RESET << std::endl;
 
 	showChannels(channels.get_channels());

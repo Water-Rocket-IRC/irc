@@ -23,9 +23,9 @@ class Sender
  @param usr_sock 클라이언트 소켓
  @param server_addr 서버 주소
 */
-Udata *Sender::pong(int usr_sock, std::string server_addr)
+Udata Sender::pong(int usr_sock, std::string server_addr)
 {
-	Udata *ret = new Udata;
+	Udata ret =  Udata;
 
 	std::string pong_reply = ":" + server_addr + " PONG " \
 		+ server_addr + " :" + server_addr + "\r\n"; 
@@ -35,9 +35,9 @@ Udata *Sender::pong(int usr_sock, std::string server_addr)
 	return ret;
 }
 
-Udata *Sender::welcome_message(int usr_sock, std::string server, std::string nick, std::string host)
+Udata Sender::welcome_message(int usr_sock, std::string server, std::string nick, std::string host)
 {
-	Udata *ret = new Udata;
+	Udata ret = Udata;
 
 	std::string msg001 = ":" + server + " 001 " + nick +" Welcome to the 42's irc network " \
 		+ nick + "!" + host + "\r\n";	
