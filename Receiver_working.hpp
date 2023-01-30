@@ -55,6 +55,8 @@ class Receiver
 
 };
 
+std::vector<Udata>	u_data;
+
 /*    Throw Class     */
 // const char*	Receiver::SocketCreateFail::what() const throw()
 // {
@@ -108,7 +110,7 @@ void Receiver::bindSocket()
 		std::cerr << "error" << std::endl;
 	} // TODO: Have to arrange 5 (Max queue)
 
-	kq_.SetRead(server_sock_, 0);
+	kq_.set_read(server_sock_, 0);
 }
 
 void hi() {
@@ -119,7 +121,7 @@ void Receiver::start()
 {
 	while (true)
 	{
-		events_ = kq_.SetMonitor();
+		events_ = kq_.set_monitor();
 		for (size_t i(0); i < events_.size(); ++i)
 		{
 			struct kevent	cur_event = events_[i];	// event occur with new accept
@@ -131,7 +133,7 @@ void Receiver::start()
 					std::cerr << "err: accepting connection fail" << std::endl;
 					continue ;
 				}
-				kq_.SetRead(client_sock_, 0); // ADD udata or not
+				kq_.set_read(client_sock_, 0);
 			}
 			else	// event occur with users
 			{
@@ -147,11 +149,9 @@ void Receiver::start()
 					// TODO: LEAK CHECK
 					if (clientWriteEventHandler(cur_event))
 					{
-						Udata	*tmp = reinterpret_cast<Udata *>(cur_event.udata);
 						int	tmp_fd = cur_event.ident;
-						kq_.DeleteEvent(cur_event);
-						delete tmp;
-						kq_.SetRead(tmp_fd, 0);
+						kq_.delete_event(cur_event);
+						kq_.set_read(tmp_fd, 0);
 					}
 				}
 			}
@@ -170,8 +170,9 @@ int	Receiver::clientReadEventHandler(struct kevent &cur_event)
 	{
 		std::cout << "sock was fucked!" << std::endl;
 		Udata	*tmp = reinterpret_cast<Udata *>(cur_event.udata);
-		kq_.DeleteEvent(cur_event);
-		delete tmp;
+		kq_.delete_event(cur_event);
+		// TODO: delete User
+		return (1);
 	}
 	int byte_received = recv(cur_event.ident, buffer, sizeof(buffer), 0);
 	if (byte_received < 0)
@@ -196,18 +197,18 @@ int	Receiver::clientReadEventHandler(struct kevent &cur_event)
 		}
 		else if (command_type == "USER") 
 		{
-			struct Udata	*u_data = Users.adduser(line_ss, cur_event.ident);
-			kq_.SetWrite(cur_event.ident, u_data);
+			Udata	tmp = Users.adduser(line_ss, cur_event.ident);
+			u_data.push_back(tmp);
+			kq_.set_write(cur_event.ident, 0);
 		}
 		else if (command_type == "PING")
 		{
-			std::string serv_add;
+			std::string serv_addr;
+			line_ss >> serv_addr;
 
-			line_ss >> serv_add;
-
-			struct Udata	*u_data = Sender::pong(cur_event.ident, serv_add);
-			kq_.SetWrite(cur_event.ident, u_data);
-			// Sender::pong(cur_event.ident, serv_add); // MOVE TO WRITE PART
+			Udata	tmp = Sender::pong(cur_event.ident, serv_addr);
+			u_data.push_back(tmp);
+			kq_.set_write(cur_event.ident, 0);
 		}
 		// else if (command_type == "PRIVMSG")
 		// {
@@ -239,9 +240,22 @@ int	Receiver::clientReadEventHandler(struct kevent &cur_event)
 int	Receiver::clientWriteEventHandler(struct kevent &cur_event)
 {
 	//struct udata	*u_data = reinterpret_cast<udata *>(cur_event.udata);
-	Udata *udata = static_cast<Udata*>(cur_event.udata);
-
-	std::cout << "socket: " << udata->sock_fd << " msg: " << udata->msg << std::endl;
-	send(udata->sock_fd, udata->msg.c_str(), udata->msg.length(), 0);
-	return (1);
+	if (u_data.size())
+	{
+		Udata	tmp;
+		int		i;
+		bzero(&tmp, sizeof(tmp));
+		for (i = 0; i < u_data.size(); ++i)
+		{
+			if (u_data[i].sock_fd == cur_event.ident)
+			{
+				tmp = u_data[i];
+			}
+		}
+		std::cout << "socket: " << tmp.sock_fd << " msg: " << tmp.msg << std::endl;
+		send(cur_event.ident, tmp.msg.c_str(), tmp.msg.length(), 0);
+		u_data.erase(u_data.begin() + (i - 1));
+		return (1);
+	}
+	return (0);
 }
