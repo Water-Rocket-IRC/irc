@@ -2,6 +2,8 @@
 
 #include "Udata.hpp"
 #include "Sender.hpp"
+#include "Channel.hpp"
+
 #include <string>
 #include <vector>
 #include <sstream>
@@ -173,8 +175,18 @@ Udata	Users::command_privmsg(std::stringstream &line_ss, uintptr_t sock)
 
 	if (towho[0] == '#')
 	{
-		// 채널에게 보냄 
-		// 근데 채널이 없을 때 처리 ?! 
+		if (Channels::is_channel(towho.substr(1))) // channel이 있다면 ! 
+		{
+			// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+			return (Sender::privmsg(*user_who_sent, towho, message)); // @@@@@@@@@ Sender랑 이야기해야함 노션에 포맷없음 @@@@@@@@@
+			// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+		}
+		else // channel이 없다면! 
+		{
+			// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+			return (Sender::privmsg(*user_who_sent, towho, message)); // @@@@@@@@@ Sender랑 이야기해야함 노션에 포맷없음 @@@@@@@@@
+			// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+		}
 	}
 	else
 	{
