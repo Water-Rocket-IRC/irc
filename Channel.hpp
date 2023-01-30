@@ -15,6 +15,10 @@ class Channels
 		void 		create_channel(user& joiner, std::string& chan_name);
 		void 		delete_channel(std::string& chan_name);
 		Chan&		select_channel(std::string& chan_name);
+		Chan&		select_channel(user& connector);
+		
+		std::vector<Udata>		kick_channel(user& host, user& target, std::string& chan_name);
+		std::vector<Udata>		quit_channel(user& target);
 
 		std::vector<Udata> 	join_channel(user& joiner, std::string& chan_name);
 		std::vector<Udata>	leave_channel(user&leaver, std::string& chan_name);
@@ -45,7 +49,6 @@ void Channels::create_channel(user& joiner, std::string& chan_name)
 	tmp.set_host();
 	Channels_.push_back(tmp);
 }
-
  /* 
  * operator 가 없을 때 (0 index가 비어있다면 삭제)
  */
@@ -71,14 +74,29 @@ Chan&	Channels::select_channel(std::string& chan_name)
 	return *result;
 }
 
+Chan&	Channels::select_channel(user& connector)
+{
+	std::vector<Chan>::iterator it = Channels_.begin();
+	for (; it != Channels_.end(); ++it)
+	{
+		if (it->is_user(connector)) 
+		{
+			return *it;
+		}
+	}
+	// throw 	UserNoAnyChannelException();
+	return *it;
+}
+
 std::vector<Udata> Channels::join_channel(user& joiner, std::string& chan_name)
 {
-	Udata				gift;
+	Udata				tmp;
 	std::vector<Udata>	res;
 
 	if (is_channel(chan_name) == false)
 	{
-		gift.msg = "Channel Created by " + joiner.nickname_;
+		tmp.msg = "Channel Created by " + joiner.nickname_;
+		res.push_back(tmp);
 		this->create_channel(joiner, chan_name);
 	}
 	else
@@ -86,27 +104,28 @@ std::vector<Udata> Channels::join_channel(user& joiner, std::string& chan_name)
 		Chan& chan = select_channel(chan_name);
 		if (chan.is_user(joiner) == true)
 		{
-			gift.msg = "Already in channel, " + joiner.nickname_;
+			tmp.msg = "Already in channel, " + joiner.nickname_;
+			res.push_back(tmp);
 		}
 		else
 		{
-			gift.msg = "Join \"" + chan_name + "\" channel, " + joiner.nickname_;
+			res = chan.send_all(joiner, "Join \"" + chan_name + "\" channel, " + joiner.nickname_, JOIN);
 			chan.add_user(joiner);
 		}
 	}
-	res.push_back(gift);
 	//유저가 채널에 성공적으로 입장했다는 메시지 전송 + 서버 정보 전송
 	return res;
 }
 
 std::vector<Udata>	Channels::leave_channel(user&leaver, std::string& chan_name)
 {
-	Udata				gift;
+	Udata				tmp;
 	std::vector<Udata>	res;
 	
 	if (is_channel(chan_name) == false)
 	{
-		gift.msg = "There is no channel" + leaver.nickname_;
+		tmp.msg = "There is no channel" + leaver.nickname_;
+		res.push_back(tmp);
 		//채널이 없을 경우, 오류 메시지 유저에게 전송, 이건 클라이언트를 통해 들어올 수 있음
 	}
 	else
@@ -118,12 +137,11 @@ std::vector<Udata>	Channels::leave_channel(user&leaver, std::string& chan_name)
 		{
 			//유저에게 욕하는 메시지 전송
 		}
-
 		//Msg전송 : PART 내용에 따라 전송 -> 아마 채널의 다른 유저들에게 떠났다고 알려줘야
 		std::vector<user> users = chan.get_users();
 
 		//PART하면, 그 내역은 모두에게 보내진다. 나간 사람 포함한다.
-        chan.send_all(leaver, "I'm leaving idiots!" ,PART);
+        res = chan.send_all(leaver, "I'm leaving idiots!", PART);
 		chan.delete_user(leaver);
 		if (users.size() == 0)
 		{
@@ -137,7 +155,6 @@ std::vector<Udata>	Channels::leave_channel(user&leaver, std::string& chan_name)
 			}
 		}
 	}
-	res.push_back(gift);
 	return res;
 }
 
@@ -152,5 +169,54 @@ std::vector<Udata> Channels::channel_msg(user& sender, std::string chan_name, st
 	Chan	channel = select_channel(chan_name);
 
 	//본인에겐 빼고 보내야함
-	return channel.send_all(sender, msg, NORMAL);
+	return channel.send_all(sender, msg, PRIV);
+}
+
+std::vector<Udata>	Channels::kick_channel(user& host, user& target, std::string& chan_name)
+{
+	std::vector<Udata> ret;
+	Udata tmp;
+
+	if (is_channel(chan_name) == false)
+	{
+		tmp.msg = "No such Channel"; //sender
+	}
+	Chan& channel = select_channel(chan_name);
+	if (channel.get_host() == host)
+	{
+		if (channel.is_user(target) == true)
+		{
+			channel.delete_user(target);
+			ret = channel.send_all(host, "kicked!", KICK);
+		}
+		else
+		{
+			tmp.msg = "No such User";
+		}
+	}
+	else
+	{
+		tmp.msg = "Your authority is ugly as your face.";
+	}
+	ret.push_back(tmp);
+	return ret;
+}
+
+std::vector<Udata>	Channels::quit_channel(user& target)
+{
+	Udata 	tmp;
+	std::vector<Udata> ret;
+	try
+	{
+		//어떤 채널도 없으면 catch로 감
+		Chan& channel = select_channel(target);
+		ret = channel.send_all(target, target.nickname_ + " is gone  at " + channel.get_name(), QUIT);
+		channel.delete_user(target);
+	}
+	catch (std::exception& e)
+	{
+		tmp.msg = e.what();
+		ret.push_back(tmp);
+	}
+	return ret;
 }

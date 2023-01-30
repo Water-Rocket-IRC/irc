@@ -52,7 +52,8 @@ int main(int argc, char **argv)
 	std::vector<Udata> join2;
 	std::vector<Udata> join3;
 	std::vector<Udata> join4;
-	std::vector<Udata> leave1;
+	std::vector<Udata> kick1;
+	std::vector<Udata> quit1;
 
 
 	
@@ -71,6 +72,7 @@ int main(int argc, char **argv)
 	join2 = channels.join_channel(user2, chan1);
 	join3 = channels.join_channel(user3, chan1);
 	join4 = channels.join_channel(user4, chan1);
+	showUsers(channels.select_channel(chan1).get_users());
 
 	std::cout << BOLDCYAN << " --- JOIN --- " << RESET << std::endl;
 
@@ -79,35 +81,28 @@ int main(int argc, char **argv)
 	std::cout << join3[0].msg << std::endl;
 	std::cout << join4[0].msg << std::endl;
 
-	std::cout << BOLDCYAN << " --- Send --- " << RESET << std::endl;
-	events = channels.select_channel(chan1).send_all(user1, "This is the message", NORMAL);
 
- 	showUsers(channels.select_channel(chan1).get_users());
+	std::cout << BOLDCYAN << " --- KICK --- " << RESET << std::endl;
+	showUsers(channels.select_channel(chan1).get_users());
+	kick1 = channels.kick_channel(user1, user2, chan1);
+	showUsers(channels.select_channel(chan1).get_users());
 
-	std::cout << events[0].msg << std::endl;
-	std::cout << events[1].msg << std::endl;
-	std::cout << events[2].msg << std::endl;
+	std::cout << kick1[0].msg << std::endl;
+	std::cout << kick1[1].msg << std::endl;
+	std::cout << kick1[2].msg << std::endl;
+	std::cout << kick1[3].msg << std::endl;
 
-	std::memset(&events, 0, sizeof(events));
-	std::memset(&leave1, 0, sizeof(events));
+	std::cout << BOLDCYAN << " --- QUIT --- " << RESET << std::endl;
+	showUsers(channels.select_channel(chan1).get_users());
+	quit1 = channels.quit_channel(user4);
+	showUsers(channels.select_channel(chan1).get_users());
 
-
-	std::cout << BOLDCYAN << " --- LEAVE --- " << RESET << std::endl;
-	leave1 = channels.leave_channel(user2, chan1);
- 	showUsers(channels.select_channel(chan1).get_users());
-	std::cout <<leave1[0].msg << std::endl;
-	std::cout <<leave1[1].msg << std::endl;
-	std::cout <<leave1[2].msg << std::endl;
-
-	events = channels.select_channel(chan1).send_all(user1, "This is the message", NORMAL);		// user2 leave... user1 send all
-	std::cout << BOLDCYAN << " --- SEND --- " << RESET << std::endl;
-
- 	showUsers(channels.select_channel(chan1).get_users());
+	std::cout << quit1[0].msg << std::endl;
+	std::cout << quit1[1].msg << std::endl;
+	std::cout << quit1[2].msg << std::endl;
+	std::cout << quit1[3].msg << std::endl;
 
 
-	std::cout << events[0].msg << std::endl;
-	std::cout << events[1].msg << std::endl;
-	std::cout << events[2].msg << std::endl;
 	
 
 	// if (argc != 3)

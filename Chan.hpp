@@ -5,7 +5,12 @@
 #include "Users.hpp"
 #include "Udata.hpp"
 
-enum e_send_switch { NORMAL, PART };
+enum e_send_switch { JOIN, PART, PRIV, KICK, QUIT };
+/*
+ * JOIN : 나를 포함해서 모두에게 보여주는 메세지(메세지가 다름)
+ * PART : 나를 포함해서 모두에게 보여주는 메세지(메세지가 다름)
+ * PRIV : 채팅방에서 그냥 작성하는 메세지 (나한테 보여지는 건 client가 해주는 것)
+ */ 
 
 class Chan
 {
@@ -26,7 +31,7 @@ class Chan
 		bool 		is_user(user& usr);
 		void 		add_user(user& joiner);
 		void 		set_channel_name(std::string& chan_name);
-		void		delete_user(user& user_name);
+		void		delete_user(user& usr);
 
 		std::vector<Udata> send_all(user& sender, std::string msg, int remocon);
 
@@ -49,7 +54,7 @@ std::vector<Udata> Chan::send_all(user& sender, std::string msg, int remocon)
 
 		switch (remocon)
 		{
-			case NORMAL:
+			case PRIV:
 				if (sender == *it)
 				{
 					continue ;
@@ -59,6 +64,15 @@ std::vector<Udata> Chan::send_all(user& sender, std::string msg, int remocon)
 			case PART:
 				packet.msg = msg; //sender func
 				break ;
+			case JOIN:
+				packet.msg = msg; //sender func
+				break ;
+			case KICK:
+				packet.msg = msg;
+				break;
+			case QUIT:
+				packet.msg = msg;
+				break;
 		}
 		ret.push_back(packet);
 	}
@@ -114,10 +128,10 @@ std::vector<user>& Chan::get_users()
 {
 	return this->connectors_;
 }
-void	Chan::delete_user(user& user_name)
+void	Chan::delete_user(user& usr)
 {
 	std::vector<user>::iterator it = std::find(this->connectors_.begin(), \
-	this->connectors_.end(), user_name);
+	this->connectors_.end(), usr);
 	std::size_t size = std::distance(this->connectors_.begin(), it);
 	this->connectors_.erase(this->connectors_.begin() + size);
 }
