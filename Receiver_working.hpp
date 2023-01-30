@@ -113,10 +113,6 @@ void Receiver::bindSocket()
 	kq_.set_read(server_sock_, 0);
 }
 
-void hi() {
-	std::cout << "hi" << std::endl;
-}
-
 void Receiver::start()
 {
 	while (true)
@@ -239,7 +235,6 @@ int	Receiver::clientReadEventHandler(struct kevent &cur_event)
 
 int	Receiver::clientWriteEventHandler(struct kevent &cur_event)
 {
-	//struct udata	*u_data = reinterpret_cast<udata *>(cur_event.udata);
 	if (u_data.size())
 	{
 		Udata	tmp;
