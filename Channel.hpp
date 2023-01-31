@@ -9,28 +9,25 @@ class Channels
 
 	public:
 	//메시지를 전송하는 모든 명령은 std::vector<Udata>로 리턴할 것
-		std::vector<Udata> channel_msg(user& sender, std::string chan_name, std::string& msg);
-		std::vector<Udata> channel_notice(user& sender, std::string chan_name, std::string& msg);
-		Udata			   channel_wall(user& sender, std::string chan_name, std::string& msg);
+		std::vector<Udata>	channel_msg(user& sender, std::string chan_name, std::string& msg);
+		std::vector<Udata>	channel_notice(user& sender, std::string chan_name, std::string& msg);
+		Udata				channel_wall(user& sender, std::string chan_name, std::string& msg);
 
+		bool				is_channel(std::string& chan_name);
+		void 				create_channel(user& joiner, std::string& chan_name);
+		void 				delete_channel(std::string& chan_name);
+		Chan&				select_channel(std::string& chan_name);
+		Chan&				select_channel(user& connector);
 
-		bool		is_channel(std::string& chan_name);
-		void 		create_channel(user& joiner, std::string& chan_name);
-		void 		delete_channel(std::string& chan_name);
-		Chan&		select_channel(std::string& chan_name);
-		Chan&		select_channel(user& connector);
-
-		std::vector<Udata>		set_topic(user& sender, std::string& chan_name, std::string& topic);
-		std::vector<Udata>		kick_channel(user& host, user& target, std::string& chan_name);
-		std::vector<Udata>		quit_channel(user& target);
-
+		std::vector<Udata>	set_topic(user& sender, std::string& chan_name, std::string& topic);
+		std::vector<Udata>	kick_channel(user& host, user& target, std::string& chan_name);
+		std::vector<Udata>	quit_channel(user& target, std::string msg);
 		std::vector<Udata> 	join_channel(user& joiner, std::string& chan_name);
-		std::vector<Udata>	leave_channel(user&leaver, std::string& chan_name);
-
-		std::vector<Chan>& get_channels() { return	Channels_; };
+		std::vector<Udata>	leave_channel(user&leaver, std::string& chan_name, std::string& msg);
+		std::vector<Chan>&	get_channels() { return	Channels_; };
 };
 
-bool		Channels::is_channel(std::string& chan_name)
+bool	Channels::is_channel(std::string& chan_name)
 {
 	std::vector<Chan>::iterator it;
 
@@ -44,7 +41,7 @@ bool		Channels::is_channel(std::string& chan_name)
 	return false;
 }
 
-void Channels::create_channel(user& joiner, std::string& chan_name)
+void	Channels::create_channel(user& joiner, std::string& chan_name)
 {
 	Chan	tmp;
 	
@@ -56,7 +53,7 @@ void Channels::create_channel(user& joiner, std::string& chan_name)
  /* 
  * operator 가 없을 때 (0 index가 비어있다면 삭제)
  */
-void Channels::delete_channel(std::string& chan_name)
+void	Channels::delete_channel(std::string& chan_name)
 {
 	Chan tmp;
 
@@ -92,17 +89,16 @@ Chan&	Channels::select_channel(user& connector)
 	return *it;
 }
 
-std::vector<Udata> Channels::join_channel(user& joiner, std::string& chan_name)
+std::vector<Udata>	Channels::join_channel(user& joiner, std::string& chan_name)
 {
 	Udata				tmp;
 	std::vector<Udata>	res;
 
 	if (is_channel(chan_name) == false)
 	{
-		tmp = Sender::join_message(joiner, chan_name);
+		tmp = Sender::join_message(joiner, joiner, chan_name);//이거 수정해야함
 		res.push_back(tmp);
 		this->create_channel(joiner, chan_name);
-
 	}
 	else
 	{
@@ -122,7 +118,7 @@ std::vector<Udata> Channels::join_channel(user& joiner, std::string& chan_name)
 	return res;
 }
 
-std::vector<Udata>	Channels::leave_channel(user&leaver, std::string& chan_name)
+std::vector<Udata>	Channels::leave_channel(user&leaver, std::string& chan_name, std::string& msg)
 {
 	Udata				tmp;
 	std::vector<Udata>	res;
@@ -140,13 +136,13 @@ std::vector<Udata>	Channels::leave_channel(user&leaver, std::string& chan_name)
 		//유저가 존재하지 않을 경우(로비에서 part하면 예외처리)
 		if (chan.is_user(leaver) == 0)
 		{
-			//유저에게 욕하는 메시지 전송
+			return res;
 		}
 		//Msg전송 : PART 내용에 따라 전송 -> 아마 채널의 다른 유저들에게 떠났다고 알려줘야
 		std::vector<user> users = chan.get_users();
 
 		//PART하면, 그 내역은 모두에게 보내진다. 나간 사람 포함한다.
-        res = chan.send_all(leaver, "I'm leaving idiots!", PART);
+		res = chan.send_all(leaver, msg, PART);
 		chan.delete_user(leaver);
 		if (users.size() == 0)
 		{
@@ -164,7 +160,7 @@ std::vector<Udata>	Channels::leave_channel(user&leaver, std::string& chan_name)
 }
 
 /// @brief 채널 전체 유저에게 메시지 전달. 내외부 모두 사용됨
-std::vector<Udata> Channels::channel_msg(user& sender, std::string chan_name, std::string& msg)
+std::vector<Udata>	Channels::channel_msg(user& sender, std::string chan_name, std::string& msg)
 {
 	std::vector<Udata>	ret;
 	Udata				tmp;
@@ -178,7 +174,6 @@ std::vector<Udata> Channels::channel_msg(user& sender, std::string chan_name, st
 	}
 	Chan&	channel = select_channel(chan_name);
 	ret = channel.send_all(sender, msg, PRIV);
-	//본인에겐 빼고 보내야함
 	return ret;
 }
 
@@ -255,7 +250,7 @@ std::vector<Udata>	Channels::kick_channel(user& host, user& target, std::string&
 	return ret;
 }
 
-std::vector<Udata>	Channels::quit_channel(user& target)
+std::vector<Udata>	Channels::quit_channel(user& target, std::string msg)
 {
 	std::vector<Udata>	ret;
 	Udata 				tmp;
@@ -263,7 +258,7 @@ std::vector<Udata>	Channels::quit_channel(user& target)
 	{
 		//어떤 채널도 없으면 catch로 감
 		Chan& channel = select_channel(target);
-		ret = channel.send_all(target, target.nickname_ + " is gone  at " + channel.get_name(), QUIT);
+		ret = channel.send_all(target, msg, QUIT);
 		channel.delete_user(target);
 	}
 	catch (std::exception& e)
@@ -274,7 +269,7 @@ std::vector<Udata>	Channels::quit_channel(user& target)
 	return ret;
 }
 
-std::vector<Udata>		Channels::set_topic(user& sender, std::string& chan_name, std::string& topic)
+std::vector<Udata>	Channels::set_topic(user& sender, std::string& chan_name, std::string& topic)
 {
 	std::vector<Udata> ret;
 

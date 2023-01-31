@@ -33,7 +33,9 @@ class Receiver
 		void		bindSocket();
 		void 		start();
 		int			clientReadEventHandler(struct kevent &cur_event);
-		void		parser(struct kevent &cur_event, std::stringstream &ss, std::string &line);
+		void		parser(struct kevent &cur_event, std::string& command);
+		void		push_write_event(Udata &tmp, struct kevent &cur_event);
+		void		push_write_event_with_vector(std::vector<Udata> &udata_events, Udata& tmp);
 		int			clientWriteEventHandler(struct kevent &cur_event);
 };
 
@@ -122,7 +124,7 @@ void Receiver::start()
 
 int	Receiver::clientReadEventHandler(struct kevent &cur_event)
 {
-	char buffer[512];
+	char buffer[1024];
 
 
 	memset(buffer, 0, sizeof(buffer));
@@ -143,16 +145,16 @@ int	Receiver::clientReadEventHandler(struct kevent &cur_event)
 	}
 	std::cout << "Received: " << buffer << std::endl;
 	std::string			command(buffer, byte_received);
-	std::stringstream	ss(command);
-	std::string			line;
 
-	parser(cur_event, ss, line);
-
+	parser(cur_event, command);
 	return (0);
 }
 
-void	Receiver::parser(struct kevent &cur_event, std::stringstream &ss, std::string &line)
+void	Receiver::parser(struct kevent &cur_event, std::string &command)
 {
+	std::stringstream	ss(command);
+	std::string			line;
+
 	while (std::getline(ss, line, '\n'))
 	{
 		std::stringstream	line_ss(line);
@@ -163,16 +165,14 @@ void	Receiver::parser(struct kevent &cur_event, std::stringstream &ss, std::stri
 		if (command_type == "NICK")
 		{
 			tmp = Users.command_nick(line_ss, cur_event);
-			udata_.push_back(tmp);
-			kq_.set_write(cur_event.ident);
+			push_write_event(tmp, cur_event);
 		}
 		else if (command_type == "USER") 
 		{
 			tmp = Users.command_user(line_ss, cur_event.ident);
 			if (tmp.msg.size())
 			{
-				udata_.push_back(tmp);
-				kq_.set_write(cur_event.ident);
+				push_write_event(tmp, cur_event);
 			}
 		}
 		else if (command_type == "PING")
@@ -181,20 +181,35 @@ void	Receiver::parser(struct kevent &cur_event, std::stringstream &ss, std::stri
 			line_ss >> serv_addr;
 
 			tmp = Sender::pong(cur_event.ident, serv_addr);
-			udata_.push_back(tmp);
-			kq_.set_write(cur_event.ident);
+			push_write_event(tmp, cur_event);
 		}
 		else if (command_type == "QUIT")
 		{
 			tmp = Users.command_quit(line_ss, cur_event.ident);
-			udata_.push_back(tmp);
-			kq_.set_write(cur_event.ident);
+			push_write_event(tmp, cur_event);
 		}
 		else if (command_type == "PRIVMSG")
 		{
-			tmp = Users.command_privmsg(line_ss, cur_event.ident);
-			udata_.push_back(tmp);
-			kq_.set_write(cur_event.ident);
+			std::string target, msg;
+			line_ss >> target;
+
+			size_t	pos = line.find(':');
+			msg = line.substr(pos + 1, (line.length() - (pos + 2)));
+			if (msg.size() > 510)
+				msg.resize(510);
+			std::cout << "Mesaage size : " << msg.at(msg.size() - 1) << " aaa " << std::endl;
+			if (target.at(0) == '#')
+			{
+				user sender = *(Users.search_user_by_ident(cur_event.ident));
+
+				std::vector<Udata>	udata_events = Channels.channel_msg(sender, target, msg);
+				push_write_event_with_vector(udata_events, tmp);
+			}
+			else
+			{
+				tmp = Users.command_privmsg(line_ss, cur_event.ident);
+				push_write_event(tmp, cur_event);
+			}
 		}
 		// else if (command_type == "NOTICE")
 		// {
@@ -212,26 +227,43 @@ void	Receiver::parser(struct kevent &cur_event, std::stringstream &ss, std::stri
 			line_ss >> chan_name;
 			user chan_user = *(Users.search_user_by_ident(cur_event.ident));
 			std::vector<Udata>	udata_events = Channels.join_channel(chan_user, chan_name);
-			for (int k(0); k < udata_events.size(); ++k)
-			{
-				std::cout << "channel part : " << udata_events[k].sock_fd << std::endl;
-				tmp = udata_events[k];
-				udata_.push_back(tmp);
-				kq_.set_write(udata_events[k].sock_fd);
-			}
+			push_write_event_with_vector(udata_events, tmp);
 		}
-		// else if (command_type == "PART")
-		// {
-		// 	std::vector<Udata>	udata_events = Channels.
-		// }
+		else if (command_type == "PART")
+		{
+			std::string chan_name, msg;
+
+			line_ss >> chan_name, msg;
+			user leaver = *(Users.search_user_by_ident(cur_event.ident));
+			std::vector<Udata>	udata_events = Channels.leave_channel(leaver, chan_name, msg);
+			push_write_event_with_vector(udata_events, tmp);
+		}
 		// else if (command_type == "TOPIC")
 		// {
 		// 	std::vector<Udata>	udata_events = Channels.
+		// 	push_write_event_with_vector(udata_events, tmp);
 		// }
 		// else if (command_type == "KICK")
 		// {
 		// 	std::vector<Udata>	udata_events = Channels.
+		// 	push_write_event_with_vector(udata_events, tmp);
 		// }
+	}
+}
+
+void	Receiver::push_write_event(Udata& tmp, struct kevent &cur_event)
+{
+	udata_.push_back(tmp);
+	kq_.set_write(cur_event.ident);
+}
+
+void	Receiver::push_write_event_with_vector(std::vector<Udata>& udata_events, Udata& tmp)
+{
+	for (int i(0); i < udata_events.size(); ++i)
+	{
+		tmp = udata_events[i];
+		udata_.push_back(tmp);
+		kq_.set_write(udata_events[i].sock_fd);
 	}
 }
 

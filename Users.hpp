@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Sender.hpp"
-
 #include <string>
 #include <vector>
 #include <sstream>
@@ -15,12 +14,13 @@ struct user;
 class Users
 {
 	private:
-		std::vector<struct user> user_list_;
+		std::vector<struct user>	user_list_;
 	public:
 		Udata											command_nick(std::stringstream &line_ss, struct kevent event);
 		Udata											command_user(std::stringstream &line_ss, uintptr_t sock);
 		Udata											command_quit(std::stringstream &line_ss, uintptr_t sock);
 		Udata											command_privmsg(std::stringstream &line_ss, uintptr_t sock);
+		Udata											command_Notice(std::stringstream &line_ss, uintptr_t sock);
 
 		std::vector<user>::iterator						search_user_by_ident(uintptr_t sock);
 		user&											search_user_by_ident2(uintptr_t sock);
@@ -106,9 +106,13 @@ Udata	Users::command_nick(std::stringstream &line_ss, struct kevent event)
 	// 경우의 수 2 가지 
 	// 1. 중복 O -> 안된다고 적어줌
 	// 2. 중복 X -> 된다고 적어줌
-	std::pair<std::vector<user>::iterator, bool> pair;
-	std::vector<user>::iterator my_user;
+	std::pair<std::vector<user>::iterator, bool>	pair;
+	std::vector<user>::iterator						my_user;
 
+	// if (nickname.size() > 1 && nickname.at(0) == '#')
+	// {
+	// 	return (Sender::nick_wrong_message(*my_user, nickname));
+	// }
 	pair = check_dup_nick(nickname);
 	my_user = search_user_by_ident(event.ident);
 	if (pair.second) // 중복 O
@@ -128,7 +132,7 @@ Udata	Users::command_nick(std::stringstream &line_ss, struct kevent event)
 		}
 		my_user->nickname_ = nickname;
 		my_user->event = event;
-		return (Sender::nick_well_message(*my_user, nickname));
+		return (Sender::nick_well_message(*my_user, *my_user, nickname));
 	}
 }
 
@@ -149,8 +153,7 @@ Udata	Users::command_quit(std::stringstream &line_ss, uintptr_t sock)
 			user_list_.erase(it);
 		}
 	}
-
-	return (Sender::quit_channel_message(*my_user, leave_message));
+	return (Sender::quit_channel_message(*my_user, *my_user, leave_message));
 }
 
 // user를 실행하는 함수 
@@ -158,7 +161,7 @@ Udata	Users::command_user(std::stringstream &line_ss, uintptr_t sock)
 {
 	Udata	tmp;
 	//std::vector<user>::iterator my_user = search_user_by_ident(sock);
-	user& my_user = search_user_by_ident2(sock);
+	user& 	my_user = search_user_by_ident2(sock);
 	std::string username, hostname, servername, realname;
 	bzero(&tmp, sizeof(tmp));
 	
@@ -188,23 +191,43 @@ Udata	Users::command_user(std::stringstream &line_ss, uintptr_t sock)
 
 Udata	Users::command_privmsg(std::stringstream &line_ss, uintptr_t sock)
 {
-	std::string					towho, message;
+	std::string					to_who, message;
 	std::vector<user>::iterator	user_who_get;
 	std::vector<user>::iterator	user_who_sent;
 
-	line_ss >> towho >> message;
+	line_ss >> to_who >> message;
 	user_who_sent = search_user_by_ident(sock);
 
 	// 사람에게 보냄
-	user_who_get = search_user_by_nick(towho);
+	user_who_get = search_user_by_nick(to_who);
 	if (user_who_get == user_list_.end())
 	{
 		// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-		return (Sender::privmsg_message(*user_who_sent, *user_who_get, message)); // @@@@@@@@@ Sender랑 이야기해야함 노션에 포맷없음 @@@@@@@@@
+		return (Sender::privmsg_p2p_message(*user_who_sent, *user_who_get, message)); // @@@@@@@@@ Sender랑 이야기해야함 노션에 포맷없음 @@@@@@@@@
 		// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 	}
-	return (Sender::privmsg_message(*user_who_sent, *user_who_get, message)); // 정상 작동! 
+	return (Sender::privmsg_p2p_message(*user_who_sent, *user_who_get, message)); // 정상 작동! 
 }
+
+// Udata	Users::command_Notice(std::stringstream &line_ss, uintptr_t sock)
+// {
+// 	std::string					to_who, message;
+// 	std::vector<user>::iterator	user_who_get;
+// 	std::vector<user>::iterator	user_who_sent;
+
+// 	line_ss >> to_who >> message;
+// 	user_who_sent = search_user_by_ident(sock);
+
+// 	// 사람에게 보냄
+// 	user_who_get = search_user_by_nick(to_who);
+// 	if (user_who_get == user_list_.end())
+// 	{
+// 		// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+// 		return (Sender::Notice_message(*user_who_sent, *user_who_get, message)); // @@@@@@@@@ Sender랑 이야기해야함 노션에 포맷없음 @@@@@@@@@
+// 		// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+// 	}
+// 	return (Sender::Notice_message(*user_who_sent, *user_who_get, message)); // 정상 작동! 
+// }
 
 //debug 함수
 void Users::print_all_user()

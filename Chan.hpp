@@ -1,10 +1,11 @@
 #pragma once
 
+#include "Udata.hpp"
+#include "Sender.hpp"
 #include <vector>
 #include <algorithm>
 #include <sstream>
-#include "Udata.hpp"
-#include "Sender.hpp"
+
 
 enum e_send_switch { JOIN, PART, PRIV, KICK, QUIT, NOTICE, TOPIC };
 /*
@@ -25,7 +26,7 @@ class Chan
 	public:
 		std::string		get_info(void);
 
-	//채널을 처음 만든 사람 혹은,
+	//채널을 처음 만든 사s람 혹은,
 		std::string	get_name();
 		user		get_host();
 		void 		set_host();
@@ -47,7 +48,7 @@ class Chan
 */
 std::vector<Udata> Chan::send_all(user& sender, std::string msg, int remocon)
 {
-	std::vector<Udata> ret;
+	std::vector<Udata>			ret;
 	std::vector<user>::iterator it;
 
 	if (is_user(sender) == false)
@@ -61,24 +62,24 @@ std::vector<Udata> Chan::send_all(user& sender, std::string msg, int remocon)
 
 		switch (remocon)
 		{
+			case JOIN:
+				packet = Sender::join_message(sender, *it, this->get_name());
+				break ;
+			case PART:
+				packet = Sender::part_message(sender, *it, this->get_name(), msg);
+				break ;
 			case PRIV:
 				if (sender == *it)
 				{
 					continue ;
 				}
-				packet.msg = msg; //sender func
-				break ;
-			case PART:
-				packet.msg = msg; //sender func
-				break ;
-			case JOIN:
-				packet = Sender::join_message(sender, this->get_name());
+				packet = Sender::privmsg_channel_message(sender, *it, msg, this->get_name());
 				break ;
 			case KICK:
-				packet.msg = msg;
+				packet = Sender::kick_message(sender, sender.nickname_, it->nickname_, this->get_name());
 				break ;
 			case QUIT:
-				packet.msg = msg;
+				packet = Sender::quit_channel_message(sender, *it, msg);
 				break ;
 			case NOTICE:
 				packet.msg = msg;

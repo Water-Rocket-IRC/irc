@@ -2,10 +2,10 @@
 
 int main(int argc, char **argv)
 {
+	system("clear");
 	if (argc != 3)
 	{
 		//에러
-		system("clear");
 		std::cerr << RED << "err: Wrong Arguments" << RESET << std::endl;
 		exit(EXIT_FAILURE);
 	}
