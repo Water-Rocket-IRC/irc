@@ -21,7 +21,7 @@ class Sender
 		static Udata	quit_lobby_message(struct user sender, std::string leave_message);
 		static Udata	privmsg_p2p_message(struct user sender, struct user target, std::string msg);
 		static Udata	privmsg_channel_message(struct user sender, struct user receiver, std::string msg, std::string channel);
-		static Udata	privmsg_no_user_error_message(struct user sender, struct user receiver);
+		static Udata	privmsg_no_user_error_message(struct user sender, std::string target);
 		static Udata	join_message(struct user sender, struct user receiver, std::string channel);
 		static Udata	part_message(struct user sender, struct user receiver, std::string channel, std::string msg);
 		static Udata	kick_message(struct user sender, std::string host, std::string subject, std::string channel);
@@ -191,7 +191,7 @@ Udata	Sender::join_message(struct user sender, struct user receiver, std::string
 	Udata	ret;
 
 	std::string  join_message = ":" + sender.nickname_ + "!" \
-				+ sender.realname_ + "@ JOIN " + channel + "\r\n";
+				+ sender.realname_ + "@" + sender.servername_ + " JOIN " + channel + "\r\n";
 	ret.sock_fd = receiver.event.ident;//receciver의 ident
 	ret.msg = join_message;
 	return ret;
@@ -212,7 +212,7 @@ Udata	Sender::part_message(struct user sender, struct user receiver, std::string
 	Udata	ret;
 
 	std::string  part_message = ":" + sender.nickname_ + "!" \
-				+ sender.username_ + "@" + receiver.hostname_ + " PART " + channel + " " + msg + "\r\n";
+				+ sender.username_ + "@" + receiver.servername_ + " PART " + channel + " " + msg + "\r\n";
 	ret.sock_fd = receiver.event.ident;
 	ret.msg = part_message;
 	return ret;
@@ -270,7 +270,7 @@ Udata	Sender::privmsg_p2p_message(struct user sender, struct user target, std::s
 	Udata		ret;
 
 	privmsg = ":" + sender.nickname_ + "@" + sender.servername_ + " PRIVMSG " + \
-		target.nickname_ + " " + msg + "\r\n";
+		target.nickname_ + " :" + msg + "\r\n";
 
 	ret.sock_fd = target.event.ident;
 	ret.msg = privmsg;
@@ -282,21 +282,21 @@ Udata	Sender::privmsg_channel_message(struct user sender, struct user receiver, 
 	Udata		ret;
 
 	std::string privmsg = ":" + sender.nickname_ + "@" + sender.servername_ + " PRIVMSG " + \
-		channel + " " + msg + "\r\n";
+		channel + " :" + msg + "\r\n";
 
 	ret.sock_fd = receiver.event.ident;
 	ret.msg = privmsg;
 	return (ret);
 }
 
-Udata	Sender::privmsg_no_user_error_message(struct user sender, struct user receiver)
+Udata	Sender::privmsg_no_user_error_message(struct user sender, std::string target)
 {
 	Udata		ret;
 
-	std::string privmsg = ":" + sender.nickname_ + "@" + sender.servername_ + " PRIVMSG " + \
-		channel + " " + msg + "\r\n";
+	std::string privmsg = ":" + sender.nickname_ + " 401 " + sender.nickname_ + " " + target \
+	+ " :No such nick\r\n";
 
-	ret.sock_fd = receiver.event.ident;
+	ret.sock_fd = sender.event.ident;
 	ret.msg = privmsg;
 	return (ret);
 }

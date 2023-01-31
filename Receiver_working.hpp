@@ -185,7 +185,7 @@ void	Receiver::parser(struct kevent &cur_event, std::string &command)
 		}
 		else if (command_type == "QUIT")
 		{
-			tmp = Users.command_quit(line_ss, cur_event.ident);
+			tmp = Users.command_quit(line_ss, cur_event.ident); //벡터로 바꿔야함
 			push_write_event(tmp, cur_event);
 		}
 		else if (command_type == "PRIVMSG")
@@ -200,14 +200,14 @@ void	Receiver::parser(struct kevent &cur_event, std::string &command)
 			std::cout << "Mesaage size : " << msg.at(msg.size() - 1) << " aaa " << std::endl;
 			if (target.at(0) == '#')
 			{
-				user sender = *(Users.search_user_by_ident(cur_event.ident));
+				user sender = Users.search_user_by_ident(cur_event.ident);
 
 				std::vector<Udata>	udata_events = Channels.channel_msg(sender, target, msg);
 				push_write_event_with_vector(udata_events, tmp);
 			}
 			else
 			{
-				tmp = Users.command_privmsg(line_ss, cur_event.ident);
+				tmp = Users.command_privmsg(line_ss, line, cur_event.ident);
 				push_write_event(tmp, cur_event);
 			}
 		}
@@ -225,7 +225,7 @@ void	Receiver::parser(struct kevent &cur_event, std::string &command)
 			std::string	chan_name;
 
 			line_ss >> chan_name;
-			user chan_user = *(Users.search_user_by_ident(cur_event.ident));
+			user chan_user = Users.search_user_by_ident(cur_event.ident);
 			std::vector<Udata>	udata_events = Channels.join_channel(chan_user, chan_name);
 			push_write_event_with_vector(udata_events, tmp);
 		}
@@ -234,7 +234,7 @@ void	Receiver::parser(struct kevent &cur_event, std::string &command)
 			std::string chan_name, msg;
 
 			line_ss >> chan_name, msg;
-			user leaver = *(Users.search_user_by_ident(cur_event.ident));
+			user leaver = Users.search_user_by_ident(cur_event.ident);
 			std::vector<Udata>	udata_events = Channels.leave_channel(leaver, chan_name, msg);
 			push_write_event_with_vector(udata_events, tmp);
 		}
