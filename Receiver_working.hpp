@@ -107,7 +107,6 @@ void Receiver::start()
 				}
 				else if (cur_event.filter == EVFILT_WRITE)
 				{
-					// TODO: LEAK CHECK
 					if (clientWriteEventHandler(cur_event))
 					{
 						int	tmp_fd = cur_event.ident;
@@ -126,11 +125,9 @@ int	Receiver::clientReadEventHandler(struct kevent &cur_event)
 
 
 	memset(buffer, 0, sizeof(buffer));
-	// TODO: LEAK CHECK
 	if (cur_event.flags & EV_EOF)
 	{
 		std::cout << "sock was fucked!" << std::endl;
-		Udata	*tmp = reinterpret_cast<Udata *>(cur_event.udata);
 		kq_.delete_event(cur_event);
 		// TODO: delete User
 		return (1);
