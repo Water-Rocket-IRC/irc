@@ -12,20 +12,19 @@ class KeventHandler
 		int							kq_;
 		
 		std::vector<struct kevent>	change_list_;
-		void						KeventInit_(uintptr_t ident, int16_t filter, uint16_t flags, uint32_t fflags, int64_t data, void *udata);
+		void						kevent_init_(uintptr_t ident, int16_t filter, uint16_t flags, uint32_t fflags, int64_t data, void *udata);
 	public:
 		KeventHandler();
 		~KeventHandler();
 
-		std::vector<struct kevent>	SetMonitor();
-		void	SetRead(uintptr_t ident, void *udata);
-		void	SetWrite(uintptr_t ident, void *udata);
-		void	DeleteEvent(const struct kevent &event);
+		std::vector<struct kevent>	set_monitor();
+		void	set_read(uintptr_t ident);
+		void	set_write(uintptr_t ident);
+		void	delete_event(const struct kevent &event);
 };
 
 void exit_with_perror(const std::string& msg)
 {
-	system("clear");
 	std::cerr << msg << std::endl;
 	exit(EXIT_FAILURE);
 }
@@ -34,16 +33,20 @@ KeventHandler::KeventHandler()
 {
 	kq_ = kqueue();
 	if (kq_ < 0)
+	{
 		exit_with_perror("err: Kqueue Creating Fail");
+	}
 }
 
 KeventHandler::~KeventHandler()
 {
-	// if (kq_ > 0)
-	// 	close(kq_);
+	if (kq_ > 0)
+	{
+		close(kq_);
+	}
 }
 
-void	KeventHandler::KeventInit_(uintptr_t ident, int16_t filter, uint16_t flags, uint32_t fflags, int64_t data, void *udata)
+void	KeventHandler::kevent_init_(uintptr_t ident, int16_t filter, uint16_t flags, uint32_t fflags, int64_t data, void *udata)
 {
 	struct kevent	event = {};
 
@@ -51,7 +54,7 @@ void	KeventHandler::KeventInit_(uintptr_t ident, int16_t filter, uint16_t flags,
 	change_list_.push_back(event);
 }
 
-std::vector<struct kevent>	KeventHandler::SetMonitor()
+std::vector<struct kevent>	KeventHandler::set_monitor()
 {
 	struct kevent	event_list[10];
 	std::vector<struct kevent>	res;
@@ -69,17 +72,17 @@ std::vector<struct kevent>	KeventHandler::SetMonitor()
 	return (res);
 }
 
-void	KeventHandler::SetRead(uintptr_t ident, void *udata)
+void	KeventHandler::set_read(uintptr_t ident)
 {
-	KeventInit_(ident, EVFILT_READ, EV_ADD, 0, 20000, udata);
+	kevent_init_(ident, EVFILT_READ, EV_ADD, 0, 0, NULL);
 }
 
-void	KeventHandler::SetWrite(uintptr_t ident, void *udata)
+void	KeventHandler::set_write(uintptr_t ident)
 {
-	KeventInit_(ident, EVFILT_WRITE, EV_ADD, 0, 0, udata);
+	kevent_init_(ident, EVFILT_WRITE, EV_ADD, 0, 0, NULL);
 }
 
-void	KeventHandler::DeleteEvent(const struct kevent &event)
+void	KeventHandler::delete_event(const struct kevent &event)
 {
 	struct kevent	tmp;
 	EV_SET(&tmp, event.ident, event.filter, EV_DELETE, 0, 0, 0);

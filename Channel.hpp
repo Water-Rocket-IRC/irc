@@ -99,9 +99,10 @@ std::vector<Udata> Channels::join_channel(user& joiner, std::string& chan_name)
 
 	if (is_channel(chan_name) == false)
 	{
-		tmp.msg = "Channel Created by " + joiner.nickname_;
+		tmp = Sender::join_message(joiner, chan_name);
 		res.push_back(tmp);
 		this->create_channel(joiner, chan_name);
+
 	}
 	else
 	{

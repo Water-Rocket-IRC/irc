@@ -11,7 +11,7 @@ enum e_send_switch { JOIN, PART, PRIV, KICK, QUIT, NOTICE, TOPIC };
  * JOIN : 나를 포함해서 모두에게 보여주는 메세지(메세지가 다름)
  * PART : 나를 포함해서 모두에게 보여주는 메세지(메세지가 다름)
  * PRIV : 채팅방에서 그냥 작성하는 메세지 (나한테 보여지는 건 client가 해주는 것)
- */ 
+ */
 
 class Chan
 {

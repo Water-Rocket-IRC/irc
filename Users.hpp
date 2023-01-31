@@ -1,20 +1,13 @@
 #pragma once
 
-#include "Udata.hpp"
 #include "Sender.hpp"
+
 #include <string>
 #include <vector>
 #include <sstream>
 #include <algorithm>
 #include <sys/event.h>
 #include <sys/time.h>
-
-
-// enum mod
-// {
-// 	NORMAL,
-// 	ADMIN
-// };
 
 struct user;
 
@@ -24,127 +17,203 @@ class Users
 	private:
 		std::vector<struct user> user_list_;
 	public:
-		void addnick(std::stringstream &line_ss, struct kevent event);
-		Udata *adduser(std::stringstream &line_ss, uintptr_t sock);
+		Udata											command_nick(std::stringstream &line_ss, struct kevent event);
+		Udata											command_user(std::stringstream &line_ss, uintptr_t sock);
+		Udata											command_quit(std::stringstream &line_ss, uintptr_t sock);
+		Udata											command_privmsg(std::stringstream &line_ss, uintptr_t sock);
 
-		user search_user_event(struct kevent event);
-		user search_user_nick(std::string nick);
+		std::vector<user>::iterator						search_user_by_ident(uintptr_t sock);
+		user&											search_user_by_ident2(uintptr_t sock);
+
+		std::vector<user>::iterator						search_user_by_nick(std::string nickname);
+		std::pair<std::vector<user>::iterator, bool>	check_dup_nick(std::string nickname);
 
 		void print_all_user(); //debug
 };
 
-// void	Users::addnick(std::stringstream &line_ss, struct kevent event)
-// {
-// 	struct user tmp_usr;
-// 	std::string nickname;
-// 	std::vector<struct user>::iterator it;
-// 	bool flag = true;
+// ident 즉 socket을 이용해 지금 명령어 친 user가 누군 지 알아낸다. 
+std::vector<user>::iterator	Users::search_user_by_ident(uintptr_t sock)
+{
+	std::vector<user>::iterator	it;
 
-// 	line_ss >> nickname;
+	for (it = user_list_.begin(); it != user_list_.end(); it++)
+	{
+		if (it->event.ident == sock) // 닉네임 바꿔야할 유저를 찾을 상태 !!! 
+		{
+			return (it);
+		}
+	}
+	return (it);
+}
 
-// 	for (it = user_list_.begin(); it != user_list_.end(); ++it)
-// 	{
-// 		if (it->nickname_ == nickname)
-// 		{
-// 			//sender의 에러메시지 메소드 호출
-// 			flag = false;
-// 		}
-// 	}
-// 	if (flag == true)
-// 	{
-// 		tmp_usr.nickname_ = nickname;
-// 		tmp_usr.event = event;
-// 		user_list_.push_back(tmp_usr);
-// 	}
-// }
+user&	Users::search_user_by_ident2(uintptr_t sock)
+{
+	std::vector<user>::iterator	it;
 
-// /*
-// https://datatracker.ietf.org/doc/html/rfc1459#section-4.1.3
-// 에 따르면, 이건 서버에 처음 접속할때 사용되는 명령어다. NICK과 USER 모두 접수되어야, 서버에 레지스터 된 것이다.
-// 중간에 유저 명령어 전송이 가능한지 확인해야 하고, 그에 따라 처리해야 한다.
-// */
-// Udata *Users::adduser(std::stringstream &line_ss, uintptr_t sock)
-// {
-// 	std::vector<user>::iterator it;
-// 	user tmp_user;
-// 	Udata *ret = new Udata;
+	for (it = user_list_.begin(); it != user_list_.end(); it++)
+	{
+		if (it->event.ident == sock) // 닉네임 바꿔야할 유저를 찾을 상태 !!! 
+		{
+			return (*it);
+		}
+	}
+	return (*it);
+}
 
+// nick 이용해 user가 누군 지 알아낸다. 
+std::vector<user>::iterator	Users::search_user_by_nick(std::string nickname)
+{
+	std::vector<user>::iterator	it;
 
-// 	 for (it = user_list_.begin(); it != user_list_.end(); ++it)
-// 	 {
-// 		//접속한 소켓을 찾아 정보를 추가한다
-// 		if (it->event.ident == sock)
-// 		{
-// 			tmp_user = *it;
+	for (it = user_list_.begin(); it != user_list_.end(); it++)
+	{
+		if (it->nickname_ == nickname) // 닉네임 바꿔야할 유저를 찾을 상태 !!! 
+		{
+			return (it);
+		}
+	}
+	return (it);
+}
 
-// 			if (tmp_user.nickname_.empty())
-// 				break;
-// 			std::string username, hostname, servername, realname;
-// 			line_ss >> username >> hostname >> servername >> realname;
-// 			realname.erase(0, 1); //prefix 제거
+// nick이 중복되는 지 체크하는 함수
+// pair을 쓴 이유
+// 중복되면 it는 중복된 user에서의 it와 bool값은 true를 가지고 나간다.
+// 중복되지 않으면 it는 it는 end()와 bool값은 false를 가지고 나간다. 
+std::pair<std::vector<user>::iterator, bool>	Users::check_dup_nick(std::string nickname)
+{
+    std::pair<std::vector<user>::iterator, bool> pair;
 
-// 			tmp_user.username_ = username;
-// 			tmp_user.hostname_ = hostname;
-// 			tmp_user.servername_ = servername;
-// 			tmp_user.realname_ = realname;
+	for (pair.first = user_list_.begin(); pair.first != user_list_.end(); pair.first++)
+	{
+		if (pair.first->nickname_ == nickname) // 닉네임 바꿔야할 유저를 찾을 상태 !!! 
+		{
+			pair.second = true;
+			return (pair);
+		}
+	}
+	pair.second = false;
+	return (pair);
+}
 
-// 			//for debug
-// 			// std::cout << "user " << username << std::endl; 
-// 			// std::cout << "host " << hostname << std::endl;
-// 			// std::cout << "server " << servername << std::endl;
-// 			// std::cout << "real " << realname << std::endl;
+// nick을 실행하는 함수
+Udata	Users::command_nick(std::stringstream &line_ss, struct kevent event)
+{
+	std::vector<Udata>	ret;
+	std::string			nickname;
+	Udata				empty;
+	line_ss >> nickname;
 
-// 			ret = Sender::welcome_message(tmp_user.event.ident, tmp_user.servername_, tmp_user.nickname_, tmp_user.hostname_);
-// 			return (ret);
-// 		}
-// 		// 예외처리 할 부분
+	// 경우의 수 2 가지 
+	// 1. 중복 O -> 안된다고 적어줌
+	// 2. 중복 X -> 된다고 적어줌
+	std::pair<std::vector<user>::iterator, bool> pair;
+	std::vector<user>::iterator my_user;
 
-// 		// nick없이 user만 들어왔으면 sender로 에러 메시지 출력? 실제 클라이언트와 서버가 어떻게 행동하는지 살펴보고 행동 결정해야함
-// 		// USER의 매개변수가 부족할때 들어오면? nc로 쌩으로 보내면 그럴 수 있다.
-// 	 }
-// 	 return (ret);
-// }
+	pair = check_dup_nick(nickname);
+	my_user = search_user_by_ident(event.ident);
+	if (pair.second) // 중복 O
+	{
+		return (Sender::nick_error_message(*my_user, nickname));
+	}
+	else // 중복 X, 바꾸면 된다. 
+	{
+		if (my_user == user_list_.end()) // 처음 들어온 경우
+		{
+			struct user			tmp_usr;
+			tmp_usr.nickname_ = nickname;
+			tmp_usr.event = event;
+			user_list_.push_back(tmp_usr);
+			bzero(&empty, sizeof(empty));
+			return (empty);
+		}
+		my_user->nickname_ = nickname;
+		my_user->event = event;
+		return (Sender::nick_well_message(*my_user, nickname));
+	}
+}
 
+// quit을 실행하는 함수
+Udata	Users::command_quit(std::stringstream &line_ss, uintptr_t sock)
+{
+	std::vector<user>::iterator	my_user;
+	std::string					leave_message;
 
-// /// @brief kqueue의 event를 통해 서버에 메시지를 전송한 유저를 식별하는 함수
-// /// @param event 서버가 listen한 event
-// /// @return user
-// user Users::search_user_event(struct kevent event)
-// {
-// 	std::vector<user>::iterator it;
-// 	user usr;
+	line_ss >> leave_message;
+	my_user = search_user_by_ident(sock);
+	// static Udata quit_channel_message(struct user sender, std::string leave_message);
 
-// 	for (it = user_list_.begin(); it != user_list_.end(); it++)
-// 	{
-// 		if (it->event.ident == event.ident)
-// 			return *it;
-// 	}
-// 	std::cout << "Error : Unknown User accessed to the server" << std::endl;
-// 	return usr;
-// }
+	for (std::vector<user>::iterator it = user_list_.begin(); it != user_list_.end(); it++)
+	{
+		if (my_user->nickname_ == it->nickname_)
+		{
+			user_list_.erase(it);
+		}
+	}
 
-// user Users::search_user_nick(std::string nick)
-// {
-// 	std::vector<user>::iterator it;
-// 	user usr;
+	return (Sender::quit_channel_message(*my_user, leave_message));
+}
 
-// 	for (it = user_list_.begin(); it != user_list_.end(); it++)
-// 	{
-// 		if (it->nickname_ == nick)
-// 			return *it;
-// 	}
-// 	usr.client_sock_ = -433;
-// 	return usr;
-// }
+// user를 실행하는 함수 
+Udata	Users::command_user(std::stringstream &line_ss, uintptr_t sock)
+{
+	Udata	tmp;
+	//std::vector<user>::iterator my_user = search_user_by_ident(sock);
+	user& my_user = search_user_by_ident2(sock);
+	std::string username, hostname, servername, realname;
+	bzero(&tmp, sizeof(tmp));
+	
+	line_ss >> username >> hostname >> servername >> realname;
+	
+	if (my_user.nickname_.empty()) // nick을 안달고 온 것! 오류사항
+	{
+		std::cout << my_user.nickname_ << " socket is " << my_user.event.ident << std::endl;
+		return (tmp);
+	}
+	if (my_user.username_.empty()) // 넣기 전에 비어있는 지 검사를 해야한다.
+	{
+		realname.erase(0, 1); //prefix 제거 ':' <- 이거 제거
+		my_user.username_ = username;
+		my_user.hostname_ = hostname;
+		my_user.servername_ = servername;
+		my_user.realname_ = realname;
+		return(Sender::welcome_message_connect(my_user));
+	}
+	realname.erase(0, 1); //prefix 제거 ':' <- 이거 제거
+	my_user.username_ = username;
+	my_user.hostname_ = hostname;
+	my_user.servername_ = servername;
+	my_user.realname_ = realname;
+	return (tmp);
+}
 
-// //debug 함수
-// void Users::print_all_user()
-// {
-// 	std::vector<user>::iterator it;
+Udata	Users::command_privmsg(std::stringstream &line_ss, uintptr_t sock)
+{
+	std::string					towho, message;
+	std::vector<user>::iterator	user_who_get;
+	std::vector<user>::iterator	user_who_sent;
 
-// 	for (it = user_list_.begin(); it != user_list_.end(); ++it)
-// 	{
-// 		std::cout << "user " << it->nickname_ << std::endl; 
-// 		std::cout << "socket " << it->client_sock_ << std::endl;
-// 	}
-// }
+	line_ss >> towho >> message;
+	user_who_sent = search_user_by_ident(sock);
+
+	// 사람에게 보냄
+	user_who_get = search_user_by_nick(towho);
+	if (user_who_get == user_list_.end())
+	{
+		// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+		return (Sender::privmsg_message(*user_who_sent, *user_who_get, message)); // @@@@@@@@@ Sender랑 이야기해야함 노션에 포맷없음 @@@@@@@@@
+		// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+	}
+	return (Sender::privmsg_message(*user_who_sent, *user_who_get, message)); // 정상 작동! 
+}
+
+//debug 함수
+void Users::print_all_user()
+{
+	std::vector<user>::iterator it;
+
+	for (it = user_list_.begin(); it != user_list_.end(); ++it)
+	{
+		std::cout << "user " << it->nickname_ << std::endl; 
+		std::cout << "socket " << it->client_sock_ << std::endl;
+	}
+}

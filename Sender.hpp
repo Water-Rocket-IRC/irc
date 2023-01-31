@@ -14,13 +14,13 @@ struct user;
 class Sender 
 {
 	public:
-		static Udata pong(struct user sender);		
+		static Udata pong(uintptr_t socket, std::string serv_addr);		
 		static Udata welcome_message_connect(struct user sender); // 아직 모름 -> 1번 바꿈
 		static Udata nick_well_message(struct user sender, std::string new_nick);
 		static Udata nick_error_message(struct user sender, std::string new_nick);
 		static Udata quit_channel_message(struct user sender, std::string leave_message);
 		static Udata quit_lobby_message(struct user sender, std::string leave_message);
-		static Udata privmsg_message(struct user sender, std::string target, std::string msg);
+		static Udata privmsg_message(struct user sender, struct user target, std::string msg);
 		static Udata join_message(struct user sender, std::string channel);
 		static Udata part_message(struct user sender, std::string channel);
 		static Udata kick_message(struct user sender, std::string kicker, std::string subject, std::string channel);
@@ -38,14 +38,15 @@ class Sender
  @param sender.hostname_ 서버 주소
 */
 
-Udata Sender::pong(struct user sender) // 1st done
+Udata Sender::pong(uintptr_t socket, std::string serv_addr) // 1st done
 {
 	Udata ret;
 
-	std::string pong_reply = ":" + sender.hostname_ + " PONG " \
-		+ sender.hostname_ + " :" + sender.hostname_ + "\r\n"; 
+	std::string pong_reply = ":" + serv_addr + " PONG " \
+		+ serv_addr + " :" + serv_addr + "\r\n"; 
 
-	ret.sock_fd = sender.client_sock_;
+	std::cout << "Ping recveived" << std::endl;
+	ret.sock_fd = socket;
 	ret.msg = pong_reply;
 	return ret;
 }
@@ -65,7 +66,7 @@ Udata Sender::nick_well_message(struct user sender, std::string new_nick) // 1st
 
 	std::string nick_msg = sender.nickname_ + "!" + sender.username_ \
 					+ "@" + sender.hostname_ + " NICK :" + new_nick + "\r\n";
-	ret.sock_fd = sender.client_sock_;
+	ret.sock_fd = sender.event.ident;
 	ret.msg = nick_msg;
 	return ret;
 }
@@ -83,7 +84,7 @@ Udata Sender::nick_error_message(struct user sender, std::string new_nick) // 1s
 
 	std::string nick_msg = sender.hostname_ + " 433 " + sender.nickname_ \
 					+ " " + new_nick + "Nickname is already in use.\r\n";
-	ret.sock_fd = sender.client_sock_;
+	ret.sock_fd = sender.event.ident;
 	ret.msg = nick_msg;
 	return ret;
 }
@@ -98,7 +99,7 @@ Udata Sender::welcome_message_connect(struct user sender) // 1st done
 
 	std::string msg001 = ":" + sender.hostname_ + " 001 " + sender.nickname_ \
 	+ " :Welcome to the 42's irc network " + sender.nickname_ + "!" + sender.hostname_ + "\r\n";	
-	ret.sock_fd = sender.client_sock_;
+	ret.sock_fd = sender.event.ident;
 	ret.msg = msg001;
 	return ret;
 }
@@ -125,7 +126,7 @@ Udata Sender::quit_channel_message(struct user sender, std::string leave_message
 		leave_message = "leaving";
 	std::string  quit_channel_message = "ERROR :Closing link: (" \
 		+ sender.realname_ + ") [Quit: " + leave_message + "\r\n"; 
-	ret.sock_fd = sender.client_sock_;
+	ret.sock_fd = sender.event.ident;
 	ret.msg = quit_channel_message;
 	return ret;
 }
@@ -138,7 +139,7 @@ Udata Sender::quit_lobby_message(struct user sender, std::string leave_message) 
 		leave_message = "leaving";
 	std::string  quit_lobby_message = ":" + sender.nickname_ + "! " \
 				+ sender.realname_ + " QUIT :Quit: " + leave_message + "\r\n";
-	ret.sock_fd = sender.client_sock_;
+	ret.sock_fd = sender.event.ident;
 	ret.msg = quit_lobby_message;
 	return ret;
 }
@@ -174,8 +175,8 @@ Udata Sender::join_message(struct user sender, std::string channel) // 1st->done
 	Udata	ret;
 
 	std::string  join_message = ":" + sender.nickname_ + "!" \
-				+ sender.realname_ + " JOIN :#" + channel + "\r\n";
-	ret.sock_fd = sender.client_sock_;
+				+ sender.realname_ + " JOIN :" + channel + "\r\n";
+	ret.sock_fd = sender.event.ident;
 	ret.msg = join_message;
 	return ret;
 }
@@ -195,8 +196,8 @@ Udata Sender::part_message(struct user sender, std::string channel) // 1st donw
 	Udata	ret;
 
 	std::string  part_message = ":" + sender.nickname_ + "!" \
-				+ sender.realname_ + " PART :#" + channel + "\r\n";
-	ret.sock_fd = sender.client_sock_;
+				+ sender.realname_ + " PART :" + channel + "\r\n";
+	ret.sock_fd = sender.event.ident;
 	ret.msg = part_message;
 	return ret;
 }
@@ -216,8 +217,8 @@ Udata Sender::kick_message(struct user sender, std::string kicker, std::string s
 	Udata	ret;
 
 	std::string  kick_message = ":" + kicker + "!" + \
-				sender.realname_ + " KICK #" + channel + " " + subject + "\r\n";
-	ret.sock_fd = sender.client_sock_;
+				sender.realname_ + " KICK " + channel + " " + subject + "\r\n";
+	ret.sock_fd = sender.event.ident;
 	ret.msg = kick_message;
 	return ret;
 }
@@ -228,8 +229,8 @@ Udata Sender::kick_error_not_op_message(struct user sender, std::string kicker, 
 	Udata	ret;
 
 	std::string  kick_message = ":" + sender.hostname_ + \
-		" 482 " + kicker + " #" + channel + " :You must be a channel operator\r\n";
-	ret.sock_fd = sender.client_sock_;
+		" 482 " + kicker + " " + channel + " :You must be a channel operator\r\n";
+	ret.sock_fd = sender.event.ident;
 	ret.msg = kick_message;
 	return ret;	
 }
@@ -240,25 +241,25 @@ Udata Sender::kick_error_no_user_message(struct user sender, std::string kicker,
 	Udata	ret;
 
 	std::string  kick_message = ":" + sender.hostname_ + \
-		" 441 " + kicker + " " + subject + " #" + channel + " :They are not on that channel\r\n";
-	ret.sock_fd = sender.client_sock_;
+		" 441 " + kicker + " " + subject + " " + channel + " :They are not on that channel\r\n";
+	ret.sock_fd = sender.event.ident;
 	ret.msg = kick_message;
 	return ret;	
 }
 
+Udata Sender::privmsg_message(struct user sender, struct user target, std::string msg)
+{
+	std::string privmsg;
+	Udata		ret;
 
+	privmsg = ":" + sender.nickname_ + "@" + sender.servername_ + " PRIVMSG " + \
+		target.nickname_ + " :" + msg + "\r\n";
 
-
-
-// Udata Sender::privmsg(struct user sender, struct user receiver, std::string msg)
-// {
-// 	std::string privmsg;
-
-// 	privmsg = ":" + sender.nickname_ + "@" + sender.servername_ + " PRIVMSG " + \
-// 		receiver.nickname_ + " :" + msg + "\r\n";
-
-// 	send(receiver.event.ident, privmsg.c_str(), privmsg.length(), 0);
-// }
+	ret.sock_fd = sender.event.ident;
+	ret.msg = privmsg;
+	return (ret);
+	// send(target.event.ident, privmsg.c_str(), privmsg.length(), 0);
+}
 
 // sender : 보내려고 했던 대상, receiver : 잘못 닉네임을 입력해서 오류를 받아야 하는 대상
 // udata Sender::send_err(struct user sender, struct user receiver, std::string msg)
