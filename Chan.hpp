@@ -54,24 +54,14 @@ std::vector<Udata> Chan::send_all(user& sender, user& target, std::string msg, i
 	{
 		//throw noUserException();
 	}
-	// JOIN TEST 용
 
-	Udata packet;
-	if (remocon == JOIN)
-	{
-		packet = Sender::join_message(sender, sender, this->get_name());
-		ret.push_back(packet);
-	}
 	for (it = connectors_.begin(); it != connectors_.end(); it++)
 	{
+		Udata packet;
 
 		switch (remocon)
 		{
 			case JOIN:
-				if (sender == *it)
-				{
-					continue ;
-				}
 				packet = Sender::join_message(sender, *it, this->get_name());
 				break ;
 			case PART:

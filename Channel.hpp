@@ -82,13 +82,13 @@ bool	Channels::is_channel(std::string& chan_name)
 void	Channels::create_channel(user& joiner, std::string& chan_name)
 {
 	Chan	tmp;
-	
+
 	tmp.set_channel_name(chan_name);
 	tmp.add_user(joiner);
 	tmp.set_host();
 	Channels_.push_back(tmp);
 }
- /* 
+ /*
  * operator 가 없을 때 (0 index가 비어있다면 삭제)
  */
 void	Channels::delete_channel(std::string& chan_name)
@@ -133,12 +133,6 @@ std::vector<Udata>	Channels::join_channel(user& joiner, std::string& chan_name)
 	Udata				tmp;
 	std::vector<Udata>	res;
 
-	// if (is_channel(chan_name) == false)
-	// {
-	// 	tmp = Sender::join_message(joiner, joiner, chan_name);//이거 수정해야함
-	// 	res.push_back(tmp);
-	// 	this->create_channel(joiner, chan_name);
-	// }
 	try
 	{
 		Chan& chan = select_channel(chan_name);
@@ -154,7 +148,7 @@ std::vector<Udata>	Channels::join_channel(user& joiner, std::string& chan_name)
 			res = chan.send_all(joiner, joiner, "Join \"" + chan_name + "\" channel, " + joiner.nickname_, JOIN);
 		}
 	}
-	catch(const std::exception&) 
+	catch(const std::exception&)
 	{
 		// tmp = Sender::join_message(joiner, joiner, chan_name);	//이거 수정해야함
 		res.push_back(Sender::join_message(joiner, joiner, chan_name));
@@ -341,7 +335,7 @@ std::vector<Udata>	Channels::nick_channel(user& nicker, std::string& send_msg)
 	std::vector<Udata> ret;
 
 	user	trash;
-	
+
 	Chan& channel = select_channel(nicker);
 	ret = channel.send_all(nicker, trash, send_msg, NICK);
 	return ret;

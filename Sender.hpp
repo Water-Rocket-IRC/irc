@@ -210,6 +210,17 @@ Udata	Sender::join_message(user& sender, user& receiver, std::string& channel) /
 	return ret;
 }
 
+// Udata	Sender::join_353_message(user& sender, user& receiver, std::string& channel) // 2st->done
+// {
+//     Udata	ret;
+//
+//     std::string  join_message = ":" + sender.nickname_ + "!" \
+//                 + sender.realname_ + "@" + sender.servername_ + " JOIN " + channel + "\r\n";
+//     ret.sock_fd = receiver.client_sock_;//receciver의 ident
+//     ret.msg = join_message;
+//     return ret;
+// }
+
 /****************************       <PART>       ****************************/
 
 // 127.000.000.001.39544-127.000.000.001.06667: PART #test

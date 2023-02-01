@@ -13,6 +13,23 @@
 #include <sys/types.h>
 #include <netdb.h>
 
+//member 함수로 일단 넣지는 않았음
+static void _print_title(const std::string& title)
+{
+
+	std::string  under_bar = "____";
+	std::string  over_bar =  "‾‾‾‾";
+	for (std::size_t i = 0; i < title.length(); ++i)
+	{
+		under_bar += "_";
+		over_bar += "‾";
+	}
+	std::cout << BOLDCYAN << under_bar << std::endl
+						  << "| " << title << " |" << std::endl
+					 	  << over_bar << std::endl
+			  << RESET << std::endl;
+}
+
 class Receiver
 {
 	private:
@@ -40,6 +57,8 @@ class Receiver
 
 		void 	start();
 };
+
+
 
 
 /*    Receiver Class     */
@@ -160,10 +179,12 @@ void	Receiver::parser_(struct kevent &cur_event, std::string &command)
 	{
 		std::stringstream	line_ss(line);
 		std::string			command_type;
-		
+
 		line_ss >> command_type;
 		if (command_type == "NICK")
 		{
+			_print_title(command_type);
+
 			//check_argument(2, )
 			// NICK은 채널에 있을 때 모든 유저에게 NICK 변경되었음을 알리고, 로비에 있을 때는 본인에게만 알린다.
 			std::string	argument[2];
@@ -193,13 +214,17 @@ void	Receiver::parser_(struct kevent &cur_event, std::string &command)
 				push_write_event_(tmp, cur_event);
 			}
 		}
-		else if (command_type == "USER") 
+		else if (command_type == "USER")
 		{
+			_print_title(command_type);
+
 			Udata	tmp = Users.command_user(line_ss, cur_event.ident);
 			push_write_event_(tmp, cur_event);
 		}
 		else if (command_type == "PING")
 		{
+			_print_title(command_type);
+
 			std::string serv_addr;
 			line_ss >> serv_addr;
 
@@ -208,11 +233,15 @@ void	Receiver::parser_(struct kevent &cur_event, std::string &command)
 		}
 		else if (command_type == "QUIT")
 		{
+			_print_title(command_type);
+
 			Udata	tmp = Users.command_quit(line_ss, cur_event.ident); //벡터로 바꿔야함
 			push_write_event_(tmp, cur_event);
 		}
 		else if (command_type == "PRIVMSG")
 		{
+			_print_title(command_type);
+
 			std::string target, msg;
 			line_ss >> target;
 			
@@ -246,6 +275,8 @@ void	Receiver::parser_(struct kevent &cur_event, std::string &command)
 		}
 		else if (command_type == "NOTICE")
 		{
+			_print_title(command_type);
+
 			std::string chan_name, msg;
 
 			line_ss >> chan_name >> msg;
@@ -273,6 +304,8 @@ void	Receiver::parser_(struct kevent &cur_event, std::string &command)
 		}
 		else if (command_type == "WALL")
 		{
+			_print_title(command_type);
+
 			std::string chan_name, msg;
 
 			line_ss >> chan_name >> msg;
@@ -297,9 +330,11 @@ void	Receiver::parser_(struct kevent &cur_event, std::string &command)
 					std::cout << "FUck" << std::endl;
 				}
 			}
-		}	
+		}
 		else if (command_type == "JOIN")
 		{
+			_print_title(command_type);
+
 			std::string	chan_name, error;
 
 
@@ -318,6 +353,8 @@ void	Receiver::parser_(struct kevent &cur_event, std::string &command)
 		}
 		else if (command_type == "PART")
 		{
+			_print_title(command_type);
+
 			std::string chan_name, msg;
 
 			line_ss >> chan_name >> msg; 
@@ -327,6 +364,8 @@ void	Receiver::parser_(struct kevent &cur_event, std::string &command)
 		}
 		else if (command_type == "TOPIC")
 		{
+			_print_title(command_type);
+
 			std::string chan_name, topic;
 			line_ss >> chan_name >> topic;
 
@@ -347,6 +386,8 @@ void	Receiver::parser_(struct kevent &cur_event, std::string &command)
 		}
 		else if (command_type == "KICK")
 		{
+			_print_title(command_type);
+
 			std::string chan_name, target_name, msg;
 
 			line_ss >> chan_name >> target_name;
