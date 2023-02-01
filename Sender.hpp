@@ -212,7 +212,7 @@ Udata	Sender::part_message(struct user sender, struct user receiver, std::string
 	Udata	ret;
 
 	std::string  part_message = ":" + sender.nickname_ + "!" \
-				+ sender.username_ + "@" + receiver.servername_ + " PART " + channel + " " + msg + "\r\n";
+				+ sender.username_ + "@" + receiver.hostname_ + " PART " + channel + " " + msg + "\r\n";
 	ret.sock_fd = receiver.event.ident;
 	ret.msg = part_message;
 	return ret;

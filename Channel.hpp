@@ -58,6 +58,10 @@ void	Channels::delete_channel(std::string& chan_name)
 	Chan tmp;
 
 	tmp.set_channel_name(chan_name);
+
+	std::cout << "Target : " << chan_name << std::endl;
+	std::cout << "Set : " << tmp.get_name() << std::endl;
+
 	std::vector<Chan>::iterator it = std::find(Channels_.begin(), \
 	Channels_.end(), tmp);
 	std::size_t size = std::distance(this->Channels_.begin(), it);
@@ -94,15 +98,22 @@ std::vector<Udata>	Channels::join_channel(user& joiner, std::string& chan_name)
 	Udata				tmp;
 	std::vector<Udata>	res;
 
+	std::cout << "Joiner's ident :  " << joiner.event.ident <<std::endl;
 	if (is_channel(chan_name) == false)
 	{
+		std::cout << "Channel " << chan_name << " created" << std::endl;
 		tmp = Sender::join_message(joiner, joiner, chan_name);//이거 수정해야함
 		res.push_back(tmp);
 		this->create_channel(joiner, chan_name);
 	}
 	else
 	{
+		std::cout << "Channel " << joiner.nickname_ << " joined to ";
+
 		Chan& chan = select_channel(chan_name);
+
+		std::cout << chan.get_name() << std::endl;
+
 		if (chan.is_user(joiner) == true)
 		{
 			tmp.msg = "Already in channel, " + joiner.nickname_;
@@ -110,9 +121,25 @@ std::vector<Udata>	Channels::join_channel(user& joiner, std::string& chan_name)
 		}
 		else
 		{
-			res = chan.send_all(joiner, "Join \"" + chan_name + "\" channel, " + joiner.nickname_, JOIN);
 			chan.add_user(joiner);
+			res = chan.send_all(joiner, "Join \"" + chan_name + "\" channel, " + joiner.nickname_, JOIN);
+
 		}
+
+		std::cout << "Channel's user list : join situation" << std::endl;
+		std::vector<user>::iterator it;
+		for (it = chan.get_users().begin(); it != chan.get_users().end(); it++)
+		{
+			std::cout << it->nickname_ << std::endl;
+		}
+	}
+
+	std::vector<Chan>::iterator ite;
+
+	std::cout << "Channel list" << std::endl;
+	for (ite = Channels_.begin(); ite != Channels_.end(); ite++)
+	{
+		std::cout << ite->get_name() << std::endl;
 	}
 	//유저가 채널에 성공적으로 입장했다는 메시지 전송 + 서버 정보 전송
 	return res;
@@ -140,11 +167,20 @@ std::vector<Udata>	Channels::leave_channel(user&leaver, std::string& chan_name, 
 		}
 		//Msg전송 : PART 내용에 따라 전송 -> 아마 채널의 다른 유저들에게 떠났다고 알려줘야
 		std::vector<user> users = chan.get_users();
-
+		int user_size = users.size();
 		//PART하면, 그 내역은 모두에게 보내진다. 나간 사람 포함한다.
 		res = chan.send_all(leaver, msg, PART);
 		chan.delete_user(leaver);
-		if (users.size() == 0)
+
+		std::cout << "Channel's user list : leaving situation" << std::endl;
+		std::vector<user>::iterator it;
+		for (it = chan.get_users().begin(); it != chan.get_users().end(); it++)
+		{
+			std::cout << it->nickname_ << std::endl;
+		}
+
+
+		if (user_size == 1) //채널 잘 삭제되는 것 확인
 		{
 			delete_channel(chan_name);
 		}
@@ -155,6 +191,14 @@ std::vector<Udata>	Channels::leave_channel(user&leaver, std::string& chan_name, 
 				chan.set_host();
 			}
 		}
+
+		std::vector<Chan>::iterator ite;
+		std::cout << "Channel list : Leave" << std::endl;
+		for (ite = Channels_.begin(); ite != Channels_.end(); ite++)
+		{
+			std::cout << ite->get_name() << std::endl;
+		}
+
 	}
 	return res;
 }
