@@ -3,15 +3,15 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: sesim <sesim@student.42seoul.kr>           +#+  +:+       +#+         #
+#    By: jinwoole <indibooks@naver.com>             +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/01/27 10:57:54 by sesim             #+#    #+#              #
-#    Updated: 2023/01/28 22:52:47 by sesim            ###   ########.fr        #
+#    Updated: 2023/01/29 15:49:46 by jinwoole         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 CXX			=	c++
-CXXFLAGS	=	-g3
+CXXFLAGS	=	-g3 #-fsanitize=address
 RM			=	rm -rf
 
 OBJS_DIR	:=	objs/
@@ -44,5 +44,7 @@ fclean: clean
 	$(RM) $(NAME)
 
 re: | fclean all
+
+-include $(DEPS)
 
 .PHONY: all clean fclean re

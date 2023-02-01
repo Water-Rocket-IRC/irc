@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Udata.hpp"
 #include "Sender.hpp"
 #include <string>
 #include <vector>
@@ -8,13 +7,7 @@
 #include <algorithm>
 #include <sys/event.h>
 #include <sys/time.h>
-
-
-// enum mod
-// {
-// 	NORMAL,
-// 	ADMIN
-// };
+#include <exception>
 
 struct user;
 
@@ -22,121 +15,237 @@ struct user;
 class Users
 {
 	private:
-		std::vector<struct user> user_list_;
+		std::vector<struct user>	user_list_;
 	public:
-		void addnick(std::stringstream &line_ss, struct kevent event);
-		Udata *adduser(std::stringstream &line_ss, uintptr_t sock);
+		Udata	command_nick(std::stringstream &line_ss, struct kevent& event);
+		Udata	command_user(std::stringstream &line_ss, uintptr_t sock);
+		Udata	command_quit(std::stringstream &line_ss, uintptr_t sock);
+		Udata	command_privmsg(std::stringstream &line_ss, std::string &line, uintptr_t sock);
 
-		user search_user_event(struct kevent event);
-		user search_user_nick(std::string nick);
+		user&	search_user_by_ident(uintptr_t sock);
+		user&	search_user_by_nick(std::string nickname);
+		void	delete_user(user& leaver);
+		bool 	is_duplicate_ident(uintptr_t sock);
+		bool 	is_duplicate_nick(std::string& nick_name);
 
-
-		void print_all_user(); //debug
-
+		class no_user_found_exception : public std::exception
+		{
+			public:
+				const char*	what(void) const throw();
+		};
+		class duplicated_user_found_exception : public std::exception
+		{
+			public:
+				const char*	what(void) const throw();
+		};
+		void	print_all_user(); //debug
 };
 
-void	Users::addnick(std::stringstream &line_ss, struct kevent event)
+const char*	Users::no_user_found_exception::what(void) const throw()
 {
-	struct user tmp_usr;
-	std::string nickname;
-	std::vector<struct user>::iterator it;
-	bool flag = true;
+	return "err: no user found";
+}
 
-	line_ss >> nickname;
+const char*	Users::duplicated_user_found_exception::what(void) const throw()
+{
+	return "err: duplicated user found";
+}
 
-	for (it = user_list_.begin(); it != user_list_.end(); ++it)
+
+// ident 즉 socket을 이용해 지금 명령어 친 user가 누군 지 알아낸다. 
+user&	Users::search_user_by_ident(uintptr_t sock)
+{
+	std::vector<user>::iterator	it;
+
+	for (it = user_list_.begin(); it != user_list_.end(); it++)
 	{
-		if (it->nickname_ == nickname)
+		if (it->event.ident == sock) // 닉네임 바꿔야할 유저를 찾을 상태 !!! 
 		{
-			//sender의 에러메시지 메소드 호출
-			flag = false;
+			return (*it);
 		}
 	}
-	if (flag == true)
+	throw no_user_found_exception();
+	return (*it);
+}
+
+// nick 이용해 user가 누군 지 알아낸다. <- 중복검사 활용
+user&	Users::search_user_by_nick(std::string nickname)
+{
+	std::vector<user>::iterator	it;
+
+	for (it = user_list_.begin(); it != user_list_.end(); it++)
 	{
-		tmp_usr.nickname_ = nickname;
+		if (it->nickname_ == nickname) // 닉네임 바꿔야할 유저를 찾을 상태 !!! 
+		{
+			return (*it);
+		}
+	}
+	throw no_user_found_exception();
+	return (*it);
+}
+
+bool	Users::is_duplicate_ident(uintptr_t sock)
+{
+	try
+	{
+		user&	tmp_user = search_user_by_ident(sock);
+	}
+	catch (std::exception& e)
+	{
+		return false;
+	}
+	return true;
+}
+
+bool	Users::is_duplicate_nick(std::string& nick_name)
+{
+	try
+	{
+		user&	tmp_user = search_user_by_nick(nick_name);
+	}
+	catch (std::exception& e)
+	{
+		return false;
+	}
+	return true;
+}
+
+
+// nick을 실행하는 함수
+Udata	Users::command_nick(std::stringstream &line_ss, struct kevent& event)
+{
+	Udata		tmp;
+	std::string	nick_name;
+
+	line_ss >> nick_name;
+	bzero(&tmp, sizeof(tmp));
+
+	try
+	{
+		user&	cur_user = search_user_by_ident(event.ident);
+
+		if (nick_name.size() > 1 && nick_name.at(0) == '#')
+		{
+			tmp = Sender::nick_wrong_message(cur_user, nick_name);
+		}
+		else if (is_duplicate_nick(nick_name))
+		{
+			tmp = Sender::nick_error_message(cur_user, nick_name);
+		}
+		else 
+		{
+			cur_user.nickname_ = nick_name;
+			cur_user.event = event;
+			tmp = Sender::nick_well_message(cur_user, cur_user, nick_name);
+		}
+		return tmp;
+	}
+	catch (std::exception& e)
+	{
+		struct user	tmp_usr;
+		tmp_usr.nickname_ = nick_name;
 		tmp_usr.event = event;
 		user_list_.push_back(tmp_usr);
+		return tmp;
 	}
+	return tmp;
 }
 
-/*
-https://datatracker.ietf.org/doc/html/rfc1459#section-4.1.3
-에 따르면, 이건 서버에 처음 접속할때 사용되는 명령어다. NICK과 USER 모두 접수되어야, 서버에 레지스터 된 것이다.
-중간에 유저 명령어 전송이 가능한지 확인해야 하고, 그에 따라 처리해야 한다.
-*/
-Udata *Users::adduser(std::stringstream &line_ss, uintptr_t sock)
+// user를 실행하는 함수 
+Udata	Users::command_user(std::stringstream &line_ss, uintptr_t sock)
 {
-	std::vector<user>::iterator it;
-	user tmp_user;
-	Udata *ret = new Udata;
+	Udata		tmp;
+ 	std::string name[4];
 
+	bzero(&tmp, sizeof(tmp));
+	try
+	{
+		user&	cur_user = search_user_by_ident(sock);
 
-	 for (it = user_list_.begin(); it != user_list_.end(); ++it)
-	 {
-		//접속한 소켓을 찾아 정보를 추가한다
-		if (it->event.ident == sock)
+		line_ss >> name[0] >> name[1] >> name[2] >> name[3];
+		for (int i(0); i < 4; ++i)
 		{
-			tmp_user = *it;
-
-			if (tmp_user.nickname_.empty())
-				break;
-			std::string username, hostname, servername, realname;
-			line_ss >> username >> hostname >> servername >> realname;
-			realname.erase(0, 1); //prefix 제거
-
-			tmp_user.username_ = username;
-			tmp_user.hostname_ = hostname;
-			tmp_user.servername_ = servername;
-			tmp_user.realname_ = realname;
-
-			//for debug
-			// std::cout << "user " << username << std::endl; 
-			// std::cout << "host " << hostname << std::endl;
-			// std::cout << "server " << servername << std::endl;
-			// std::cout << "real " << realname << std::endl;
-
-			ret = Sender::welcome_message(tmp_user.event.ident, tmp_user.servername_, tmp_user.nickname_, tmp_user.hostname_);
-			return (ret);
+			if (name[i].empty())
+			{
+				return tmp;
+			}
 		}
-		// 예외처리 할 부분
-
-		// nick없이 user만 들어왔으면 sender로 에러 메시지 출력? 실제 클라이언트와 서버가 어떻게 행동하는지 살펴보고 행동 결정해야함
-		// USER의 매개변수가 부족할때 들어오면? nc로 쌩으로 보내면 그럴 수 있다.
-	 }
-	 return (ret);
+		if (cur_user.username_.empty())
+		{
+			cur_user.username_ = name[0];
+			cur_user.hostname_ = name[1];
+			cur_user.servername_ = name[2];
+			cur_user.realname_ = name[3].substr(1);
+			return Sender::welcome_message_connect(cur_user);
+		}
+		return tmp;
+	}
+	catch (std::exception& e)
+	{
+		return tmp;
+	}
 }
 
-
-/// @brief kqueue의 event를 통해 서버에 메시지를 전송한 유저를 식별하는 함수
-/// @param event 서버가 listen한 event
-/// @return user
-user Users::search_user_event(struct kevent event)
+void	Users::delete_user(user& leaver)
 {
 	std::vector<user>::iterator it;
-	user usr;
+	int	idx = 0;
 
 	for (it = user_list_.begin(); it != user_list_.end(); it++)
 	{
-		if (it->event.ident == event.ident)
-			return *it;
+		if (*it == leaver)
+		{
+			user_list_.erase(user_list_.begin() + idx);
+			break ;
+		}
+		idx++;
 	}
-	std::cout << "Error : Unknown User accessed to the server" << std::endl;
-	return usr;
 }
 
-user Users::search_user_nick(std::string nick)
+// quit을 실행하는 함수
+Udata	Users::command_quit(std::stringstream &line_ss, uintptr_t sock)
 {
-	std::vector<user>::iterator it;
-	user usr;
+	Udata		ret;
+	user		leaver;
+	std::string	leave_msg;
 
-	for (it = user_list_.begin(); it != user_list_.end(); it++)
+	line_ss >> leave_msg;
+	leaver = search_user_by_ident(sock);
+	delete_user(leaver);
+	ret = Sender::quit_lobby_message(leaver, leave_msg);
+
+	return ret;
+}
+
+Udata	Users::command_privmsg(std::stringstream &line_ss, std::string &line, uintptr_t sock)
+{
+	std::string nick, msg;
+	user	sender, target;
+	Udata	ret;
+	try
 	{
-		if (it->nickname_ == nick)
-			return *it;
+		line_ss >> nick >> msg;
+		std::cout << sock << std::endl;
+		sender = search_user_by_ident(sock);
+		try
+		{
+			target = search_user_by_nick(nick);
+		}
+		catch (std::exception& e())
+		{
+			return Sender::privmsg_no_user_error_message(sender, nick);
+		}
+		size_t	pos = line.find(':');
+		msg = line.substr(pos + 1, (line.length() - (pos + 2)));
+		ret = Sender::privmsg_p2p_message(sender, target, msg);
 	}
-	usr.client_sock_ = -433;
-	return usr;
+	catch (std::exception &e)
+	{
+		std::cout << "No try" << std::endl;
+	}
+
+
+	return ret;
 }
 
 //debug 함수
