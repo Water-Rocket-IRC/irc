@@ -11,7 +11,8 @@
 # **************************************************************************** #
 
 CXX			=	c++
-CXXFLAGS	=	-g3 #-fsanitize=address
+CXXFLAGS	=	-g3 -Wall -Wextra -Werror -fsanitize=address
+CXXFLAGS_TMP	=	-g3 #-fsanitize=address 
 RM			=	rm -rf
 
 OBJS_DIR	:=	objs/
@@ -23,7 +24,10 @@ OBJS		:=	$(addprefix $(OBJS_DIR), $(SRCS:.cpp=.o))
 DEPS		:=	$(addprefix $(DEPS_DIR), $(SRCS:.cpp=.d))
 NAME		:=	ircserv
 
-all : $(NAME)
+all :
+	$(CXX) $(CXXFLAGS_TMP) $(SRCS) -o $(NAME)
+
+tmp : $(NAME)
 
 $(NAME) : $(OBJS)
 	$(CXX) $(CXXFLAGS) $^ -o $@

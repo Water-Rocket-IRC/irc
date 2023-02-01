@@ -9,9 +9,8 @@ struct user
 	std::string servername_;
 	std::string realname_;
 
-	struct kevent event;
-	int			client_sock_; //legacy variable, 곧 kevent로 대체해야 함
-	int			mod;
-	bool	operator==(const user& obj) { return this->nickname_ == obj.nickname_; };
+	uintptr_t		client_sock_; //legacy variable, 곧 kevent로 대체해야 함
+	int				mod;
+	bool	operator==(const user& obj) { return this->client_sock_ == obj.client_sock_; };
 	//그 외 기타등등
 };

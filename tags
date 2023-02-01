@@ -1,0 +1,173 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+BLACK	color.hpp	/^# define BLACK	/;"	d
+BLUE	color.hpp	/^# define BLUE	/;"	d
+BOLDBLACK	color.hpp	/^# define BOLDBLACK	/;"	d
+BOLDBLUE	color.hpp	/^# define BOLDBLUE	/;"	d
+BOLDCYAN	color.hpp	/^# define BOLDCYAN	/;"	d
+BOLDGREEN	color.hpp	/^# define BOLDGREEN	/;"	d
+BOLDMAGENTA	color.hpp	/^# define BOLDMAGENTA	/;"	d
+BOLDRED	color.hpp	/^# define BOLDRED	/;"	d
+BOLDWHITE	color.hpp	/^# define BOLDWHITE	/;"	d
+BOLDYELLOW	color.hpp	/^# define BOLDYELLOW	/;"	d
+CXX	Makefile	/^CXX			=	c++$/;"	m
+CXXFLAGS	Makefile	/^CXXFLAGS	=	-g3 #-fsanitize=address$/;"	m
+CYAN	color.hpp	/^# define CYAN	/;"	d
+Chan	Chan.hpp	/^class Chan$/;"	c
+Channels	Channel.hpp	/^class Channels$/;"	c
+Channels	Receiver_working.hpp	/^		Channels	Channels;$/;"	m	class:Receiver
+Channels_	Channel.hpp	/^		std::vector<Chan> Channels_;$/;"	m	class:Channels
+DEPS	Makefile	/^DEPS		:=	$(addprefix $(DEPS_DIR), $(SRCS:.cpp=.d))$/;"	m
+DEPS_DIR	Makefile	/^DEPS_DIR	:=	deps\/$/;"	m
+GREEN	color.hpp	/^# define GREEN	/;"	d
+JOIN	Chan.hpp	/^enum e_send_switch { JOIN, PART, PRIV, KICK, QUIT, NOTICE, TOPIC, WALL };$/;"	e	enum:e_send_switch
+KICK	Chan.hpp	/^enum e_send_switch { JOIN, PART, PRIV, KICK, QUIT, NOTICE, TOPIC, WALL };$/;"	e	enum:e_send_switch
+KeventHandler	KeventHandler.hpp	/^KeventHandler::KeventHandler()$/;"	f	class:KeventHandler
+KeventHandler	KeventHandler.hpp	/^class KeventHandler$/;"	c
+MAGENTA	color.hpp	/^# define MAGENTA	/;"	d
+NAME	Makefile	/^NAME		:=	ircserv$/;"	m
+NOTICE	Chan.hpp	/^enum e_send_switch { JOIN, PART, PRIV, KICK, QUIT, NOTICE, TOPIC, WALL };$/;"	e	enum:e_send_switch
+OBJS	Makefile	/^OBJS		:=	$(addprefix $(OBJS_DIR), $(SRCS:.cpp=.o))$/;"	m
+OBJS_DIR	Makefile	/^OBJS_DIR	:=	objs\/$/;"	m
+PART	Chan.hpp	/^enum e_send_switch { JOIN, PART, PRIV, KICK, QUIT, NOTICE, TOPIC, WALL };$/;"	e	enum:e_send_switch
+PRIV	Chan.hpp	/^enum e_send_switch { JOIN, PART, PRIV, KICK, QUIT, NOTICE, TOPIC, WALL };$/;"	e	enum:e_send_switch
+QUIT	Chan.hpp	/^enum e_send_switch { JOIN, PART, PRIV, KICK, QUIT, NOTICE, TOPIC, WALL };$/;"	e	enum:e_send_switch
+RED	color.hpp	/^# define RED	/;"	d
+RESET	color.hpp	/^# define RESET	/;"	d
+RM	Makefile	/^RM			=	rm -rf$/;"	m
+Receiver	Receiver_working.hpp	/^Receiver::Receiver(int port)$/;"	f	class:Receiver
+Receiver	Receiver_working.hpp	/^class Receiver$/;"	c
+SRCS	Makefile	/^SRCS		:=	main.cpp$/;"	m
+Sender	Sender.hpp	/^class Sender $/;"	c
+Server	Server.hpp	/^Server::Server(std::string port, std::string password)$/;"	f	class:Server
+Server	Server.hpp	/^class Server$/;"	c
+TOPIC	Chan.hpp	/^enum e_send_switch { JOIN, PART, PRIV, KICK, QUIT, NOTICE, TOPIC, WALL };$/;"	e	enum:e_send_switch
+Udata	Udata.hpp	/^struct Udata$/;"	s
+Users	Receiver_working.hpp	/^		Users		Users;$/;"	m	class:Receiver
+Users	Users.hpp	/^class Users$/;"	c
+WALL	Chan.hpp	/^enum e_send_switch { JOIN, PART, PRIV, KICK, QUIT, NOTICE, TOPIC, WALL };$/;"	e	enum:e_send_switch
+WHITE	color.hpp	/^# define WHITE	/;"	d
+YELLOW	color.hpp	/^# define YELLOW	/;"	d
+_port_checker	Server.hpp	/^static bool	_port_checker(std::string &str)$/;"	f
+_pw_checker	Server.hpp	/^static bool _pw_checker(std::string &str)$/;"	f
+add_user	Chan.hpp	/^void Chan::add_user(user& joiner)$/;"	f	class:Chan
+bindSocket_	Receiver_working.hpp	/^void Receiver::bindSocket_()$/;"	f	class:Receiver
+change_list_	KeventHandler.hpp	/^		std::vector<struct kevent>	change_list_;$/;"	m	class:KeventHandler
+channel_msg	Channel.hpp	/^std::vector<Udata>	Channels::channel_msg(user& sender, std::string chan_name, std::string& msg)$/;"	f	class:Channels
+channel_notice	Channel.hpp	/^std::vector<Udata>	Channels::channel_notice(user& sender, std::string chan_name, std::string& msg)$/;"	f	class:Channels
+channel_wall	Channel.hpp	/^Udata	Channels::channel_wall(user& sender, std::string chan_name, std::string& msg)$/;"	f	class:Channels
+clientReadEventHandler_	Receiver_working.hpp	/^int	Receiver::clientReadEventHandler_(struct kevent &cur_event)$/;"	f	class:Receiver
+clientWriteEventHandler_	Receiver_working.hpp	/^int	Receiver::clientWriteEventHandler_(struct kevent &cur_event)$/;"	f	class:Receiver
+client_sock_	Receiver_working.hpp	/^		uintptr_t			client_sock_;$/;"	m	class:Receiver
+client_sock_	user.hpp	/^	uintptr_t		client_sock_; \/\/legacy variable, 곧 kevent로 대체해야 함$/;"	m	struct:user
+command_nick	Users.hpp	/^Udata	Users::command_nick(std::stringstream &line_ss, struct kevent& event)$/;"	f	class:Users
+command_privmsg	Users.hpp	/^Udata	Users::command_privmsg(std::stringstream &line_ss, std::string &line, uintptr_t sock)$/;"	f	class:Users
+command_quit	Users.hpp	/^Udata	Users::command_quit(std::stringstream &line_ss, uintptr_t sock)$/;"	f	class:Users
+command_user	Users.hpp	/^Udata	Users::command_user(std::stringstream &line_ss, uintptr_t sock)$/;"	f	class:Users
+connectors_	Chan.hpp	/^		std::vector<user>	connectors_;		\/\/ connectors.at(0) => operator$/;"	m	class:Chan
+create_channel	Channel.hpp	/^void	Channels::create_channel(user& joiner, std::string& chan_name)$/;"	f	class:Channels
+delete_channel	Channel.hpp	/^void	Channels::delete_channel(std::string& chan_name)$/;"	f	class:Channels
+delete_event	KeventHandler.hpp	/^void	KeventHandler::delete_event(const struct kevent &event)$/;"	f	class:KeventHandler
+delete_user	Chan.hpp	/^void	Chan::delete_user(user& usr)$/;"	f	class:Chan
+delete_user	Users.hpp	/^void	Users::delete_user(user& leaver)$/;"	f	class:Users
+duplicated_user_found_exception	Users.hpp	/^		class duplicated_user_found_exception : public std::exception$/;"	c	class:Users
+e_send_switch	Chan.hpp	/^enum e_send_switch { JOIN, PART, PRIV, KICK, QUIT, NOTICE, TOPIC, WALL };$/;"	g
+error_	Chan.hpp	/^		int					error_;$/;"	m	class:Chan
+event	user.hpp	/^	struct kevent	event;$/;"	m	struct:user	typeref:struct:user::kevent
+exit_with_perror	KeventHandler.hpp	/^void exit_with_perror(const std::string& msg)$/;"	f
+get_channels	Channel.hpp	/^		std::vector<Chan>&	get_channels() { return	Channels_; };$/;"	f	class:Channels
+get_host	Chan.hpp	/^user Chan::get_host()$/;"	f	class:Chan
+get_info	Chan.hpp	/^std::string Chan::get_info()$/;"	f	class:Chan
+get_name	Chan.hpp	/^std::string Chan::get_name()$/;"	f	class:Chan
+get_users	Chan.hpp	/^std::vector<user>& Chan::get_users()$/;"	f	class:Chan
+host_	Chan.hpp	/^		user				host_;				\/\/ operator$/;"	m	class:Chan
+hostname_	user.hpp	/^	std::string hostname_;$/;"	m	struct:user
+initSocket_	Receiver_working.hpp	/^void	Receiver::initSocket_(int &port)$/;"	f	class:Receiver
+is_channel	Channel.hpp	/^bool	Channels::is_channel(std::string& chan_name)$/;"	f	class:Channels
+is_duplicate_ident	Users.hpp	/^bool	Users::is_duplicate_ident(uintptr_t sock)$/;"	f	class:Users
+is_duplicate_nick	Users.hpp	/^bool	Users::is_duplicate_nick(std::string& nick_name)$/;"	f	class:Users
+is_user	Chan.hpp	/^bool Chan::is_user(user& usr)$/;"	f	class:Chan
+join_channel	Channel.hpp	/^std::vector<Udata>	Channels::join_channel(user& joiner, std::string& chan_name)$/;"	f	class:Channels
+join_message	Sender.hpp	/^Udata	Sender::join_message(user& sender, user& receiver, std::string& channel) \/\/ 2st->done$/;"	f	class:Sender
+kevent_init_	KeventHandler.hpp	/^void	KeventHandler::kevent_init_(uintptr_t ident, int16_t filter, uint16_t flags, uint32_t fflags, int64_t data, void *udata)$/;"	f	class:KeventHandler
+kick_channel	Channel.hpp	/^std::vector<Udata>	Channels::kick_channel(user& host, user& target, std::string& chan_name, std::string& msg)$/;"	f	class:Channels
+kick_error_no_user_message	Sender.hpp	/^Udata	Sender::kick_error_no_user_message(user& sender, std::string& host, std::string& subject, std::string& channel)$/;"	f	class:Sender
+kick_error_not_op_message	Sender.hpp	/^Udata	Sender::kick_error_not_op_message(user& sender, std::string& host, std::string& channel) \/\/ 1st done$/;"	f	class:Sender
+kick_message	Sender.hpp	/^Udata	Sender::kick_message(user& sender, user& receiver, std::string& target, std::string& channel, std::string& msg) \/\/ 1st done$/;"	f	class:Sender
+kq_	KeventHandler.hpp	/^		int							kq_;$/;"	m	class:KeventHandler
+kq_	Receiver_working.hpp	/^		KeventHandler		kq_;$/;"	m	class:Receiver
+leave_channel	Channel.hpp	/^std::vector<Udata>	Channels::leave_channel(user&leaver, std::string& chan_name, std::string& msg)$/;"	f	class:Channels
+main	main.cpp	/^int main(int argc, char **argv)$/;"	f
+mod	user.hpp	/^	int			mod;$/;"	m	struct:user
+msg	Udata.hpp	/^	std::string	msg;$/;"	m	struct:Udata
+name_	Chan.hpp	/^		std::string			name_;$/;"	m	class:Chan
+nick_error_message	Sender.hpp	/^Udata	Sender::nick_error_message(user& sender, std::string& new_nick) \/\/ 1st done$/;"	f	class:Sender
+nick_well_message	Sender.hpp	/^Udata	Sender::nick_well_message(user& sender, user& receiver, std::string& new_nick) \/\/ 1st done$/;"	f	class:Sender
+nick_wrong_message	Sender.hpp	/^Udata	Sender::nick_wrong_message(user& sender, std::string& new_nick)$/;"	f	class:Sender
+nickname_	user.hpp	/^	std::string	nickname_;$/;"	m	struct:user
+no_channel_message	Sender.hpp	/^Udata	no_channel_message(user& sender, std::string& channel)$/;"	f
+no_match_channels_exception	Channel.hpp	/^		class no_match_channels_exception : public std::exception$/;"	c	class:Channels
+no_user_found_exception	Users.hpp	/^		class no_user_found_exception : public std::exception$/;"	c	class:Users
+no_user_message	Sender.hpp	/^Udata	no_user_message(user& sender, std::string& target)$/;"	f
+notice_channel_message	Sender.hpp	/^Udata	Sender::notice_channel_message(user& sender, user& receiver, std::string& msg, std::string& channel) \/\/ 2st done$/;"	f	class:Sender
+notice_no_nick_message	Sender.hpp	/^Udata 	Sender::notice_no_nick_message(user& sender, user& receiver)$/;"	f	class:Sender
+notice_p2p_message	Sender.hpp	/^Udata	Sender::notice_p2p_message(user& sender, user& target, std::string& msg) \/\/2st done$/;"	f	class:Sender
+operator ==	Chan.hpp	/^bool Chan::operator==(const Chan& t) const$/;"	f	class:Chan
+operator ==	user.hpp	/^	bool	operator==(const user& obj) { return this->nickname_ == obj.nickname_; };$/;"	f	struct:user
+parser_	Receiver_working.hpp	/^void	Receiver::parser_(struct kevent &cur_event, std::string &command)$/;"	f	class:Receiver
+part_message	Sender.hpp	/^Udata	Sender::part_message(user& sender, user& receiver, std::string& channel, std::string& msg) \/\/ 2st done$/;"	f	class:Sender
+password_	Receiver_working.hpp	/^		std::string			password_;$/;"	m	class:Receiver
+password_	Server.hpp	/^		std::string	password_;$/;"	m	class:Server
+pong	Sender.hpp	/^Udata	Sender::pong(uintptr_t socket, std::string& serv_addr) \/\/ 1st done$/;"	f	class:Sender
+port_	Receiver_working.hpp	/^		std::string			port_;$/;"	m	class:Receiver
+port_	Server.hpp	/^		int	port_;$/;"	m	class:Server
+print_all_user	Users.hpp	/^void Users::print_all_user()$/;"	f	class:Users
+privmsg_channel_message	Sender.hpp	/^Udata	Sender::privmsg_channel_message(user& sender, user& receiver, std::string& msg, std::string& channel) \/\/ 2st done$/;"	f	class:Sender
+privmsg_no_user_error_message	Sender.hpp	/^Udata	Sender::privmsg_no_user_error_message(user& sender, std::string& target)$/;"	f	class:Sender
+privmsg_p2p_message	Sender.hpp	/^Udata	Sender::privmsg_p2p_message(user& sender, user& target, std::string& msg) \/\/2st done$/;"	f	class:Sender
+push_write_event_	Receiver_working.hpp	/^void	Receiver::push_write_event_(Udata& tmp, struct kevent &cur_event)$/;"	f	class:Receiver
+push_write_event_with_vector_	Receiver_working.hpp	/^void	Receiver::push_write_event_with_vector_(std::vector<Udata>& udata_events, Udata& tmp)$/;"	f	class:Receiver
+quit_channel	Channel.hpp	/^std::vector<Udata>	Channels::quit_channel(user& target, std::string msg)$/;"	f	class:Channels
+quit_channel_message	Sender.hpp	/^Udata	Sender::quit_channel_message(user& sender, user& receiver, std::string& leave_message) \/\/ 2st done$/;"	f	class:Sender
+quit_lobby_message	Sender.hpp	/^Udata	Sender::quit_lobby_message(user& sender, std::string& leave_message) \/\/ 2st done$/;"	f	class:Sender
+realname_	user.hpp	/^	std::string realname_;$/;"	m	struct:user
+search_user_by_ident	Users.hpp	/^user&	Users::search_user_by_ident(uintptr_t sock)$/;"	f	class:Users
+search_user_by_nick	Users.hpp	/^user&	Users::search_user_by_nick(std::string nickname)$/;"	f	class:Users
+select_channel	Channel.hpp	/^Chan&	Channels::select_channel(std::string& chan_name)$/;"	f	class:Channels
+select_channel	Channel.hpp	/^Chan&	Channels::select_channel(user& connector)$/;"	f	class:Channels
+send_all	Chan.hpp	/^std::vector<Udata> Chan::send_all(user& sender, user& target, std::string msg, int remocon)$/;"	f	class:Chan
+server_addr_	Receiver_working.hpp	/^		sockaddr_in			server_addr_;$/;"	m	class:Receiver
+server_sock_	Receiver_working.hpp	/^		uintptr_t			server_sock_;$/;"	m	class:Receiver
+servername_	user.hpp	/^	std::string servername_;$/;"	m	struct:user
+set_channel_name	Chan.hpp	/^void Chan::set_channel_name(std::string& chan_name)$/;"	f	class:Chan
+set_host	Chan.hpp	/^void Chan::set_host()$/;"	f	class:Chan
+set_message_	Receiver_working.hpp	/^std::string	Receiver::set_message_(std::string &msg, size_t start, size_t end)$/;"	f	class:Receiver
+set_monitor	KeventHandler.hpp	/^std::vector<struct kevent>	KeventHandler::set_monitor()$/;"	f	class:KeventHandler
+set_read	KeventHandler.hpp	/^void	KeventHandler::set_read(uintptr_t ident)$/;"	f	class:KeventHandler
+set_topic	Chan.hpp	/^void Chan::set_topic(std::string& topic)$/;"	f	class:Chan
+set_topic	Channel.hpp	/^std::vector<Udata>	Channels::set_topic(user& sender, std::string& chan_name, std::string& topic)$/;"	f	class:Channels
+set_write	KeventHandler.hpp	/^void	KeventHandler::set_write(uintptr_t ident)$/;"	f	class:KeventHandler
+sock_fd	Udata.hpp	/^	int			sock_fd;$/;"	m	struct:Udata
+start	Receiver_working.hpp	/^void Receiver::start()$/;"	f	class:Receiver
+start	Server.hpp	/^void Server::start()$/;"	f	class:Server
+topic_	Chan.hpp	/^		std::string			topic_;$/;"	m	class:Chan
+topic_error_message	Sender.hpp	/^Udata	topic_error_message(user& sender, std::string& channel) \/\/ 2st done$/;"	f
+topic_message	Sender.hpp	/^Udata	Sender::topic_message(user& sender, user& receiver, std::string& channel, std::string& topic) \/\/2st done$/;"	f	class:Sender
+udata_	Receiver_working.hpp	/^		std::vector<Udata>	udata_;$/;"	m	class:Receiver
+user	user.hpp	/^struct user $/;"	s
+user_list_	Users.hpp	/^		std::vector<struct user>	user_list_;$/;"	m	class:Users
+user_no_any_channels_exception	Channel.hpp	/^		class user_no_any_channels_exception : public std::exception$/;"	c	class:Channels
+username_	user.hpp	/^	std::string username_;$/;"	m	struct:user
+wall_message	Sender.hpp	/^Udata	Sender::wall_message(user& sender, user& receiver, std::string& channel, std::string& msg)$/;"	f	class:Sender
+welcome_message_connect	Sender.hpp	/^Udata	Sender::welcome_message_connect(user& sender) \/\/ 1st done$/;"	f	class:Sender
+what	Channel.hpp	/^const	char*		Channels::no_match_channels_exception::what(void) const throw()$/;"	f	class:Channels::no_match_channels_exception
+what	Channel.hpp	/^const	char*		Channels::user_no_any_channels_exception::what(void) const throw()$/;"	f	class:Channels::user_no_any_channels_exception
+what	Users.hpp	/^const char*	Users::duplicated_user_found_exception::what(void) const throw()$/;"	f	class:Users::duplicated_user_found_exception
+what	Users.hpp	/^const char*	Users::no_user_found_exception::what(void) const throw()$/;"	f	class:Users::no_user_found_exception
+~KeventHandler	KeventHandler.hpp	/^KeventHandler::~KeventHandler()$/;"	f	class:KeventHandler
+~Receiver	Receiver_working.hpp	/^Receiver::~Receiver()$/;"	f	class:Receiver
+~Server	Server.hpp	/^Server::~Server()$/;"	f	class:Server

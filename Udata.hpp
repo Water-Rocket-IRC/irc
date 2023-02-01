@@ -4,6 +4,6 @@
 
 struct Udata
 {
-	int			sock_fd;
+	uintptr_t	sock_fd;
 	std::string	msg;
 };

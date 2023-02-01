@@ -7,7 +7,7 @@
 #include <sstream>
 
 
-enum e_send_switch { JOIN, PART, PRIV, KICK, QUIT, NOTICE, TOPIC };
+enum e_send_switch { JOIN, PART, PRIV, KICK, QUIT, NOTICE, TOPIC, WALL, NICK };
 /*
  * JOIN : 나를 포함해서 모두에게 보여주는 메세지(메세지가 다름)
  * PART : 나를 포함해서 모두에게 보여주는 메세지(메세지가 다름)
@@ -26,14 +26,14 @@ class Chan
 	public:
 		std::string		get_info(void);
 
-		std::string	get_name();
-		user		get_host();
-		void 		set_host();
-		void		set_topic(std::string& topic);
-		bool 		is_user(user& usr);
-		void 		add_user(user& joiner);
-		void 		set_channel_name(std::string& chan_name);
-		void		delete_user(user& usr);
+		std::string&	get_name();
+		user&			get_host();
+		void			set_host();
+		void			set_topic(std::string& topic);
+		bool 			is_user(user& usr);
+		void 			add_user(user& joiner);
+		void 			set_channel_name(std::string& chan_name);
+		void			delete_user(user& usr);
 
 		std::vector<Udata> send_all(user& sender, user& target, std::string msg, int remocon);
 
@@ -54,14 +54,24 @@ std::vector<Udata> Chan::send_all(user& sender, user& target, std::string msg, i
 	{
 		//throw noUserException();
 	}
+	// JOIN TEST 용
 
+	Udata packet;
+	if (remocon == JOIN)
+	{
+		packet = Sender::join_message(sender, sender, this->get_name());
+		ret.push_back(packet);
+	}
 	for (it = connectors_.begin(); it != connectors_.end(); it++)
 	{
-		Udata packet;
 
 		switch (remocon)
 		{
 			case JOIN:
+				if (sender == *it)
+				{
+					continue ;
+				}
 				packet = Sender::join_message(sender, *it, this->get_name());
 				break ;
 			case PART:
@@ -81,9 +91,27 @@ std::vector<Udata> Chan::send_all(user& sender, user& target, std::string msg, i
 				packet = Sender::quit_channel_message(sender, *it, msg);
 				break ;
 			case NOTICE:
+				if (sender == *it)
+				{
+					continue ;
+				}
+				packet = Sender::notice_channel_message(sender, *it, msg, this->get_name());
+				break ;
+			case WALL:
+				if (sender == *it)
+				{
+					continue ;
+				}			
+				packet = Sender::wall_message(sender, this->get_host(), this->get_name(), msg);
+			case TOPIC:
 				packet.msg = msg;
 				break ;
-			case TOPIC:
+			case NICK:
+				if (sender == *it)
+				{
+					continue ;
+				}
+				packet.sock_fd = it->client_sock_;
 				packet.msg = msg;
 				break ;
 		}
@@ -92,7 +120,7 @@ std::vector<Udata> Chan::send_all(user& sender, user& target, std::string msg, i
 	return ret;
 }
 
-std::string Chan::get_name()
+std::string&	Chan::get_name(void)
 {
 	return this->name_;
 }
@@ -104,7 +132,7 @@ bool Chan::is_user(user& usr)
 
 	for (it = connectors_.begin(); it != connectors_.end(); it++)
 	{
-		if (it->nickname_ == usr.nickname_)
+		if (it->client_sock_ == usr.client_sock_)
 			return 1;
 	}
 	return 0;
@@ -143,7 +171,7 @@ bool Chan::operator==(const Chan& t) const
 {
 	return (this->name_ == t.name_);
 }
-user Chan::get_host()
+user& Chan::get_host()
 {
 	return this->host_;
 }

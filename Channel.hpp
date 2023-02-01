@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Chan.hpp"
+#include "Users.hpp"
 
 class Channels
 {
@@ -24,6 +25,7 @@ class Channels
 		std::vector<Udata>	quit_channel(user& target, std::string msg);
 		std::vector<Udata> 	join_channel(user& joiner, std::string& chan_name);
 		std::vector<Udata>	leave_channel(user&leaver, std::string& chan_name, std::string& msg);
+		std::vector<Udata>	nick_channel(user& who, std::string& send_msg);
 		std::vector<Chan>&	get_channels() { return	Channels_; };
 
 		class user_no_any_channels_exception : public std::exception
@@ -37,6 +39,21 @@ class Channels
 				const char*		what(void) const throw();
 		};
 };
+
+static void	DebugshowUsers(std::vector<user>& target) {
+	std::cout << YELLOW << "(begin) " << RESET << " ➜ ";
+	for (std::vector<user>::iterator it = target.begin(); it != target.end(); ++it) {
+		std::cout << (*it).nickname_ << " ➜ ";
+	}
+	std::cout << YELLOW << "(end)" << RESET << std::endl;
+}
+static void	DebugshowChannels(std::vector<Chan>& target) {
+	std::cout << YELLOW << "(begin) " << RESET << " ➜ ";
+	for (std::vector<Chan>::iterator it = target.begin(); it != target.end(); ++it) {
+		std::cout << (*it).get_name() << " ➜ ";
+	}
+	std::cout << YELLOW << "(end)" << RESET << std::endl;
+}
 
 const	char*		Channels::user_no_any_channels_exception::what(void) const throw()
 {
@@ -116,39 +133,32 @@ std::vector<Udata>	Channels::join_channel(user& joiner, std::string& chan_name)
 	Udata				tmp;
 	std::vector<Udata>	res;
 
-	if (is_channel(chan_name) == false)
+	// if (is_channel(chan_name) == false)
+	// {
+	// 	tmp = Sender::join_message(joiner, joiner, chan_name);//이거 수정해야함
+	// 	res.push_back(tmp);
+	// 	this->create_channel(joiner, chan_name);
+	// }
+	try
 	{
-		tmp = Sender::join_message(joiner, joiner, chan_name);//이거 수정해야함
-		res.push_back(tmp);
-		this->create_channel(joiner, chan_name);
+		Chan& chan = select_channel(chan_name);
+
+		if (chan.is_user(joiner) == true)
+		{
+			tmp.msg = "Already in channel, " + joiner.nickname_;
+			res.push_back(tmp);
+		}
+		else
+		{
+			chan.add_user(joiner);
+			res = chan.send_all(joiner, joiner, "Join \"" + chan_name + "\" channel, " + joiner.nickname_, JOIN);
+		}
 	}
-	else
+	catch(const std::exception&) 
 	{
-		try
-		{
-			Chan& chan = select_channel(chan_name);
-
-			if (chan.is_user(joiner) == true)
-			{
-				tmp.msg = "Already in channel, " + joiner.nickname_;
-				res.push_back(tmp);
-			}
-			else
-			{
-				chan.add_user(joiner);
-				res = chan.send_all(joiner, joiner, "Join \"" + chan_name + "\" channel, " + joiner.nickname_, JOIN);
-
-			}
-			std::vector<user>::iterator it;
-			for (it = chan.get_users().begin(); it != chan.get_users().end(); it++)
-			{
-				std::cout << it->nickname_ << std::endl;
-			}
-		}
-		catch(const std::exception& e)
-		{
-			std::cerr << e.what() << '\n';
-		}
+		// tmp = Sender::join_message(joiner, joiner, chan_name);	//이거 수정해야함
+		res.push_back(Sender::join_message(joiner, joiner, chan_name));
+		this->create_channel(joiner, chan_name);
 	}
 	//유저가 채널에 성공적으로 입장했다는 메시지 전송 + 서버 정보 전송
 	return res;
@@ -158,7 +168,7 @@ std::vector<Udata>	Channels::leave_channel(user&leaver, std::string& chan_name, 
 {
 	Udata				tmp;
 	std::vector<Udata>	res;
-	
+
 	try
 	{
 		Chan& chan = select_channel(chan_name);
@@ -198,7 +208,7 @@ std::vector<Udata>	Channels::leave_channel(user&leaver, std::string& chan_name, 
 			std::cout << ite->get_name() << std::endl;
 		}
 	}
-	catch (std::exception& e)
+	catch (std::exception&)
 	{
 		// sender
 		// tmp = Sender::
@@ -215,21 +225,15 @@ std::vector<Udata>	Channels::channel_msg(user& sender, std::string chan_name, st
 	std::vector<Udata>	ret;
 	Udata				tmp;
 
-	if (is_channel(chan_name) == false)
-	{
-		tmp.msg = "No such Channel";
-		ret.push_back(tmp);
-		//채널이 없을 경우, 오류 메시지 유저에게 전송
-		return ret;
-	}
 	try
 	{
 		Chan&	channel = select_channel(chan_name);
 		ret = channel.send_all(sender, sender, msg, PRIV);
 	}
-	catch (std::exception& e)
+	catch (std::exception&)
 	{
-		std::cerr << e.what() << '\n';
+		tmp.msg = "No such Channel";
+		ret.push_back(tmp);
 	}
 	return ret;
 }
@@ -239,23 +243,16 @@ std::vector<Udata>	Channels::channel_notice(user& sender, std::string chan_name,
 	std::vector<Udata>	ret;
 	Udata				tmp;
 
-	if (is_channel(chan_name) == false)
-	{
-		tmp.msg = "No such Channel";
-		ret.push_back(tmp);
-		//채널이 없을 경우, 오류 메시지 유저에게 전송
-		return ret;
-	}
 	try
 	{
 		Chan &channel = select_channel(chan_name);
 		ret = channel.send_all(sender, sender, msg, PRIV);
 	}
-	catch(const std::exception& e)
+	catch(const std::exception&)
 	{
-		std::cerr << e.what() << '\n';
+		tmp.msg = "No such Channel";
+		ret.push_back(tmp);
 	}
-	//본인에겐 빼고 보내야함
 	return ret;
 }
 
@@ -263,11 +260,6 @@ Udata	Channels::channel_wall(user& sender, std::string chan_name, std::string& m
 {
 	Udata				ret;
 
-	if (is_channel(chan_name) == false)
-	{
-		ret.msg = "No such Channel";
-		//채널이 없을 경우, 오류 메시지 유저에게 전송
-	}
 	try
 	{
 		Chan&	channel = select_channel(chan_name);
@@ -281,9 +273,9 @@ Udata	Channels::channel_wall(user& sender, std::string chan_name, std::string& m
 		}
 		ret.msg = sender.nickname_ + " need to " + chan_name + "\'s host, " + host.nickname_;
 	}
-	catch (std::exception& e)
+	catch (std::exception&)
 	{
-		std::cerr << e.what() << '\n';
+		ret = Sender::no_channel_message(sender, chan_name);
 	}
 	return ret;
 }
@@ -293,10 +285,6 @@ std::vector<Udata>	Channels::kick_channel(user& host, user& target, std::string&
 	std::vector<Udata>	ret;
 	Udata 				tmp;
 
-	if (is_channel(chan_name) == false)
-	{
-		ret.push_back(tmp);
-	}
 	try
 	{
 		Chan& channel = select_channel(chan_name);
@@ -319,9 +307,10 @@ std::vector<Udata>	Channels::kick_channel(user& host, user& target, std::string&
 			ret.push_back(tmp);
 		}
 	}
-	catch (std::exception& e)
+	catch (std::exception&)
 	{
-		std::cerr << e.what() << '\n';
+		tmp = Sender::no_channel_message(host, chan_name);
+		ret.push_back(tmp);
 	}
 	return ret;
 }
@@ -330,23 +319,38 @@ std::vector<Udata>	Channels::quit_channel(user& target, std::string msg)
 {
 	std::vector<Udata>	ret;
 	Udata 				tmp;
+
 	try
 	{
 		//어떤 채널도 없으면 catch로 감
 		Chan& channel = select_channel(target);
-		//ret = channel.send_all(target, target, msg, QUIT);
+		ret = channel.send_all(target, target, msg, QUIT);
 		channel.delete_user(target);
 	}
-	catch (std::exception& e)
+	catch (const std::exception& e)
 	{
-		std::cerr << e.what() << std::endl;
+		std::string		chan_name = "#";
+		tmp = Sender::no_channel_message(target, chan_name);					//No such user in every channel
+		ret.push_back(tmp);
 	}
+	return ret;
+}
+
+std::vector<Udata>	Channels::nick_channel(user& nicker, std::string& send_msg)
+{
+	std::vector<Udata> ret;
+
+	user	trash;
+	
+	Chan& channel = select_channel(nicker);
+	ret = channel.send_all(nicker, trash, send_msg, NICK);
 	return ret;
 }
 
 std::vector<Udata>	Channels::set_topic(user& sender, std::string& chan_name, std::string& topic)
 {
-	std::vector<Udata> ret;
+	Udata 				tmp;
+	std::vector<Udata>	ret;
 
 	try
 	{
@@ -363,9 +367,9 @@ std::vector<Udata>	Channels::set_topic(user& sender, std::string& chan_name, std
 			ret = channel.send_all(sender, sender, topic_msg, TOPIC);
 		}
 	}
-	catch (std::exception& e)
+	catch (std::exception&)
 	{
-		std::cerr << e.what() << '\n';
+		ret.push_back(Sender::no_channel_message(sender, chan_name));
 	}
 	return	ret;
 }

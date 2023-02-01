@@ -17,16 +17,17 @@ class Users
 	private:
 		std::vector<struct user>	user_list_;
 	public:
-		Udata	command_nick(std::stringstream &line_ss, struct kevent& event);
-		Udata	command_user(std::stringstream &line_ss, uintptr_t sock);
-		Udata	command_quit(std::stringstream &line_ss, uintptr_t sock);
-		Udata	command_privmsg(std::stringstream &line_ss, std::string &line, uintptr_t sock);
+		Udata	command_nick(std::string& nick_name, struct kevent& event);
+		Udata	command_user(std::stringstream &line_ss, uintptr_t& sock);
+		Udata	command_quit(std::stringstream &line_ss, uintptr_t& sock);
+		Udata	command_privmsg(std::stringstream &line_ss, std::string &line, uintptr_t& sock);
 
-		user&	search_user_by_ident(uintptr_t sock);
+		user&	search_user_by_ident(uintptr_t& sock);
 		user&	search_user_by_nick(std::string nickname);
 		void	delete_user(user& leaver);
-		bool 	is_duplicate_ident(uintptr_t sock);
+		bool 	is_duplicate_ident(uintptr_t& sock);
 		bool 	is_duplicate_nick(std::string& nick_name);
+		void	change_nickname(user& cur, std::string& nick_name);
 
 		class no_user_found_exception : public std::exception
 		{
@@ -53,13 +54,13 @@ const char*	Users::duplicated_user_found_exception::what(void) const throw()
 
 
 // ident 즉 socket을 이용해 지금 명령어 친 user가 누군 지 알아낸다. 
-user&	Users::search_user_by_ident(uintptr_t sock)
+user&	Users::search_user_by_ident(uintptr_t& sock)
 {
 	std::vector<user>::iterator	it;
 
 	for (it = user_list_.begin(); it != user_list_.end(); it++)
 	{
-		if (it->event.ident == sock) // 닉네임 바꿔야할 유저를 찾을 상태 !!! 
+		if (it->client_sock_ == sock) //140732838809008 닉네임 바꿔야할 유저를 찾을 상태 !!! 
 		{
 			return (*it);
 		}
@@ -84,7 +85,7 @@ user&	Users::search_user_by_nick(std::string nickname)
 	return (*it);
 }
 
-bool	Users::is_duplicate_ident(uintptr_t sock)
+bool	Users::is_duplicate_ident(uintptr_t& sock)
 {
 	try
 	{
@@ -110,41 +111,53 @@ bool	Users::is_duplicate_nick(std::string& nick_name)
 	return true;
 }
 
+void	Users::change_nickname(user& cur, std::string& new_nick_name)
+{	
+	cur.nickname_ = new_nick_name;
+}
+
+
 
 // nick을 실행하는 함수
-Udata	Users::command_nick(std::stringstream &line_ss, struct kevent& event)
+// nick 처음  두번 째
+Udata	Users::command_nick(std::string& nick_name, struct kevent& event)
 {
 	Udata		tmp;
-	std::string	nick_name;
 
-	line_ss >> nick_name;
 	bzero(&tmp, sizeof(tmp));
 
+	if (is_duplicate_nick(nick_name))	// 기존에 없음
+	{
+		try
+		{
+			user &cur_user = search_user_by_ident(event.ident);	// 처음 소켓인지 
+			tmp = Sender::nick_error_message(cur_user, nick_name);		// 기존에 유저가 없는 상태에서 중복 에러
+		}
+		catch (std::exception&)
+		{
+			tmp = Sender::nick_error_message(nick_name, event.ident);		// 기존에 유저가 없는 상태에서 중복 에러
+		}
+		return tmp;
+	}
 	try
 	{
-		user&	cur_user = search_user_by_ident(event.ident);
-
+		user &cur_user = search_user_by_ident(event.ident);	// 처음 소켓인지 
 		if (nick_name.size() > 1 && nick_name.at(0) == '#')
 		{
 			tmp = Sender::nick_wrong_message(cur_user, nick_name);
 		}
-		else if (is_duplicate_nick(nick_name))
-		{
-			tmp = Sender::nick_error_message(cur_user, nick_name);
-		}
 		else 
 		{
-			cur_user.nickname_ = nick_name;
-			cur_user.event = event;
 			tmp = Sender::nick_well_message(cur_user, cur_user, nick_name);
+			// cur_user.nickname_ = nick_name;
 		}
 		return tmp;
 	}
 	catch (std::exception& e)
 	{
-		struct user	tmp_usr;
+		user	tmp_usr;
 		tmp_usr.nickname_ = nick_name;
-		tmp_usr.event = event;
+		tmp_usr.client_sock_ = event.ident;
 		user_list_.push_back(tmp_usr);
 		return tmp;
 	}
@@ -152,7 +165,7 @@ Udata	Users::command_nick(std::stringstream &line_ss, struct kevent& event)
 }
 
 // user를 실행하는 함수 
-Udata	Users::command_user(std::stringstream &line_ss, uintptr_t sock)
+Udata	Users::command_user(std::stringstream &line_ss, uintptr_t& sock)
 {
 	Udata		tmp;
  	std::string name[4];
@@ -203,7 +216,7 @@ void	Users::delete_user(user& leaver)
 }
 
 // quit을 실행하는 함수
-Udata	Users::command_quit(std::stringstream &line_ss, uintptr_t sock)
+Udata	Users::command_quit(std::stringstream &line_ss, uintptr_t& sock)
 {
 	Udata		ret;
 	user		leaver;
@@ -217,7 +230,7 @@ Udata	Users::command_quit(std::stringstream &line_ss, uintptr_t sock)
 	return ret;
 }
 
-Udata	Users::command_privmsg(std::stringstream &line_ss, std::string &line, uintptr_t sock)
+Udata	Users::command_privmsg(std::stringstream &line_ss, std::string &line, uintptr_t& sock)
 {
 	std::string nick, msg;
 	user	sender, target;
@@ -243,7 +256,6 @@ Udata	Users::command_privmsg(std::stringstream &line_ss, std::string &line, uint
 	{
 		std::cout << "No try" << std::endl;
 	}
-
 
 	return ret;
 }
