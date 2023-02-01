@@ -32,8 +32,7 @@ class Sender
 		static Udata	notice_p2p_message(struct user sender, struct user target, std::string msg);
 		static Udata	notice_channel_message(struct user sender, struct user receiver, std::string msg, std::string channel);
 		static Udata 	notice_no_nick_message(struct user sender, struct user receiver);
-		static Udata	wall_message(struct user sender, struct user receiver, std::string channel, std::string msg);
-	
+		static Udata	wall_message(struct user sender, struct user receiver, std::string channel, std::string msg);	
 };
 
 /****************************       <PING && PONG>       ****************************/
@@ -50,8 +49,6 @@ Udata	Sender::pong(uintptr_t socket, std::string serv_addr) // 1st done
 
 	std::string pong_reply = ":" + serv_addr + " PONG " \
 		+ serv_addr + " :" + serv_addr + "\r\n"; 
-
-	std::cout << "Ping recveived" << std::endl;
 	ret.sock_fd = socket;
 	ret.msg = pong_reply;
 	return ret;

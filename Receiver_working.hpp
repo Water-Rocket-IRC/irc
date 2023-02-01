@@ -37,6 +37,7 @@ class Receiver
 		void		push_write_event(Udata &tmp, struct kevent &cur_event);
 		void		push_write_event_with_vector(std::vector<Udata> &udata_events, Udata& tmp);
 		int			clientWriteEventHandler(struct kevent &cur_event);
+		std::string	set_message(std::string &msg, size_t start, size_t end);
 };
 
 
@@ -170,10 +171,7 @@ void	Receiver::parser(struct kevent &cur_event, std::string &command)
 		else if (command_type == "USER") 
 		{
 			tmp = Users.command_user(line_ss, cur_event.ident);
-			if (tmp.msg.size())
-			{
-				push_write_event(tmp, cur_event);
-			}
+			push_write_event(tmp, cur_event);
 		}
 		else if (command_type == "PING")
 		{
@@ -192,12 +190,22 @@ void	Receiver::parser(struct kevent &cur_event, std::string &command)
 		{
 			std::string target, msg;
 			line_ss >> target;
+			
+			try
+			{
+				size_t	pos = line.find(':');
+				msg = set_message(line, pos + 1, (line.length() - (pos + 2)));
+				(msg.size() > 510) ? msg.resize(510) : msg.resize(msg.size());
+				std::cout << "Mesaage size : " << msg.at(msg.size() - 1) << " aaa " << std::endl;
 
-			size_t	pos = line.find(':');
-			msg = line.substr(pos + 1, (line.length() - (pos + 2)));
-			if (msg.size() > 510)
-				msg.resize(510);
-			std::cout << "Mesaage size : " << msg.at(msg.size() - 1) << " aaa " << std::endl;
+				std::cout << msg << std::endl;
+				std::cout << target << std::endl;
+			}
+			catch (std::exception &e)
+			{
+				std::cout << "wow" << std::endl;
+			}
+
 			if (target.at(0) == '#')
 			{
 				user sender = Users.search_user_by_ident(cur_event.ident);
@@ -211,10 +219,11 @@ void	Receiver::parser(struct kevent &cur_event, std::string &command)
 				push_write_event(tmp, cur_event);
 			}
 		}
-		// else if (command_type == "NOTICE")
-		// {
-			
-		// }
+		else if (command_type == "NOTICE")
+		{
+			//notice in channel
+			//std::string 	
+		}
 		//Channels
 		// else if (command_type == "WALL")
 		// {
@@ -243,18 +252,42 @@ void	Receiver::parser(struct kevent &cur_event, std::string &command)
 		// 	std::vector<Udata>	udata_events = Channels.
 		// 	push_write_event_with_vector(udata_events, tmp);
 		// }
-		// else if (command_type == "KICK")
-		// {
-		// 	std::vector<Udata>	udata_events = Channels.
-		// 	push_write_event_with_vector(udata_events, tmp);
-		// }
+		else if (command_type == "KICK")
+		{
+			std::string chan_name, target_name, msg;
+
+			line_ss >> chan_name >> target_name;
+			try
+			{
+				user kicker = Users.search_user_by_ident(cur_event.ident);
+				user target = Users.search_user_by_nick(target_name); 
+				size_t	pos = line.find(':');
+				msg = set_message(line, pos + 1, (line.length() - (pos + 2)));
+				(msg.size() > 510) ? msg.resize(510) : msg.resize(msg.size());
+				std::vector<Udata>	udata_events = Channels.kick_channel(kicker, target, chan_name, msg);
+				push_write_event_with_vector(udata_events, tmp);
+			}
+			catch (std::exception &e)
+			{
+				std::cout << "FUck" << std::endl;
+			}
+		}
 	}
+}
+
+std::string	Receiver::set_message(std::string &msg, size_t start, size_t end)
+{
+	std::string	ret = msg.substr(start, end);
+	return ret;
 }
 
 void	Receiver::push_write_event(Udata& tmp, struct kevent &cur_event)
 {
-	udata_.push_back(tmp);
-	kq_.set_write(cur_event.ident);
+	if (tmp.msg.size())
+	{
+		udata_.push_back(tmp);
+		kq_.set_write(cur_event.ident);
+	}
 }
 
 void	Receiver::push_write_event_with_vector(std::vector<Udata>& udata_events, Udata& tmp)
@@ -271,21 +304,17 @@ int	Receiver::clientWriteEventHandler(struct kevent &cur_event)
 {
 	if (udata_.size())
 	{
-		Udata	tmp;
 		int		i;
 
-		bzero(&tmp, sizeof(tmp));
 		for (i = 0; i < udata_.size(); ++i)
 		{
 			if (udata_[i].sock_fd == cur_event.ident)
 			{
-				tmp = udata_[i];
-				break ;
+				std::cout << "socket: " << udata_[i].sock_fd << " msg: " << udata_[i].msg << std::endl;
+				send(cur_event.ident, udata_[i].msg.c_str(), udata_[i].msg.length(), 0);
+				udata_.erase(udata_.begin() + i);
 			}
 		}
-		std::cout << "socket: " << tmp.sock_fd << " msg: " << tmp.msg << std::endl;
-		send(cur_event.ident, tmp.msg.c_str(), tmp.msg.length(), 0);
-		udata_.erase(udata_.begin() + i);
 		return (1);
 	}
 	return (0);

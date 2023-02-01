@@ -20,7 +20,7 @@ class Channels
 		Chan&				select_channel(user& connector);
 
 		std::vector<Udata>	set_topic(user& sender, std::string& chan_name, std::string& topic);
-		std::vector<Udata>	kick_channel(user& host, user& target, std::string& chan_name);
+		std::vector<Udata>	kick_channel(user& host, user& target, std::string& chan_name, std::string& msg);
 		std::vector<Udata>	quit_channel(user& target, std::string msg);
 		std::vector<Udata> 	join_channel(user& joiner, std::string& chan_name);
 		std::vector<Udata>	leave_channel(user&leaver, std::string& chan_name, std::string& msg);
@@ -59,9 +59,6 @@ void	Channels::delete_channel(std::string& chan_name)
 
 	tmp.set_channel_name(chan_name);
 
-	std::cout << "Target : " << chan_name << std::endl;
-	std::cout << "Set : " << tmp.get_name() << std::endl;
-
 	std::vector<Chan>::iterator it = std::find(Channels_.begin(), \
 	Channels_.end(), tmp);
 	std::size_t size = std::distance(this->Channels_.begin(), it);
@@ -98,21 +95,15 @@ std::vector<Udata>	Channels::join_channel(user& joiner, std::string& chan_name)
 	Udata				tmp;
 	std::vector<Udata>	res;
 
-	std::cout << "Joiner's ident :  " << joiner.event.ident <<std::endl;
 	if (is_channel(chan_name) == false)
 	{
-		std::cout << "Channel " << chan_name << " created" << std::endl;
 		tmp = Sender::join_message(joiner, joiner, chan_name);//이거 수정해야함
 		res.push_back(tmp);
 		this->create_channel(joiner, chan_name);
 	}
 	else
 	{
-		std::cout << "Channel " << joiner.nickname_ << " joined to ";
-
 		Chan& chan = select_channel(chan_name);
-
-		std::cout << chan.get_name() << std::endl;
 
 		if (chan.is_user(joiner) == true)
 		{
@@ -125,21 +116,11 @@ std::vector<Udata>	Channels::join_channel(user& joiner, std::string& chan_name)
 			res = chan.send_all(joiner, "Join \"" + chan_name + "\" channel, " + joiner.nickname_, JOIN);
 
 		}
-
-		std::cout << "Channel's user list : join situation" << std::endl;
 		std::vector<user>::iterator it;
 		for (it = chan.get_users().begin(); it != chan.get_users().end(); it++)
 		{
 			std::cout << it->nickname_ << std::endl;
 		}
-	}
-
-	std::vector<Chan>::iterator ite;
-
-	std::cout << "Channel list" << std::endl;
-	for (ite = Channels_.begin(); ite != Channels_.end(); ite++)
-	{
-		std::cout << ite->get_name() << std::endl;
 	}
 	//유저가 채널에 성공적으로 입장했다는 메시지 전송 + 서버 정보 전송
 	return res;
@@ -172,7 +153,6 @@ std::vector<Udata>	Channels::leave_channel(user&leaver, std::string& chan_name, 
 		res = chan.send_all(leaver, msg, PART);
 		chan.delete_user(leaver);
 
-		std::cout << "Channel's user list : leaving situation" << std::endl;
 		std::vector<user>::iterator it;
 		for (it = chan.get_users().begin(); it != chan.get_users().end(); it++)
 		{
@@ -193,7 +173,6 @@ std::vector<Udata>	Channels::leave_channel(user&leaver, std::string& chan_name, 
 		}
 
 		std::vector<Chan>::iterator ite;
-		std::cout << "Channel list : Leave" << std::endl;
 		for (ite = Channels_.begin(); ite != Channels_.end(); ite++)
 		{
 			std::cout << ite->get_name() << std::endl;
@@ -262,14 +241,14 @@ Udata	Channels::channel_wall(user& sender, std::string chan_name, std::string& m
 	return ret;
 }
 
-std::vector<Udata>	Channels::kick_channel(user& host, user& target, std::string& chan_name)
+std::vector<Udata>	Channels::kick_channel(user& host, user& target, std::string& chan_name, std::string& msg)
 {
 	std::vector<Udata>	ret;
 	Udata 				tmp;
 
 	if (is_channel(chan_name) == false)
 	{
-		tmp.msg = "No such Channel"; //sender
+		//
 		ret.push_back(tmp);
 	}
 	Chan& channel = select_channel(chan_name);
@@ -277,18 +256,18 @@ std::vector<Udata>	Channels::kick_channel(user& host, user& target, std::string&
 	{
 		if (channel.is_user(target) == true)
 		{
+			ret = channel.send_all(host, msg, KICK); //add target
 			channel.delete_user(target);
-			ret = channel.send_all(host, "kicked!", KICK);
 		}
 		else
 		{
-			tmp.msg = "No such User";
+			tmp = Sender::kick_error_no_user_message(host, host.nickname_, target.nickname_, chan_name);
 			ret.push_back(tmp);
 		}
 	}
 	else
 	{
-		tmp.msg = "Your authority is ugly as your face.";
+		tmp = Sender::kick_error_not_op_message(host, channel.get_host().nickname_, chan_name);
 		ret.push_back(tmp);
 	}
 	return ret;

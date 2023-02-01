@@ -146,7 +146,6 @@ Udata	Users::command_nick(std::stringstream &line_ss, struct kevent& event)
 		tmp_usr.nickname_ = nick_name;
 		tmp_usr.event = event;
 		user_list_.push_back(tmp_usr);
-		std::cout << "NICK pushed" << std::endl;
 		return tmp;
 	}
 	return tmp;
@@ -223,20 +222,28 @@ Udata	Users::command_privmsg(std::stringstream &line_ss, std::string &line, uint
 	std::string nick, msg;
 	user	sender, target;
 	Udata	ret;
-
-	sender = search_user_by_ident(sock);
 	try
 	{
-		target = search_user_by_nick(nick);
+		line_ss >> nick >> msg;
+		std::cout << sock << std::endl;
+		sender = search_user_by_ident(sock);
+		try
+		{
+			target = search_user_by_nick(nick);
+		}
+		catch (std::exception& e())
+		{
+			return Sender::privmsg_no_user_error_message(sender, nick);
+		}
+		size_t	pos = line.find(':');
+		msg = line.substr(pos + 1, (line.length() - (pos + 2)));
+		ret = Sender::privmsg_p2p_message(sender, target, msg);
 	}
-	catch (std::exception& e())
+	catch (std::exception &e)
 	{
-		return Sender::privmsg_no_user_error_message(sender, nick);
+		std::cout << "No try" << std::endl;
 	}
-	line_ss >> nick >> msg;
-	size_t	pos = line.find(':');
-	msg = line.substr(pos + 1, (line.length() - (pos + 2)));
-	ret = Sender::privmsg_p2p_message(sender, target, msg);
+
 
 	return ret;
 }

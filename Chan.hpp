@@ -26,7 +26,6 @@ class Chan
 	public:
 		std::string		get_info(void);
 
-	//채널을 처음 만든 사s람 혹은,
 		std::string	get_name();
 		user		get_host();
 		void 		set_host();
@@ -92,21 +91,6 @@ std::vector<Udata> Chan::send_all(user& sender, std::string msg, int remocon)
 	}
 	return ret;
 }
-
-// //int플래그가 추가되었으면, part메시지 전용. 만들기 귀찮아서 복붙함
-// std::vector<Udata> Chan::send_all(user& sender, std::string& msg, std::string string == "PART")
-// {
-//     std::vector<Udata> ret;
-//     std::vector<user>::iterator it;
-
-//     for (it = connectors_.begin(); it != connectors_.end(); it++)
-//     {
-//         Udata packet;
-//         packet = //sender로 호출->part 메시지 전
-//                 ret.push_back(packet);
-//     }
-//     return ret;
-// }
 
 std::string Chan::get_name()
 {
