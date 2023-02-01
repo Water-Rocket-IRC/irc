@@ -24,7 +24,7 @@ class Sender
 		static Udata	privmsg_no_user_error_message(struct user sender, std::string target);
 		static Udata	join_message(struct user sender, struct user receiver, std::string channel);
 		static Udata	part_message(struct user sender, struct user receiver, std::string channel, std::string msg);
-		static Udata	kick_message(struct user sender, std::string host, std::string subject, std::string channel);
+		static Udata	kick_message(struct user sender, struct user receiver, std::string subject, std::string channel, std::string msg);
 		static Udata	kick_error_not_op_message(struct user sender, std::string host, std::string channel);
 		static Udata	kick_error_no_user_message(struct user sender, std::string host, std::string subject, std::string channel);
 		static Udata	topic_message(struct user sender, struct user receiver, std::string channel, std::string topic);
@@ -225,13 +225,15 @@ Udata	Sender::part_message(struct user sender, struct user receiver, std::string
 
 // 127.000.000.001.06667-127.000.000.001.39546: :junoh!root@127.0.0.1 KICK #test mypark :
 
-Udata	Sender::kick_message(struct user sender, std::string host, std::string subject, std::string channel) // 1st done
+Udata	Sender::kick_message(user sender, user receiver, std::string target, std::string channel, std::string msg) // 1st done
 {
 	Udata	ret;
 
-	std::string  kick_message = ":" + host + "!" + \
-				sender.realname_ + " KICK " + channel + " " + subject + "\r\n";
-	ret.sock_fd = sender.event.ident;
+	std::string  kick_message = ":" + sender.nickname_ + "!" + \
+				sender.realname_ + '@' + sender.servername_ + " KICK " + channel + " " + target + " :" + msg + "\r\n";
+	// std::string  kick_message = ":" + host + "!" + \
+	// 			sender.realname_ + " KICK " + channel + " " + subject + "\r\n";
+	ret.sock_fd = receiver.event.ident;
 	ret.msg = kick_message;
 	return ret;
 }
@@ -254,7 +256,7 @@ Udata	Sender::kick_error_no_user_message(struct user sender, std::string host, s
 	Udata	ret;
 
 	std::string  kick_message = ":" + sender.hostname_ + \
-		" 441 " + host + " " + subject + " " + channel + " They are not on that channel\r\n";
+		" 441 " + host + " " + subject + " " + channel + " :They are not on that channel\r\n";
 	ret.sock_fd = sender.event.ident;
 	ret.msg = kick_message;
 	return ret;	

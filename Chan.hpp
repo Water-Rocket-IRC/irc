@@ -35,7 +35,7 @@ class Chan
 		void 		set_channel_name(std::string& chan_name);
 		void		delete_user(user& usr);
 
-		std::vector<Udata> send_all(user& sender, std::string msg, int remocon);
+		std::vector<Udata> send_all(user& sender, user& target, std::string msg, int remocon);
 
 		std::vector<user>& get_users();
 		bool operator==(const Chan& t) const;
@@ -45,7 +45,7 @@ class Chan
 /*
 ///@ brief 기본형 : 나 빼고 다 보냄, flag 1 -> PART
 */
-std::vector<Udata> Chan::send_all(user& sender, std::string msg, int remocon)
+std::vector<Udata> Chan::send_all(user& sender, user& target, std::string msg, int remocon)
 {
 	std::vector<Udata>			ret;
 	std::vector<user>::iterator it;
@@ -75,7 +75,7 @@ std::vector<Udata> Chan::send_all(user& sender, std::string msg, int remocon)
 				packet = Sender::privmsg_channel_message(sender, *it, msg, this->get_name());
 				break ;
 			case KICK:
-				packet = Sender::kick_message(sender, sender.nickname_, it->nickname_, this->get_name());
+				packet = Sender::kick_message(sender, *it, target.nickname_, this->get_name(), msg);
 				break ;
 			case QUIT:
 				packet = Sender::quit_channel_message(sender, *it, msg);

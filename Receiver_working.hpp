@@ -165,6 +165,7 @@ void	Receiver::parser(struct kevent &cur_event, std::string &command)
 		line_ss >> command_type;
 		if (command_type == "NICK")
 		{
+			//check_argument(2, )
 			tmp = Users.command_nick(line_ss, cur_event);
 			push_write_event(tmp, cur_event);
 		}
@@ -221,8 +222,23 @@ void	Receiver::parser(struct kevent &cur_event, std::string &command)
 		}
 		else if (command_type == "NOTICE")
 		{
-			//notice in channel
-			//std::string 	
+			// std::string chan_name, msg;
+
+			// line_ss >> chan_name, msg;
+			// try
+			// {
+			// 	user kicker = Users.search_user_by_ident(cur_event.ident);
+			// 	user target = Users.search_user_by_nick(target_name); 
+			// 	size_t	pos = line.find(':');
+			// 	msg = set_message(line, pos + 1, (line.length() - (pos + 2)));
+			// 	(msg.size() > 510) ? msg.resize(510) : msg.resize(msg.size());
+			// 	std::vector<Udata>	udata_events = Channels.kick_channel(kicker, target, chan_name, msg);
+			// 	push_write_event_with_vector(udata_events, tmp);
+			// }
+			// catch (std::exception &e)
+			// {
+			// 	std::cout << "FUck" << std::endl;
+			// }
 		}
 		//Channels
 		// else if (command_type == "WALL")
