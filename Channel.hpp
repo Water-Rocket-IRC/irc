@@ -25,7 +25,18 @@ class Channels
 		std::vector<Udata> 	join_channel(user& joiner, std::string& chan_name);
 		std::vector<Udata>	leave_channel(user&leaver, std::string& chan_name, std::string& msg);
 		std::vector<Chan>&	get_channels() { return	Channels_; };
+
+		class user_no_any_channel_exception : public std::exception
+		{
+			public:
+				const char*		what(void) const throw();
+		};
 };
+
+const	char*		Channels::user_no_any_channel_exception::what(void) const throw()
+{
+	return "err: user no any channel";
+}
 
 bool	Channels::is_channel(std::string& chan_name)
 {
@@ -81,12 +92,12 @@ Chan&	Channels::select_channel(user& connector)
 	std::vector<Chan>::iterator it = Channels_.begin();
 	for (; it != Channels_.end(); ++it)
 	{
-		if (it->is_user(connector)) 
+		if (it->is_user(connector))
 		{
 			return *it;
 		}
 	}
-	// throw 	UserNoAnyChannelException();
+	throw	user_no_any_channel_exception();
 	return *it;
 }
 
@@ -195,8 +206,15 @@ std::vector<Udata>	Channels::channel_msg(user& sender, std::string chan_name, st
 		//채널이 없을 경우, 오류 메시지 유저에게 전송
 		return ret;
 	}
-	Chan&	channel = select_channel(chan_name);
-	ret = channel.send_all(sender, msg, PRIV);
+	try
+	{
+		Chan&	channel = select_channel(chan_name);
+		ret = channel.send_all(sender, msg, PRIV);
+	}
+	catch (std::exception& e)
+	{
+		std::cerr << e.what() << 
+	}
 	return ret;
 }
 
@@ -303,7 +321,7 @@ std::vector<Udata>	Channels::set_topic(user& sender, std::string& chan_name, std
 		{
 			std::string topic_msg = "Topic was changed to " + topic;
 			channel.set_topic(topic);
-			ret = channel.send_all(sender,topic_msg, TOPIC);	
+			ret = channel.send_all(sender,topic_msg, TOPIC);
 		}
 		else
 		{

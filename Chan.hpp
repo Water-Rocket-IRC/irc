@@ -38,7 +38,7 @@ class Chan
 		std::vector<Udata> send_all(user& sender, std::string msg, int remocon);
 
 		std::vector<user>& get_users();
-		bool operator==(const Chan& t) const;	
+		bool operator==(const Chan& t) const;
 		void seterror();
 		int geterror();
 };
