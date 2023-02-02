@@ -15,7 +15,7 @@ class Channels
 		Udata				channel_wall(user& sender, std::string chan_name, std::string& msg);
 
 		bool				is_channel(std::string& chan_name);
-		void 				create_channel(user& joiner, std::string& chan_name);
+		void 				create_channel(user& joiner, std::string& chan_name, std::string chan_access);
 		void 				delete_channel(std::string& chan_name);
 		Chan&				select_channel(std::string& chan_name);
 		Chan&				select_channel(user& connector);
@@ -79,13 +79,14 @@ bool	Channels::is_channel(std::string& chan_name)
 	return false;
 }
 
-void	Channels::create_channel(user& joiner, std::string& chan_name)
+void	Channels::create_channel(user& joiner, std::string& chan_name, std::string chan_access)
 {
 	Chan	tmp;
 
 	tmp.set_channel_name(chan_name);
 	tmp.add_user(joiner);
 	tmp.set_host();
+	tmp.set_access(chan_access);
 	Channels_.push_back(tmp);
 }
  /*
@@ -152,8 +153,15 @@ std::vector<Udata>	Channels::join_channel(user& joiner, std::string& chan_name)
 	{
 		// tmp = Sender::join_message(joiner, joiner, chan_name);	//이거 수정해야함
 		res.push_back(Sender::join_message(joiner, joiner, chan_name));
-		this->create_channel(joiner, chan_name);
+		this->create_channel(joiner, chan_name, "=");
 	}
+
+	// 추가하기
+	Chan& chan = select_channel(chan_name);
+	const std::string& chan_user_list = chan.get_user_list_str();
+	res.at(0).msg += Sender::join_353_message(joiner, chan.get_name(), chan.get_access(), chan_user_list);
+	res.at(0).msg += Sender::join_366_message(joiner, chan.get_name());
+
 	//유저가 채널에 성공적으로 입장했다는 메시지 전송 + 서버 정보 전송
 	return res;
 }

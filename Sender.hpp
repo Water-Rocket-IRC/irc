@@ -35,7 +35,10 @@ class Sender
 		static Udata 	notice_no_nick_message(user& sender, user& receiver);
 		static Udata	wall_message(user& sender, user& receiver, std::string& channel, std::string& msg);
 		static Udata	no_channel_message(user& sender, std::string& channel);
-		static Udata	no_user_message(user& sender, std::string& target);	
+		static Udata	no_user_message(user& sender, std::string& target);
+
+		static std::string	join_353_message(const user& sender, const std::string& chan_name, const std::string& chan_status, const std::string& chan_user_list);
+		static std::string	join_366_message(const user& sender, const std::string& chan_name);
 	private:
 		static const std::string	server_name_;
 };
@@ -54,7 +57,7 @@ Udata	Sender::pong(uintptr_t socket, std::string& serv_addr) // 1st done
 	Udata ret;
 
 	std::string pong_reply = ":" + serv_addr + " PONG " \
-		+ serv_addr + " :" + serv_addr + "\r\n"; 
+		+ serv_addr + " :" + serv_addr + "\r\n";
 	ret.sock_fd = socket;
 	ret.msg = pong_reply;
 	return ret;
@@ -195,7 +198,7 @@ Udata	Sender::quit_lobby_message(user& sender, std::string& leave_message) // 2s
 // [/join #] 로 명령어 입력 시 채널 방 이름은 #이다
 /*
  @param user.event.indent user 소캣
- @brief join 시 메세지 
+ @brief join 시 메세지
  @param nick 현재 닉네임
  @param user 유저네임
 */
@@ -210,16 +213,41 @@ Udata	Sender::join_message(user& sender, user& receiver, std::string& channel) /
 	return ret;
 }
 
-// Udata	Sender::join_353_message(user& sender, user& receiver, std::string& channel) // 2st->done
-// {
-//     Udata	ret;
-//
-//     std::string  join_message = ":" + sender.nickname_ + "!" \
-//                 + sender.realname_ + "@" + sender.servername_ + " JOIN " + channel + "\r\n";
-//     ret.sock_fd = receiver.client_sock_;//receciver의 ident
-//     ret.msg = join_message;
-//     return ret;
-// }
+
+/*
+@brief RPL_NAMREPLY(353)
+@param 1. sender	보내는 사람
+	   2. user 유저네임
+	   3. channel_status
+		ㄴ '=' : public channel
+    	ㄴ '*' : private channel
+    	ㄴ '@' : secret channel
+@example ":irc.local 353 one = #123 :one two"
+*/
+std::string	Sender::join_353_message(const user& sender, const std::string& chan_name, const std::string& chan_access, const std::string& chan_user_list)
+{
+	std::string  ret = ":" + Sender::server_name_ + " 353 "+ sender.nickname_
+				+ " " + chan_access + " " + chan_name + " :" + chan_user_list + "\r\n";
+	return ret;
+}
+
+
+/*
+@brief RPL_NAMREPLY(353)
+@param 1. sender	보내는 사람
+	   2. user 유저네임
+	   3. channel_status
+		ㄴ '=' : public channel
+    	ㄴ '*' : private channel
+    	ㄴ '@' : secret channel
+@example ":irc.local 366 two #123 :End of /NAMES list."
+*/
+std::string	Sender::join_366_message(const user& sender, const std::string& chan_name)
+{
+	std::string  ret = ":" + Sender::server_name_ + " 366 "+ sender.nickname_
+				+ " " + chan_name + " :End of /NAMES list.\r\n";
+	return ret;
+}
 
 /****************************       <PART>       ****************************/
 

@@ -22,18 +22,22 @@ class Chan
 		int					error_;
 		user				host_;				// operator
 		std::vector<user>	connectors_;		// connectors.at(0) => operator
+		std::string			access_;
 
 	public:
 		std::string		get_info(void);
 
-		std::string&	get_name();
-		user&			get_host();
-		void			set_host();
+		std::string&	get_name(void);
+		user&			get_host(void);
+		void			set_host(void);
+		std::string&	get_access(void);
+		void			set_access(const std::string& access);
 		void			set_topic(std::string& topic);
 		bool 			is_user(user& usr);
 		void 			add_user(user& joiner);
 		void 			set_channel_name(std::string& chan_name);
 		void			delete_user(user& usr);
+		std::string		get_user_list_str(void);
 
 		std::vector<Udata> send_all(user& sender, user& target, std::string msg, int remocon);
 
@@ -42,6 +46,26 @@ class Chan
 		void seterror();
 		int geterror();
 };
+
+std::string&	Chan::get_access(void) { return access_; }
+void			Chan::set_access(const std::string& access) { access_ = access; }
+
+
+std::string		Chan::get_user_list_str(void)
+{
+	std::vector<user>::iterator	it;
+	std::string					ret;
+
+	// TODO : 순서는 잘 모르겠음
+	for (it = connectors_.begin(); it != connectors_.end(); it++)
+	{
+		ret += *it == get_host() ? "@" + it->nickname_ : it->nickname_;
+		ret += " ";
+	}
+	return ret;
+}
+
+
 /*
 ///@ brief 기본형 : 나 빼고 다 보냄, flag 1 -> PART
 */
@@ -91,7 +115,7 @@ std::vector<Udata> Chan::send_all(user& sender, user& target, std::string msg, i
 				if (sender == *it)
 				{
 					continue ;
-				}			
+				}
 				packet = Sender::wall_message(sender, this->get_host(), this->get_name(), msg);
 			case TOPIC:
 				packet.msg = msg;
