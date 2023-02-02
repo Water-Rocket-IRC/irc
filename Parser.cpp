@@ -2,13 +2,13 @@
 #include "Receiver.hpp"
 
 // const std::string Parser::commands[N_COMMAND] = {"NICK", "USER", "PING", "QUIT", "PRIVMSG", "NOTICE", "WALL", "JOIN", "MODE", "WHO", "PART", "TOPIC", "KICK"};
-// void (Parser::*Parser::func_ptr[N_COMMAND])(struct kevent&, std::stringstream&, std::string&) = \
-// 								{&Parser::parser_nick, &Parser::parser_user, &Parser::parser_ping, &Parser::parser_quit, &Parser::parser_privmsg, &Parser::parser_notice
-// 							   , &Parser::parser_wall, &Parser::parser_join, &Parser::parser_mode, &Parser::parser_who,  &Parser::parser_part, &Parser::parser_topic, &Parser::parser_kick };
+// void (Parser::*Parser::func_ptr[N_COMMAND])_(uintptr_t&, std::stringstream&, std::string&) = \
+// 								{&Parser::parser_nick_, &Parser::parser_user_, &Parser::parser_ping_, &Parser::parser_quit_, &Parser::parser_privmsg_, &Parser::parser_notice_
+// 							   , &Parser::parser_wall_, &Parser::parser_join_, &Parser::parser_mode_, &Parser::parser_who_,  &Parser::parser_part_, &Parser::parser_topic_, &Parser::parser_kick_ };
 const std::string Parser::commands[N_COMMAND] = {"NICK", "USER", "PING", "JOIN", "MODE", "WHO", "PART"};
-void (Parser::*Parser::func_ptr[N_COMMAND])(struct kevent&, std::stringstream&, std::string&) = \
-								{&Parser::parser_nick, &Parser::parser_user, &Parser::parser_ping
-							   , &Parser::parser_join, &Parser::parser_mode, &Parser::parser_who,  &Parser::parser_part };
+void (Parser::*Parser::func_ptr[N_COMMAND])(uintptr_t&, std::stringstream&, std::string&) = \
+								{&Parser::parser_nick_, &Parser::parser_user_, &Parser::parser_ping_
+							   , &Parser::parser_join_, &Parser::parser_mode_, &Parser::parser_who_,  &Parser::parser_part_ };
 	// ret = channel.send_all(moder, trash, chan_name, MODE);
 
 Parser::Parser(/* args */)
@@ -41,7 +41,7 @@ static void _print_title(const std::string& title)
 			  << RESET << std::endl;
 }
 
-void	Parser::command_parser(struct kevent &cur_event, std::string &command)
+void	Parser::command_parser(uintptr_t& ident, std::string &command)
 {
 	std::stringstream	ss(command);
 	std::string			line;
@@ -62,7 +62,7 @@ void	Parser::command_parser(struct kevent &cur_event, std::string &command)
 				if (pos == std::string::npos)
 					to_send.clear();
 				to_send = set_message_(line, pos + 1, (line.length() - (pos + 2)));
-				(this->*Parser::func_ptr[i])(cur_event, line_ss, to_send);
+				(this->*Parser::func_ptr[i])(ident, line_ss, to_send);
 			}
 			else 
 			{
@@ -75,7 +75,7 @@ void	Parser::command_parser(struct kevent &cur_event, std::string &command)
 
 	//check_argument(2, )
 	// NICK은 채널에 있을 때 모에게 NICK 변경되었음을 알리고, 로비에 있을 때는 본인에게만 알린다.
-void	Parser::parser_nick(struct kevent &cur_event, std::stringstream& line_ss, std::string& to_send)
+void	Parser::parser_nick_(uintptr_t& ident, std::stringstream& line_ss, std::string& to_send)
 {
 	static_cast<void>(to_send);
 	std::string	nick;
@@ -85,11 +85,11 @@ void	Parser::parser_nick(struct kevent &cur_event, std::stringstream& line_ss, s
 	line_ss >> nick;
 	if (nick.empty()) // no nickname error
 	{
-		tmp = Sender::command_empty_argument_461(cur_event.ident, "NICK"); // TODO: name respecify
+		tmp = Sender::command_empty_argument_461(ident, "NICK"); // TODO: name respecify
 		Receiver::push_write_event(tmp, cur_event);
 		return ;
 	}
-	tmp = Users_.command_nick(nick, cur_event.ident);
+	tmp = users_.command_nick(nick, ident);
 	if (tmp.msg.empty()) {
 		// Client first enter
 		push_write_event(tmp, cur_event);
@@ -100,10 +100,10 @@ void	Parser::parser_nick(struct kevent &cur_event, std::stringstream& line_ss, s
 	try
 	{
 		// Success change nick
-		user& 	who = Users_.search_user_by_ident(cur_event.ident);
-		std::vector<Udata> tmp_events = Channels.nick_channel(who, tmp.msg);
+		user& 	who = users_.search_user_by_ident(ident);
+		std::vector<Udata> tmp_events = channels_.nick_channel(who, tmp.msg);
 		events.insert(events.end(), tmp_events.begin(), tmp_events.end());
-		push_write_event_with_vector(events);
+		push_multiple_write_events_(events);
 	}
 	catch (const std::exception& e)
 	{
@@ -112,7 +112,7 @@ void	Parser::parser_nick(struct kevent &cur_event, std::stringstream& line_ss, s
 	}
 }
 
-void	Parser::parser_user(struct kevent &cur_event, std::stringstream& line_ss, std::string& real_name)
+void	Parser::parser_user_(uintptr_t& ident, std::stringstream& line_ss, std::string& real_name)
 {
 
 	Udata	tmp;
@@ -126,7 +126,7 @@ void	Parser::parser_user(struct kevent &cur_event, std::stringstream& line_ss, s
 		{
 			try
 			{
-				user&	cur_user = Users_.search_user_by_ident(cur_event.ident);
+				user&	cur_user = users_.search_user_by_ident(ident);
 				if (cur_user.is_user_has_nick())
 				{
 					tmp = Sender::command_not_registered_451(cur_user, "USER");
@@ -138,7 +138,7 @@ void	Parser::parser_user(struct kevent &cur_event, std::stringstream& line_ss, s
 			}
 			catch(const std::exception&)
 			{
-				tmp = Sender::command_not_registered_451(cur_event.ident, "USER");
+				tmp = Sender::command_not_registered_451(ident, "USER");
 				push_write_event(tmp, cur_event);
 			}
 		}
@@ -147,11 +147,11 @@ void	Parser::parser_user(struct kevent &cur_event, std::stringstream& line_ss, s
 	{
 		argument[3] = real_name;
 	}
-	tmp = Users_.command_user(argument, cur_event.ident); // USER TODO: have to change argument and logic
+	tmp = users_.command_user(argument, ident); // USER TODO: have to change argument and logic
 	push_write_event(tmp, cur_event);
 }
 
-void	Parser::parser_ping(struct kevent &cur_event, std::stringstream& line_ss, std::string& to_send)
+void	Parser::parser_ping_(uintptr_t& ident, std::stringstream& line_ss, std::string& to_send)
 {
 	std::string serv_addr;
 	Udata		tmp;
@@ -172,9 +172,9 @@ void	Parser::parser_ping(struct kevent &cur_event, std::stringstream& line_ss, s
 	// }
 	try
 	{
-		user&	cur_user = Users_.search_user_by_ident(cur_event.ident);
+		user&	cur_user = users_.search_user_by_ident(ident);
 
-		tmp = Sender::pong(cur_event.ident, serv_addr);
+		tmp = Sender::pong(ident, serv_addr);
 		push_write_event(tmp, cur_event);
 	}
 	catch(const std::exception& e)
@@ -184,7 +184,7 @@ void	Parser::parser_ping(struct kevent &cur_event, std::stringstream& line_ss, s
 	}
 }
 
-// void	Parser::parser_quit(struct kevent &cur_event, std::stringstream& line_ss, std::string& to_send)
+// void	Parser::parser_quit_(uintptr_t& ident, std::stringstream& line_ss, std::string& to_send)
 // {
 // 	std::string	nick, msg;
 // 	Udata		tmp;
@@ -193,9 +193,9 @@ void	Parser::parser_ping(struct kevent &cur_event, std::stringstream& line_ss, s
 // 	bzero(&tmp, sizeof(tmp));
 // 	try
 // 	{
-// 		user&	cur_user = Users_.search_user_by_ident(cur_event.ident);
+// 		user&	cur_user = users_.search_user_by_ident(ident);
 
-// 		tmp = Users_.command_quit(nick, to_send, cur_event.ident); // USER TODO: Have to change logic
+// 		tmp = users_.command_quit(nick, to_send, ident); // USER TODO: Have to change logic
 // 		push_write_event(tmp, cur_event);
 // 	}
 // 	catch(const std::exception& e)
@@ -206,7 +206,7 @@ void	Parser::parser_ping(struct kevent &cur_event, std::stringstream& line_ss, s
 	
 // }
 
-// void	Parser::parser_privmsg(struct kevent &cur_event, std::stringstream& line_ss, std::string& to_send)
+// void	Parser::parser_privmsg_(uintptr_t& ident, std::stringstream& line_ss, std::string& to_send)
 // {
 // 	std::string target, msg;
 
@@ -216,14 +216,14 @@ void	Parser::parser_ping(struct kevent &cur_event, std::stringstream& line_ss, s
 // 	{
 // 		try
 // 		{
-// 			user&	sender = Users_.search_user_by_ident(cur_event.ident); // USER is unregistered
+// 			user&	sender = users_.search_user_by_ident(ident); // USER is unregistered
 			
 // 			try
 // 			{
 // 				Channels&	tmp_chan = Channels::select_channel(user); // TODO: user is not in channel
 // 				// if success
-// 				std::vector<Udata>	udata_events = Channels.channel_msg(sender, target, msg);
-// 				push_write_event_with_vector(udata_events);
+// 				std::vector<Udata>	udata_events = channels_.channel_msg(sender, target, msg);
+// 				push_multiple_write_events_(udata_events);
 // 			}
 // 			catch(const std::exception& e)
 // 			{
@@ -240,12 +240,12 @@ void	Parser::parser_ping(struct kevent &cur_event, std::stringstream& line_ss, s
 // 	}
 // 	else
 // 	{
-// 		Udata	tmp = Users_.command_privmsg(target, to_send, cur_event.ident); // TODO: USER have to change logic
+// 		Udata	tmp = users_.command_privmsg(target, to_send, ident); // TODO: USER have to change logic
 // 		push_write_event(tmp, cur_event);
 // 	}
 // }
 
-// void	Parser::parser_notice(struct kevent &cur_event, std::stringstream& line_ss, std::string& to_send)
+// void	Parser::parser_notice_(uintptr_t& ident, std::stringstream& line_ss, std::string& to_send)
 // {
 // 	std::string target, msg;
 
@@ -255,14 +255,14 @@ void	Parser::parser_ping(struct kevent &cur_event, std::stringstream& line_ss, s
 // 	{
 // 		try
 // 		{
-// 			user&	sender = Users_.search_user_by_ident(cur_event.ident); // USER is unregistered
+// 			user&	sender = users_.search_user_by_ident(ident); // USER is unregistered
 			
 // 			try
 // 			{
 // 				Channels&	tmp_chan = Channels::select_channel(sender); // TODO: user is not in channel
 // 				// if success
-// 				std::vector<Udata>	udata_events = Channels.channel_notice(sender, target, msg);
-// 				push_write_event_with_vector(udata_events);
+// 				std::vector<Udata>	udata_events = channels_.channel_notice(sender, target, msg);
+// 				push_multiple_write_events_(udata_events);
 // 			}
 // 			catch(const std::exception& e)
 // 			{
@@ -279,12 +279,12 @@ void	Parser::parser_ping(struct kevent &cur_event, std::stringstream& line_ss, s
 // 	}
 // 	else
 // 	{
-// 		Udata	tmp = Users_.command_notice(target, to_send, cur_event.ident); // TODO: USER have to change logic
+// 		Udata	tmp = users_.command_notice(target, to_send, ident); // TODO: USER have to change logic
 // 		push_write_event(tmp, cur_event);
 // 	}
 // }
 
-// void	Parser::parser_wall(struct kevent &cur_event, std::stringstream& line_ss, std::string& to_send)
+// void	Parser::parser_wall_(uintptr_t& ident, std::stringstream& line_ss, std::string& to_send)
 // {
 // 	std::string chan_name, msg;
 
@@ -297,14 +297,14 @@ void	Parser::parser_ping(struct kevent &cur_event, std::stringstream& line_ss, s
 // 	{
 // 		try
 // 		{
-// 			user sender = Users_.search_user_by_ident(cur_event.ident);
+// 			user sender = users_.search_user_by_ident(ident);
 
 // 			std::size_t	pos = line.find(':');
 // 			msg = set_message_(line, pos + 1, (line.length() - (pos + 2)));
 // 			(msg.size() > 510) ? msg.resize(510) : msg.resize(msg.size());
 
-// 			std::vector<Udata>	udata_events = Channels.channel_notice(sender, chan_name, msg);
-// 			push_write_event_with_vector(udata_events);
+// 			std::vector<Udata>	udata_events = channels_.channel_notice(sender, chan_name, msg);
+// 			push_multiple_write_events_(udata_events);
 // 		}
 // 		catch (std::exception &e)
 // 		{
@@ -313,7 +313,7 @@ void	Parser::parser_ping(struct kevent &cur_event, std::stringstream& line_ss, s
 // 	}
 // }
 
-void	Parser::parser_join(struct kevent &cur_event, std::stringstream& line_ss, std::string& to_send)
+void	Parser::parser_join_(uintptr_t& ident, std::stringstream& line_ss, std::string& to_send)
 {
 	std::string	chan_name, error;
 
@@ -328,9 +328,9 @@ void	Parser::parser_join(struct kevent &cur_event, std::stringstream& line_ss, s
 	{
 		try
 		{
-			user chan_user = Users_.search_user_by_ident(cur_event.ident);
-			std::vector<Udata>	udata_events = Channels.join_channel(chan_user, chan_name);
-			push_write_event_with_vector(udata_events);
+			user chan_user = users_.search_user_by_ident(ident);
+			std::vector<Udata>	udata_events = channels_.join_channel(chan_user, chan_name);
+			push_multiple_write_events_(udata_events);
 		}
 		catch(const std::exception& e)
 		{
@@ -341,7 +341,7 @@ void	Parser::parser_join(struct kevent &cur_event, std::stringstream& line_ss, s
 
 }
 
-void	Parser::parser_mode(struct kevent &cur_event, std::stringstream& line_ss, std::string& to_send)
+void	Parser::parser_mode_(uintptr_t& ident, std::stringstream& line_ss, std::string& to_send)
 {
 	std::string	arguments[3];
 
@@ -355,19 +355,19 @@ void	Parser::parser_mode(struct kevent &cur_event, std::stringstream& line_ss, s
 	{
 		if (arguments[0].at(0) == '#')
 		{
-			user	cur_user = Users_.search_user_by_ident(cur_event.ident);
-			Udata	tmp = Channels.mode_channel(cur_user, arguments[0], (arguments[1].size() == 1 && arguments[1] == "b"));
+			user	cur_user = users_.search_user_by_ident(ident);
+			Udata	tmp = channels_.mode_channel(cur_user, arguments[0], (arguments[1].size() == 1 && arguments[1] == "b"));
 			push_write_event(tmp, cur_event);
 		}
 		else
 		{
-			// Udata	tmp = Users_.command_mode(arguments[0], (arguments[1].size () == 2 && arguments[1] == "+i"));
+			// Udata	tmp = users_.command_mode(arguments[0], (arguments[1].size () == 2 && arguments[1] == "+i"));
 			// push_write_event(tmp, cur_event);
 		}
 	}
 }
 
-void	Parser::parser_who(struct kevent &cur_event, std::stringstream& line_ss, std::string& to_send)
+void	Parser::parser_who_(uintptr_t& ident, std::stringstream& line_ss, std::string& to_send)
 {
 	std::string	arguments[2];
 
@@ -378,35 +378,35 @@ void	Parser::parser_who(struct kevent &cur_event, std::stringstream& line_ss, st
 	}
 	else
 	{
-		Udata	tmp = Channels.who_channel(cur_event.ident, arguments[0]);
+		Udata	tmp = channels_.who_channel(ident, arguments[0]);
 		push_write_event(tmp, cur_event);
 	}
 }
 
-void	Parser::parser_part(struct kevent &cur_event, std::stringstream& line_ss, std::string& to_send)
+void	Parser::parser_part_(uintptr_t& ident, std::stringstream& line_ss, std::string& to_send)
 {
 	std::string chan_name, msg;
 
 	line_ss >> chan_name >> msg;
-	user leaver = Users_.search_user_by_ident(cur_event.ident);
-	std::vector<Udata>	udata_events = Channels.leave_channel(leaver, chan_name, msg);
-	push_write_event_with_vector(udata_events);
+	user leaver = users_.search_user_by_ident(ident);
+	std::vector<Udata>	udata_events = channels_.leave_channel(leaver, chan_name, msg);
+	push_multiple_write_events_(udata_events);
 }
 
-// void	Parser::parser_topic(struct kevent &cur_event, std::stringstream& line_ss, std::string& to_send)
+// void	Parser::parser_topic_(uintptr_t& ident, std::stringstream& line_ss, std::string& to_send)
 // {
 // 	std::string chan_name, topic;
 // 	line_ss >> chan_name >> topic;
 
 // 	try
 // 	{
-// 		user sender = Users_.search_user_by_ident(cur_event.ident);
+// 		user sender = users_.search_user_by_ident(ident);
 // 		std::size_t	pos = line.find(':');
 // 		topic = set_message_(line, pos + 1, (line.length() - (pos + 2)));
 // 		(topic.size() > 510) ? topic.resize(510) : topic.resize(topic.size());
 
-// 		std::vector<Udata>	udata_events = Channels.set_topic(sender, chan_name, topic);
-// 		push_write_event_with_vector(udata_events);
+// 		std::vector<Udata>	udata_events = channels_.set_topic(sender, chan_name, topic);
+// 		push_multiple_write_events_(udata_events);
 // 	}
 // 	catch (std::exception &e)
 // 	{
@@ -414,23 +414,42 @@ void	Parser::parser_part(struct kevent &cur_event, std::stringstream& line_ss, s
 // 	}
 // }
 
-// void	Parser::parser_kick(struct kevent &cur_event, std::stringstream& line_ss, std::string& to_send)
+// void	Parser::parser_kick_(uintptr_t& ident, std::stringstream& line_ss, std::string& to_send)
 // {
 // 	std::string chan_name, target_name, msg;
 
 // 	line_ss >> chan_name >> target_name;
 // 	try
 // 	{
-// 		user kicker = Users_.search_user_by_ident(cur_event.ident);
-// 		user target = Users_.search_user_by_nick(target_name);
+// 		user kicker = users_.search_user_by_ident(ident);
+// 		user target = users_.search_user_by_nick(target_name);
 // 		std::size_t	pos = line.find(':');
 // 		msg = set_message_(line, pos + 1, (line.length() - (pos + 2)));
 // 		(msg.size() > 510) ? msg.resize(510) : msg.resize(msg.size());
-// 		std::vector<Udata>	udata_events = Channels.kick_channel(kicker, target, chan_name, msg);
-// 		push_write_event_with_vector(udata_events);
+// 		std::vector<Udata>	udata_events = channels_.kick_channel(kicker, target, chan_name, msg);
+// 		push_multiple_write_events_(udata_events);
 // 	}
 // 	catch (std::exception &e)
 // 	{
 // 		std::cout << "FUck" << std::endl;
 // 	}
 // }
+
+
+void	Parser::push_write_event_(Udata& tmp, struct kevent &cur_event)
+{
+	if (tmp.msg.size())
+	{
+		udata_.push_back(tmp);
+		kq_.set_write(cur_event.ident);
+	}
+}
+
+void	Parser::push_multiple_write_events_(std::vector<Udata>& udata_events)
+{
+	for (std::size_t i(0); i < udata_events.size(); ++i)
+	{
+		udata_.push_back(udata_events[i]);
+		kq_.set_write(udata_events[i].sock_fd);
+	}
+}

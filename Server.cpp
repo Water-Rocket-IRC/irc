@@ -38,9 +38,8 @@ Server::~Server()
 
 void Server::start()
 {
-	Receiver	receiver;
+	Receiver	receiver(port_);
+	Parser		parser;
 
-	receiver.init_socket(port_);
-	receiver.bind_socket();
 	receiver.start();
 }

@@ -18,13 +18,14 @@ class Parser;
 // USER 클래스를 Parser로 이동
 // std::vector<Udata>를 server에서 생성 후 Receiver에서 레퍼런스로 받아오면 좋을듯
 // >> Parser도 std::vector<Udata>를 레퍼런스로 받아오면 서로 참조가 가능하니 좋을듯?
+// ***생각해보니 Receiver 에서 Parser를 가져야된다. 아니면 Parser::command_parser함수를 못 부른다.***
 
 class Receiver
 {
 	private:
 		KeventHandler		kq_;
 		sockaddr_in			server_addr_;
-		std::vector<Udata>	udata_;
+		// std::vector<Udata>	udata_;
 		std::string			port_;
 		std::string			password_;
 		uintptr_t			server_sock_;
@@ -33,20 +34,17 @@ class Receiver
 		int					clientReadEventHandler_(struct kevent &cur_event);
 		// void				parser_(struct kevent &cur_event, std::string& command);
 		int					clientWriteEventHandler_(struct kevent &cur_event);
-		std::string			set_message_(std::string &msg, std::size_t start, std::size_t end);
+
+		void				init_socket_(int &port);
+		void				bind_socket_();
 
 	protected:
-		Users				Users_;
-		void	push_write_event(Udata &tmp, struct kevent &cur_event);
-		void	push_write_event_with_vector(std::vector<Udata> &udata_events);
+		
 
 	public:
-		Channels	Channels;
-		Receiver();
+		Receiver(int port);
 		~Receiver();
 
-		void	init_socket(int &port);
-		void	bind_socket();
 		void 	start();
 };
 

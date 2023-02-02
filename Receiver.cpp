@@ -6,11 +6,18 @@
 /*    Receiver Class     */
 /// @brief Receiver 생성자
 /// @param port 소켓을 생성할 포켓 번호
-Receiver::Receiver()
+Receiver::Receiver(int port)
 {
+	init_socket_(port);
+	bind_socket_();
 }
 
-void	Receiver::init_socket(int &port)
+Receiver::~Receiver()
+{
+	close(server_sock_);
+}
+
+void	Receiver::init_socket_(int &port)
 {
 	server_sock_ = socket(AF_INET, SOCK_STREAM, 0);
 	if (server_sock_ < 0)
@@ -22,11 +29,7 @@ void	Receiver::init_socket(int &port)
 	server_addr_.sin_addr.s_addr = INADDR_ANY;
 }
 
-Receiver::~Receiver()
-{
-}
-
-void Receiver::bind_socket()
+void	Receiver::bind_socket_()
 {
 	// socket bind
 	if (bind(server_sock_, (sockaddr *) &server_addr_, sizeof(server_addr_)) < 0)
@@ -36,12 +39,12 @@ void Receiver::bind_socket()
 	if (listen(server_sock_, 5) < 0)
 	{
 		std::cerr << "error" << std::endl;
-	} // TODO: Have to arrange 5 (Max queue)
-
+	}
+	// TODO: Have to arrange 5 (Max queue)
 	kq_.set_read(server_sock_);
 }
 
-void Receiver::start()
+void	Receiver::start()
 {
 	while (true)
 	{
@@ -369,30 +372,6 @@ int	Receiver::clientReadEventHandler_(struct kevent &cur_event)
 // 		}
 // 	}
 // }
-
-std::string	Receiver::set_message_(std::string &msg, size_t start, size_t end)
-{
-	std::string	ret = msg.substr(start, end);
-	return ret;
-}
-
-void	Receiver::push_write_event(Udata& tmp, struct kevent &cur_event)
-{
-	if (tmp.msg.size())
-	{
-		udata_.push_back(tmp);
-		kq_.set_write(cur_event.ident);
-	}
-}
-
-void	Receiver::push_write_event_with_vector(std::vector<Udata>& udata_events)
-{
-	for (std::size_t i(0); i < udata_events.size(); ++i)
-	{
-		udata_.push_back(udata_events[i]);
-		kq_.set_write(udata_events[i].sock_fd);
-	}
-}
 
 int	Receiver::clientWriteEventHandler_(struct kevent &cur_event)
 {
