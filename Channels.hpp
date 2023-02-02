@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CHANNELS_HPP
+# define CHANNELS_HPP
 
 #include "Chan.hpp"
 #include "Users.hpp"
@@ -26,6 +27,8 @@ class Channels
 		std::vector<Udata> 	join_channel(user& joiner, std::string& chan_name);
 		std::vector<Udata>	leave_channel(user&leaver, std::string& chan_name, std::string& msg);
 		std::vector<Udata>	nick_channel(user& who, std::string& send_msg);
+		Udata				mode_channel(user& moder, const std::string& chan_name, const bool vaild);
+		Udata				who_channel(const uintptr_t& sock, std::string& chan_name);
 		std::vector<Chan>&	get_channels() { return	Channels_; };
 
 		class user_no_any_channels_exception : public std::exception
@@ -40,19 +43,19 @@ class Channels
 		};
 };
 
-static void	DebugshowUsers(std::vector<user>& target) {
-	std::cout << YELLOW << "(begin) " << RESET << " ➜ ";
-	for (std::vector<user>::iterator it = target.begin(); it != target.end(); ++it) {
-		std::cout << (*it).nickname_ << " ➜ ";
+Udata		Channels::who_channel(const uintptr_t& sock, std::string& chan_name)
+{
+	Udata	tmp;
+	
+	bzero(&tmp, sizeof(tmp));
+	try
+	{
+		Chan& chan = select_channel(chan_name);
+		tmp.msg = chan.get_info();
+		tmp.sock_fd = sock;
 	}
-	std::cout << YELLOW << "(end)" << RESET << std::endl;
-}
-static void	DebugshowChannels(std::vector<Chan>& target) {
-	std::cout << YELLOW << "(begin) " << RESET << " ➜ ";
-	for (std::vector<Chan>::iterator it = target.begin(); it != target.end(); ++it) {
-		std::cout << (*it).get_name() << " ➜ ";
-	}
-	std::cout << YELLOW << "(end)" << RESET << std::endl;
+	catch (std::exception& e) { }
+	return tmp;
 }
 
 const	char*		Channels::user_no_any_channels_exception::what(void) const throw()
@@ -234,7 +237,7 @@ std::vector<Udata>	Channels::channel_msg(user& sender, std::string chan_name, st
 	}
 	catch (std::exception&)
 	{
-		tmp.msg = "No such Channel";
+		tmp = Sender::no_channel_message(sender, chan_name); // TODO: channel not found err
 		ret.push_back(tmp);
 	}
 	return ret;
@@ -248,7 +251,7 @@ std::vector<Udata>	Channels::channel_notice(user& sender, std::string chan_name,
 	try
 	{
 		Chan &channel = select_channel(chan_name);
-		ret = channel.send_all(sender, sender, msg, PRIV);
+		ret = channel.send_all(sender, sender, msg, NOTICE);
 	}
 	catch(const std::exception&)
 	{
@@ -338,6 +341,23 @@ std::vector<Udata>	Channels::quit_channel(user& target, std::string msg)
 	return ret;
 }
 
+Udata	Channels::mode_channel(user& moder, const std::string& chan_name, const bool vaild)
+{
+	Udata	ret;
+
+	user	trash;
+	// if (vaild)	// true
+	// {
+	// 	ret = Sender::mode_324_message(moder, chan_name);
+	// 	ret.msg += Sender::mode_329_message(moder, chan_name, timstamp);
+	// }
+	// else
+	// {
+	// 	ret =
+	// }
+	return ret;
+}
+
 std::vector<Udata>	Channels::nick_channel(user& nicker, std::string& send_msg)
 {
 	std::vector<Udata> ret;
@@ -375,3 +395,5 @@ std::vector<Udata>	Channels::set_topic(user& sender, std::string& chan_name, std
 	}
 	return	ret;
 }
+
+#endif

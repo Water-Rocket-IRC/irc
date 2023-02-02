@@ -1,5 +1,6 @@
 #pragma once
 
+#include "color.hpp"
 #include <iostream>
 #include <unistd.h>
 #include <vector>
@@ -25,7 +26,7 @@ class KeventHandler
 
 void exit_with_perror(const std::string& msg)
 {
-	std::cerr << msg << std::endl;
+	std::cerr << BOLDRED << msg << RESET << std::endl;
 	exit(EXIT_FAILURE);
 }
 

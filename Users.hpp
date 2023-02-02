@@ -1,4 +1,5 @@
-#pragma once
+#ifndef USERS_HPP
+# define USERS_HPP
 
 #include "Sender.hpp"
 #include <string>
@@ -9,7 +10,7 @@
 #include <sys/time.h>
 #include <exception>
 
-struct user;
+// struct user;
 
 /// @brief 유저들을 관리하고, sender에게 적절한 응답을 요청한다.
 class Users
@@ -17,8 +18,8 @@ class Users
 	private:
 		std::vector<struct user>	user_list_;
 	public:
-		Udata	command_nick(std::string& nick_name, struct kevent& event);
-		Udata	command_user(std::stringstream &line_ss, uintptr_t& sock);
+		Udata	command_nick(std::string& nick_name, uintptr_t &sock);
+		Udata	command_user(const std::string input[4], uintptr_t& sock);
 		Udata	command_quit(std::stringstream &line_ss, uintptr_t& sock);
 		Udata	command_privmsg(std::stringstream &line_ss, std::string &line, uintptr_t& sock);
 
@@ -120,28 +121,28 @@ void	Users::change_nickname(user& cur, std::string& new_nick_name)
 
 // nick을 실행하는 함수
 // nick 처음  두번 째
-Udata	Users::command_nick(std::string& nick_name, struct kevent& event)
+Udata	Users::command_nick(std::string& nick_name, uintptr_t& sock)
 {
 	Udata		tmp;
 
 	bzero(&tmp, sizeof(tmp));
 
-	if (is_duplicate_nick(nick_name))	// 기존에 없음
+	if (is_duplicate_nick(nick_name))									// 중복 체크
 	{
 		try
 		{
-			user &cur_user = search_user_by_ident(event.ident);	// 처음 소켓인지 
+			user &cur_user = search_user_by_ident(sock);				// 처음 소켓인지 
 			tmp = Sender::nick_error_message(cur_user, nick_name);		// 기존에 유저가 없는 상태에서 중복 에러
 		}
 		catch (std::exception&)
 		{
-			tmp = Sender::nick_error_message(nick_name, event.ident);		// 기존에 유저가 없는 상태에서 중복 에러
+			tmp = Sender::nick_error_message(nick_name, sock);			// 기존에 유저가 없는 상태에서 중복 에러
 		}
 		return tmp;
 	}
 	try
 	{
-		user &cur_user = search_user_by_ident(event.ident);	// 처음 소켓인지 
+		user &cur_user = search_user_by_ident(sock);					// who?
 		if (nick_name.size() > 1 && nick_name.at(0) == '#')
 		{
 			tmp = Sender::nick_wrong_message(cur_user, nick_name);
@@ -149,7 +150,7 @@ Udata	Users::command_nick(std::string& nick_name, struct kevent& event)
 		else 
 		{
 			tmp = Sender::nick_well_message(cur_user, cur_user, nick_name);
-			// cur_user.nickname_ = nick_name;
+			cur_user.nickname_ = nick_name;
 		}
 		return tmp;
 	}
@@ -157,7 +158,7 @@ Udata	Users::command_nick(std::string& nick_name, struct kevent& event)
 	{
 		user	tmp_usr;
 		tmp_usr.nickname_ = nick_name;
-		tmp_usr.client_sock_ = event.ident;
+		tmp_usr.client_sock_ = sock;
 		user_list_.push_back(tmp_usr);
 		return tmp;
 	}
@@ -165,30 +166,21 @@ Udata	Users::command_nick(std::string& nick_name, struct kevent& event)
 }
 
 // user를 실행하는 함수 
-Udata	Users::command_user(std::stringstream &line_ss, uintptr_t& sock)
+Udata	Users::command_user(const std::string input[4], uintptr_t& sock)
 {
 	Udata		tmp;
- 	std::string name[4];
 
 	bzero(&tmp, sizeof(tmp));
 	try
 	{
 		user&	cur_user = search_user_by_ident(sock);
 
-		line_ss >> name[0] >> name[1] >> name[2] >> name[3];
-		for (int i(0); i < 4; ++i)
-		{
-			if (name[i].empty())
-			{
-				return tmp;
-			}
-		}
 		if (cur_user.username_.empty())
 		{
-			cur_user.username_ = name[0];
-			cur_user.hostname_ = name[1];
-			cur_user.servername_ = name[2];
-			cur_user.realname_ = name[3].substr(1);
+			cur_user.username_ = input[0];
+			cur_user.mode_ = input[1];
+			cur_user.unused_ = input[2];
+			cur_user.realname_ = input[3].substr(1);
 			return Sender::welcome_message_connect(cur_user);
 		}
 		return tmp;
@@ -271,3 +263,5 @@ void Users::print_all_user()
 		std::cout << "socket " << it->client_sock_ << std::endl;
 	}
 }
+
+#endif

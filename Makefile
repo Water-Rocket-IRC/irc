@@ -19,7 +19,7 @@ OBJS_DIR	:=	objs/
 DEPS_DIR	:=	deps/
 
 # SRCS		:=	$(wildcard *.cpp)
-SRCS		:=	main.cpp
+SRCS		:=	main.cpp Server.cpp Receiver.cpp
 OBJS		:=	$(addprefix $(OBJS_DIR), $(SRCS:.cpp=.o))
 DEPS		:=	$(addprefix $(DEPS_DIR), $(SRCS:.cpp=.d))
 NAME		:=	ircserv

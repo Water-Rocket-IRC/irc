@@ -7,7 +7,7 @@
 #include <sstream>
 
 
-enum e_send_switch { JOIN, PART, PRIV, KICK, QUIT, NOTICE, TOPIC, WALL, NICK };
+enum e_send_switch { JOIN, PART, PRIV, KICK, QUIT, NOTICE, TOPIC, WALL, NICK, MODE };
 /*
  * JOIN : 나를 포함해서 모두에게 보여주는 메세지(메세지가 다름)
  * PART : 나를 포함해서 모두에게 보여주는 메세지(메세지가 다름)
@@ -25,39 +25,84 @@ class Chan
 		std::string			access_;
 
 	public:
-		std::string		get_info(void);
+		std::string			get_info(void);
 
-		std::string&	get_name(void);
-		user&			get_host(void);
-		void			set_host(void);
-		std::string&	get_access(void);
-		void			set_access(const std::string& access);
-		void			set_topic(std::string& topic);
-		bool 			is_user(user& usr);
-		void 			add_user(user& joiner);
-		void 			set_channel_name(std::string& chan_name);
-		void			delete_user(user& usr);
-		std::string		get_user_list_str(void);
+		std::string&		get_name(void);
+		user&				get_host(void);
+		void				set_host(void);
+		std::string&		get_access(void);
+		void				set_access(const std::string& access);
+		void				set_topic(std::string& topic);
+		bool 				is_user(user& usr);
+		
+		void 				add_user(user& joiner);
+		void 				set_channel_name(std::string& chan_name);
+		void				delete_user(user& usr);
+		std::string			get_user_list_str(void);
 
-		std::vector<Udata> send_all(user& sender, user& target, std::string msg, int remocon);
+		std::vector<Udata>	send_all(user& sender, user& target, std::string msg, int remocon);
 
-		std::vector<user>& get_users();
+		std::vector<user>&	get_users(void);
+		std::vector<user>	sort_users(void);
 		bool operator==(const Chan& t) const;
 		void seterror();
 		int geterror();
 };
 
+void	DebugshowUsers(std::vector<user>& target) {
+	std::cout << YELLOW << "(begin) " << RESET << " ➜ ";
+	for (std::vector<user>::iterator it = target.begin(); it != target.end(); ++it) {
+		std::cout << (*it).nickname_ << " ➜ ";
+	}
+	std::cout << YELLOW << "(end)" << RESET << std::endl;
+}
+
+void	DebugshowChannels(std::vector<Chan>& target) {
+	std::cout << YELLOW << "(begin) " << RESET << " ➜ ";
+	for (std::vector<Chan>::iterator it = target.begin(); it != target.end(); ++it) {
+		std::cout << (*it).get_name() << " ➜ ";
+	}
+	std::cout << YELLOW << "(end)" << RESET << std::endl;
+}
+
 std::string&	Chan::get_access(void) { return access_; }
 void			Chan::set_access(const std::string& access) { access_ = access; }
 
 
+std::vector<user>	Chan::sort_users(void)
+{
+	std::vector<user>	ret;
+
+	ret.push_back(connectors_.at(0));
+	if (connectors_.size() == 1)
+		return ret;
+	for (std::vector<user>::iterator it = connectors_.begin()
+		 ; it != connectors_.end(); ++it)
+	{	
+		std::vector<user>::iterator ret_it = ret.begin();
+		for (; ret_it != ret.end(); ++ret_it)
+		{
+			if (*it > *ret_it)
+			{
+				continue ;
+			}
+			else if (*it < *ret_it || *it == *ret_it)
+			{
+				break ;
+			}
+		} 
+		if (ret_it == ret.end() || *it != *ret_it)
+			ret.insert(ret_it, *it);
+	}
+	return ret;
+}
+
+
 std::string		Chan::get_user_list_str(void)
 {
-	std::vector<user>::iterator	it;
 	std::string					ret;
-
-	// TODO : 순서는 잘 모르겠음
-	for (it = connectors_.begin(); it != connectors_.end(); it++)
+	std::vector<user> sort = sort_users();
+	for (std::vector<user>::iterator it = sort.begin(); it != sort.end(); ++it)
 	{
 		ret += *it == get_host() ? "@" + it->nickname_ : it->nickname_;
 		ret += " ";

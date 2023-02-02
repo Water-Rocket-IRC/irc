@@ -1,4 +1,5 @@
 #include "Server.hpp"
+#include "color.hpp"
 
 int main(int argc, char **argv)
 {
