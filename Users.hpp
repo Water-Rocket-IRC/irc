@@ -66,12 +66,13 @@ user&	Users::search_user_by_ident(const uintptr_t& ident, int error_code)
 
 	for (it = user_list_.begin(); it != user_list_.end(); it++)
 	{
-		if (it->client_sock_ == ident) //140732838809008 닉네임 바꿔야할 유저를 찾을 상태 !!! 
+		if (it->client_sock_ == ident) // 닉네임 바꿔야할 유저를 찾을 상태 !!! 
 		{
 			return (*it);
 		}
 	}
-	Sender::error_message(error_code);
+	throw error_code;
+	// Sender::error_message(error_code);
 	return (*it);
 }
 
@@ -88,7 +89,7 @@ user&	Users::search_user_by_nick(std::string nickname, int error_code)
 			return (*it);
 		}
 	}
-	Sender::error_message(error_code);
+	// Sender::error_message(error_code);
 	return (*it);
 }
 
@@ -122,9 +123,16 @@ bool	Users::is_duplicate_nick(std::string& nick_name)
 // ident로 찾고, nick이 있는 지 확인 
 bool	Users::has_nick(const uintptr_t& ident)
 {
-	user tmp = search_user_by_ident(ident, 0);	// No THROW
-	if (tmp.nickname_.empty())
+	try
+	{
+		user tmp = search_user_by_ident(ident, 0);	// No THROW
+		if (tmp.nickname_.empty())
+			return (false);
+	}
+	catch(const std::exception&)
+	{
 		return (false);
+	}
 	return (true);
 }
 
@@ -132,9 +140,16 @@ bool	Users::has_nick(const uintptr_t& ident)
 // ident로 찾고, username이 있는 지 확인 
 bool	Users::has_username(const uintptr_t& ident)
 {
-	user tmp = search_user_by_ident(ident, 0);	// No THROW
-	if (tmp.nickname_.empty())
+	try
+	{
+		user tmp = search_user_by_ident(ident, 0);	// No THROW
+		if (tmp.username_.empty())
+			return (false);
+	}
+	catch(const std::exception&)
+	{
 		return (false);
+	}
 	return (true);
 }
 
@@ -190,21 +205,22 @@ Udata	Users::command_quit(user& leaver, std::string& leave_msg)
 Event	Users::command_user(const std::string input[4], const uintptr_t& ident)
 {
 	Event	ret;
-	user&	cur_user = search_user_by_ident(ident, 0);	// NO THROW
 
-	if (cur_user.username_.empty()) 					// 처음 
+	try
 	{
-		cur_user.username_ = input[0];
-		cur_user.mode_ = input[1];
-		cur_user.unused_ = input[2];
-		cur_user.realname_ = input[3].substr(1);
-		cur_user.client_sock_ = ident;
-		return Sender::welcome_message_connect(cur_user);
+		user&	cur_user = search_user_by_ident(ident, 0);	// NO THROW
 	}
-	else
+	catch(const std::exception&)
 	{
-		return (ret);									// 이중 user함수 선언이라 빈 Event를 Parser에게 return
+		user	tmp_user;
+		tmp_user.username_ = input[0];
+		tmp_user.mode_ = input[1];
+		tmp_user.unused_ = input[2];
+		tmp_user.realname_ = input[3].substr(1);
+		tmp_user.client_sock_ = ident;
+		ret = Sender::welcome_message_connect(tmp_user);
 	}
+	return (ret);
 }
 
 /// @brief 

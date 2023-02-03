@@ -7,6 +7,6 @@
 
 typedef std::map<uintptr_t, std::string>			Udata;
 typedef std::pair<uintptr_t, std::string> 			Event;
-typedef std::map<uintptr_t, std::string>::iterator	Event_iter;
+typedef std::map<uintptr_t, std::string>::iterator	Udata_iter;
 
 #endif
