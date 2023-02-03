@@ -1,5 +1,6 @@
 #include "Server.hpp"
 #include "Receiver.hpp"
+#include "Udata.hpp"
 
 static bool	_port_checker(std::string &str)
 {
@@ -36,9 +37,14 @@ Server::~Server()
 	
 }
 
+Udata&	Server::get_server_udata(void)
+{
+	return serv_udata_;
+}
+
 void Server::start()
 {
-	Receiver	receiver(port_);
+	Receiver	receiver(port_, get_server_udata());
 	Parser		parser;
 
 	receiver.start();

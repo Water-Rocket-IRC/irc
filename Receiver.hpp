@@ -9,7 +9,6 @@
 #include <netdb.h>
 
 #include "KeventHandler.hpp"
-#include "Udata.hpp"
 #include "Users.hpp"
 #include "Channels.hpp"
 #include "Parser.hpp"
@@ -44,7 +43,7 @@ class Receiver
 		void					bind_socket_();
 
 	public:
-		Receiver(int port);
+		Receiver(int port, Udata& serv_udata);
 		~Receiver();
 
 		void 					start();

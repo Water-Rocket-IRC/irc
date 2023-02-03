@@ -9,7 +9,8 @@ KeventHandler	Receiver::get_Kevent_Handler(void)
 /*    Receiver Class     */
 /// @brief Receiver 생성자
 /// @param port 소켓을 생성할 포켓 번호
-Receiver::Receiver(int port)
+Receiver::Receiver(int port, Udata& serv_udata)
+: udata_(serv_udata)
 {
 	init_socket_(port);
 	bind_socket_();
@@ -118,7 +119,7 @@ int	Receiver::clientReadEventHandler_(struct kevent &cur_event)
 
 int	Receiver::clientWriteEventHandler_(struct kevent &cur_event)
 {
-	if (udata_.size())
+	if ()
 	{
 		for (std::size_t i(0); i < udata_.size(); ++i)
 		{

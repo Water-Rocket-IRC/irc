@@ -43,19 +43,20 @@ class Channels
 		};
 };
 
-Udata		Channels::who_channel(const uintptr_t& sock, std::string& chan_name)
+Udata	Channels::who_channel(const uintptr_t& sock, std::string& chan_name)
 {
-	Udata	tmp;
+	Udata	ret;
+	Event	tmp;
 	
-	bzero(&tmp, sizeof(tmp));
 	try
 	{
 		Chan& chan = select_channel(chan_name);
-		tmp.msg = chan.get_info();
-		tmp.sock_fd = sock;
+		tmp.first = sock;
+		tmp.second = chan.get_info();
+		ret.insert((tmp));
 	}
 	catch (std::exception& e) { }
-	return tmp;
+	return ret;
 }
 
 const	char*		Channels::user_no_any_channels_exception::what(void) const throw()
