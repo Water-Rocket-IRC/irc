@@ -9,16 +9,16 @@
 class Server
 {
 	private:
-		int				port_;
-		std::string		password_;
 		Udata			serv_udata_;
-		// std::map<uintptr_t sock, std::string msg>;
-	public:
+		std::string		password_;
+		uintptr_t		port_;
 
-		Server(std::string port, std::string password);
+	public:
+		Server(const std::string& port, const std::string& password);
 		~Server();
 
 		void	start();
 		Udata&	get_server_udata(void);
 };
+
 #endif

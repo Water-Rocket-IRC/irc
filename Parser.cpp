@@ -28,8 +28,8 @@ const std::string Parser::command_toupper(const char* command)
 	return ret;
 }
 
-Parser::Parser(Udata& serv_udata)
-: parser_udata_(serv_udata)
+Parser::Parser(Udata& serv_udata, const std::string& password)
+: parser_udata_(serv_udata), channels_(), password_(password)
 {
 }
 
@@ -112,11 +112,11 @@ void	Parser::valid_user_checker_(const uintptr_t& ident, const std::string& comm
 	try
 	{
 		user&	cur_user = users_.search_user_by_ident(ident, 0);
-		if (!users_.is_has_nick(ident))
+		if (!users_.has_nick(ident))
 		{
 			throw Sender::command_not_registered_451(ident, command_type);
 		}
-		else if (!users_.is_has_username(ident))
+		else if (!users_.has_username(ident))
 		{
 			throw Sender::command_not_registered_451(cur_user, command_type);
 		}
@@ -462,13 +462,13 @@ void	Parser::push_write_event_(Event& ret)
 	if (ret.second.size())
 	{
 		parser_udata_.insert(ret);
-		(Receiver::get_Kevent_Handler()).set_write(e.first);
+		(Receiver::get_Kevent_Handler()).set_write(ret.first);
 	}
 }
 
 void	Parser::push_multiple_write_events_(Udata& ret, const uintptr_t& ident)
 {
-	Event_iter	target = ret.find(ident); //이게 없으면 내 자신한테 보내는게 아님
+	Udata_iter	target = ret.find(ident); //이게 없으면 내 자신한테 보내는게 아님
 
 	// 내가 있으면 나를 먼저 보내고 모두에게 보냄
 	if (target != ret.end())
@@ -476,14 +476,14 @@ void	Parser::push_multiple_write_events_(Udata& ret, const uintptr_t& ident)
 		Receiver::get_Kevent_Handler().set_write(ident);
 	}
 	// 내가 없으면 나를 제외한 모두에게 보냄
-	for (Event_iter iter = ret.begin(); iter != ret.end(); ++iter)
+	for (Udata_iter iter = ret.begin(); iter != ret.end(); ++iter)
 	{
 		parser_udata_.insert(*iter);
 		if (target != ret.end() && iter->first == ident)
 		{
 			continue ;
 		}
-		(Receiver::get_Kevent_Handler()).set_write(udata_events[i].sock_fd);
+		(Receiver::get_Kevent_Handler()).set_write(iter->first);
 	}
 }
 

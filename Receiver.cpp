@@ -9,8 +9,8 @@ KeventHandler	Receiver::get_Kevent_Handler(void)
 /*    Receiver Class     */
 /// @brief Receiver 생성자
 /// @param port 소켓을 생성할 포켓 번호
-Receiver::Receiver(int port, Udata& serv_udata)
-: parser_(serv_udata), udata_(serv_udata)
+Receiver::Receiver(Udata& serv_udata, const uintptr_t& port, const std::string& password)
+: parser_(serv_udata, password), udata_(serv_udata), port_(port)
 {
 	init_socket_(port);
 	bind_socket_();
@@ -18,10 +18,12 @@ Receiver::Receiver(int port, Udata& serv_udata)
 
 Receiver::~Receiver()
 {
+	// TODO: Have to add quit all client function
+	kq_.delete_server(server_sock_);
 	close(server_sock_);
 }
 
-void	Receiver::init_socket_(int &port)
+void	Receiver::init_socket_(const uintptr_t& port)
 {
 	server_sock_ = socket(AF_INET, SOCK_STREAM, 0);
 	if (server_sock_ < 0)
@@ -58,13 +60,13 @@ void	Receiver::start()
 			struct kevent	cur_event = events[i];	// event occur with new accept
 			if (cur_event.ident == server_sock_)
 			{
-				client_sock_ = accept(server_sock_, NULL, NULL);
-				if (client_sock_ < 0)
+				uintptr_t	client_sock = accept(server_sock_, NULL, NULL);
+				if (client_sock < 0)
 				{
 					std::cerr << "err: accepting connection fail" << std::endl;
 					continue ;
 				}
-				kq_.set_read(client_sock_);
+				kq_.set_read(client_sock);
 			}
 			else	// event occur with users
 			{
@@ -77,7 +79,6 @@ void	Receiver::start()
 				}
 				else if (cur_event.filter == EVFILT_WRITE)
 				{
-					// TODO: LEAK CHECK
 					clientWriteEventHandler_(cur_event);
 					uintptr_t	tmp_fd = cur_event.ident;
 
@@ -116,7 +117,7 @@ int	Receiver::clientReadEventHandler_(struct kevent &cur_event)
 
 void	Receiver::clientWriteEventHandler_(struct kevent &cur_event)
 {
-	Event_iter target = udata_.find(cur_event.ident);
+	Udata_iter	target = udata_.find(cur_event.ident);
 
 	std::cout << BOLDGREEN
 				<< "socket: " << target->first << "\nmsg: " << target->second

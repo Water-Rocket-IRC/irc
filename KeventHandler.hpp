@@ -22,6 +22,7 @@ class KeventHandler
 		void						set_read(uintptr_t ident);
 		void						set_write(uintptr_t ident);
 		void						delete_event(const struct kevent &event);
+		void						delete_server(uintptr_t serv_sock);
 };
 
 void exit_with_perror(const std::string& msg)
@@ -87,5 +88,12 @@ void	KeventHandler::delete_event(const struct kevent &event)
 {
 	struct kevent	tmp;
 	EV_SET(&tmp, event.ident, event.filter, EV_DELETE, 0, 0, 0);
+	kevent(kq_, &tmp, 1, NULL, 0, NULL);
+}
+
+void	KeventHandler::delete_server(uintptr_t serv_sock)
+{
+	struct kevent	tmp;
+	EV_SET(&tmp, serv_sock, EVFILT_READ, EV_DELETE, 0, 0, 0);
 	kevent(kq_, &tmp, 1, NULL, 0, NULL);
 }

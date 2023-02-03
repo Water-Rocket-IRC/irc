@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: jinwoole <indibooks@naver.com>             +#+  +:+       +#+         #
+#    By: sesim <sesim@student.42seoul.kr>           +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/01/27 10:57:54 by sesim             #+#    #+#              #
-#    Updated: 2023/01/29 15:49:46 by jinwoole         ###   ########.fr        #
+#    Updated: 2023/02/03 23:42:14 by sesim            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -19,13 +19,13 @@ OBJS_DIR	:=	objs/
 DEPS_DIR	:=	deps/
 
 # SRCS		:=	$(wildcard *.cpp)
-SRCS		:=	main.cpp Server.cpp Receiver.cpp
+SRCS		:=	main.cpp Server.cpp Receiver.cpp Parser.cpp
 OBJS		:=	$(addprefix $(OBJS_DIR), $(SRCS:.cpp=.o))
 DEPS		:=	$(addprefix $(DEPS_DIR), $(SRCS:.cpp=.d))
 NAME		:=	ircserv
 
 all :
-	$(CXX) $(CXXFLAGS_TMP) $(SRCS) -o $(NAME)
+	$(CXX) $(CXXFLAGS) $(SRCS) -o $(NAME)
 
 tmp : $(NAME)
 

@@ -31,19 +31,17 @@ class Receiver
 		Parser					parser_;
 		Udata					udata_;
 		sockaddr_in				server_addr_;
-		std::string				port_;
-		std::string				password_;
+		const uintptr_t			port_;
 		uintptr_t				server_sock_;
-		uintptr_t				client_sock_;
 
 		int						clientReadEventHandler_(struct kevent &cur_event);
 		void					clientWriteEventHandler_(struct kevent &cur_event);
 
-		void					init_socket_(int &port);
+		void					init_socket_(const uintptr_t &port);
 		void					bind_socket_();
 
 	public:
-		Receiver(int port, Udata& serv_udata);
+		Receiver(Udata& serv_udata, const uintptr_t& port, const std::string& password);
 		~Receiver();
 
 		void 					start();

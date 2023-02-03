@@ -15,9 +15,10 @@ enum e_val { N_COMMAND = 13 };
 class Parser
 {
 	private:
-		Udata			&parser_udata_;
-		Users			users_;
-		Channels		channels_;
+		Udata				&parser_udata_;
+		Users				users_;
+		Channels			channels_;
+		const std::string&	password_;
 
 		static const std::string	commands[N_COMMAND];
 		static void (Parser::*func_ptr[N_COMMAND])(const uintptr_t&, std::stringstream&, std::string&, const std::string&);
@@ -46,7 +47,7 @@ class Parser
 		const std::string	command_toupper(const char* command);
 
 	public:
-		Parser(Udata& serv_udata);
+		Parser(Udata& serv_udata, const std::string& password);
 		~Parser();
 
 		void			command_parser(const uintptr_t& ident, std::string &command);

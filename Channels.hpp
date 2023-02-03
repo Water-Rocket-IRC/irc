@@ -5,6 +5,7 @@
 #include "Udata.hpp"
 #include "Users.hpp"
 
+/*********************** TODO: 왜 채널의 기본 생성자가 없다고 뜨죠...?? *********************/
 class Channels
 {
 	private:
@@ -165,7 +166,7 @@ Udata	Channels::join_channel(user& joiner, std::string& chan_name)
 			ret = chan.send_all(joiner, joiner, "Join \"" + chan_name + "\" channel, " + joiner.nickname_, JOIN);
 			const std::string& chan_user_list = chan.get_user_list_str();
 
-			Event_iter it = ret.find(joiner.client_sock_);
+			Udata_iter it = ret.find(joiner.client_sock_);
 			it->second += Sender::join_353_message(joiner, chan.get_name(), chan.get_access(), chan_user_list);
 			it->second += Sender::join_366_message(joiner, chan.get_name());
 		}

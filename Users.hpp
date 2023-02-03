@@ -21,7 +21,7 @@ class Users
 	public:
 		Udata	command_nick(std::string& nick_name, const uintptr_t& ident);
 		Event	command_user(const std::string input[4], const uintptr_t& ident);
-		Udata	command_quit(user& leaver, std::string& leave_msg);
+		Udata	command_quit(user& leaver, const std::string& leave_msg);
 		Udata	command_privmsg(std::string &target_name, std::string &line, const uintptr_t& ident);
 		Udata	command_mode(std::string &target_name, std::string &line, const uintptr_t& ident);
 
@@ -186,7 +186,7 @@ Udata	Users::command_privmsg(std::string &target_name, std::string &line, const 
 
 /// @brief
 // quit을 실행하는 함수
-Udata	Users::command_quit(user& leaver, std::string& leave_msg)
+Udata	Users::command_quit(user& leaver, const std::string& leave_msg)
 {
 	Udata	ret;
 

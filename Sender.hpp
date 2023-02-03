@@ -294,6 +294,7 @@ Event	Sender::join_message(const user& sender, const user& receiver, const std::
 	ret = make_pair(receiver.client_sock_, join_message);
 	return ret;
 }
+/******** TODO: join_op_message // join_normal_message 2개로 오버로딩 하여 오퍼레이터와 일반 유저를 각각 처리하게 만들어야 됨.... ********/
 
 /// @brief 476
 Event	Sender::join_invaild_channel_name_message(const user& sender, const std::string invaild_channel)
