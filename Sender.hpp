@@ -11,10 +11,6 @@
 #include "color.hpp"
 
 // struct user;
-enum e_error
-{
-
-};
 
 class Sender
 { 

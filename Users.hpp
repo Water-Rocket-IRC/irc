@@ -19,19 +19,21 @@ class Users
 	private:
 		std::vector<user>	user_list_;
 	public:
-		Udata	command_nick(std::string& nick_name, uintptr_t &ident);
-		Event	command_user(const std::string input[4], uintptr_t& ident);
+		Udata	command_nick(std::string& nick_name, const uintptr_t& ident);
+		Event	command_user(const std::string input[4], const uintptr_t& ident);
 		Udata	command_quit(user& leaver, std::string& leave_msg);
-		Udata	command_privmsg(std::string &target_name, std::string &line, uintptr_t& ident);
+		Udata	command_privmsg(std::string &target_name, std::string &line, const uintptr_t& ident);
+		Udata	command_mode(std::string &target_name, std::string &line, const uintptr_t& ident);
 
-		user&	search_user_by_ident(uintptr_t& ident, int error_code);
+
+		user&	search_user_by_ident(const uintptr_t& ident, int error_code);
 		user&	search_user_by_nick(std::string nickname, int error_code);
 		void	delete_user(user& leaver);
-		bool 	is_duplicate_ident(uintptr_t& ident);
+		bool 	is_duplicate_ident(const uintptr_t& ident);
 		bool 	is_duplicate_nick(std::string& nick_name);
 
-		bool	has_nick(uintptr_t& ident);
-		bool	has_username(uintptr_t& ident);
+		bool	has_nick(const uintptr_t& ident);
+		bool	has_username(const uintptr_t& ident);
 
 		class no_user_found_exception : public std::exception
 		{
@@ -58,7 +60,7 @@ const char*	Users::duplicated_user_found_exception::what(void) const throw()
 
 /// @brief 
 // ident 즉 socket을 이용해 지금 명령어 친 user가 누군 지 알아낸다. 
-user&	Users::search_user_by_ident(uintptr_t& ident, int error_code)
+user&	Users::search_user_by_ident(const uintptr_t& ident, int error_code)
 {
 	std::vector<user>::iterator	it;
 
@@ -90,7 +92,7 @@ user&	Users::search_user_by_nick(std::string nickname, int error_code)
 	return (*it);
 }
 
-bool	Users::is_duplicate_ident(uintptr_t& ident)
+bool	Users::is_duplicate_ident(const uintptr_t& ident)
 {
 	try
 	{
@@ -118,7 +120,7 @@ bool	Users::is_duplicate_nick(std::string& nick_name)
 
 /// @brief 
 // ident로 찾고, nick이 있는 지 확인 
-bool	Users::has_nick(uintptr_t& ident)
+bool	Users::has_nick(const uintptr_t& ident)
 {
 	user tmp = search_user_by_ident(ident, 0);	// No THROW
 	if (tmp.nickname_.empty())
@@ -128,7 +130,7 @@ bool	Users::has_nick(uintptr_t& ident)
 
 /// @brief 
 // ident로 찾고, username이 있는 지 확인 
-bool	Users::has_username(uintptr_t& ident)
+bool	Users::has_username(const uintptr_t& ident)
 {
 	user tmp = search_user_by_ident(ident, 0);	// No THROW
 	if (tmp.nickname_.empty())
@@ -155,7 +157,7 @@ void	Users::delete_user(user& leaver)
 
 /// @brief 
 //	이 command에는 privmsg가 정상작동 될 때만 존재
-Udata	Users::command_privmsg(std::string &target_name, std::string &line, uintptr_t& ident)
+Udata	Users::command_privmsg(std::string &target_name, std::string &line, const uintptr_t& ident)
 {
 	Udata	ret;
 	user&	sender_user = search_user_by_ident(ident, 0);
@@ -185,7 +187,7 @@ Udata	Users::command_quit(user& leaver, std::string& leave_msg)
 
 /// @brief
 // user를 실행하는 함수 (command_user는 Event 반환)
-Event	Users::command_user(const std::string input[4], uintptr_t& ident)
+Event	Users::command_user(const std::string input[4], const uintptr_t& ident)
 {
 	Event	ret;
 	user&	cur_user = search_user_by_ident(ident, 0);	// NO THROW
@@ -207,7 +209,7 @@ Event	Users::command_user(const std::string input[4], uintptr_t& ident)
 
 /// @brief 
 // nick을 실행하는 함복
-Udata	Users::command_nick(std::string& new_nick, uintptr_t& ident)
+Udata	Users::command_nick(std::string& new_nick, const uintptr_t& ident)
 {
 	Udata		ret;
 	int			error_code;

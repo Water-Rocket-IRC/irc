@@ -65,7 +65,7 @@ Udata	printException(uintptr_t& sock, int error_code) {
 int main()
 {
     std::time_t result = std::time(NULL);
-	std::stringstream	ss();
+	std::stringstream	ss;
 	ss << result;
     std::cout << ss.str() << " seconds since the Epoch\n";
 

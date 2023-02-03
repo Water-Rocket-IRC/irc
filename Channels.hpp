@@ -301,15 +301,15 @@ Udata	Channels::mode_channel(user& moder, const std::string& chan_name, const bo
 	Udata	ret;
 
 	user	trash;
-	// if (vaild)	// true
-	// {
-	// 	ret = Sender::mode_324_message(moder, chan_name);
-	// 	ret.msg += Sender::mode_329_message(moder, chan_name, timstamp);
-	// }
-	// else
-	// {
-	// 	ret =
-	// }
+	if (vaild)	// true
+	{
+		ret = Sender::mode_324_message(moder, chan_name);
+		ret.msg += Sender::mode_329_message(moder, chan_name, timestamp);
+	}
+	else
+	{
+		ret =
+	}
 	return ret;
 }
 

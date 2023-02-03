@@ -52,7 +52,4 @@ class Parser
 		void			command_parser(const uintptr_t& ident, std::string &command);
 };
 
-
-
-
 #endif
