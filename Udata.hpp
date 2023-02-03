@@ -3,9 +3,10 @@
 
 #include <iostream>
 #include <map>
+#include <sys/_types/_uintptr_t.h>
 
-typedef std::map<uintptr_t, std::string>		Udata;
-typedef std::pair<int , std::string> 			Event;
-typedef std::map<int, std::string>::iterator	Event_iter;
+typedef std::map<uintptr_t, std::string>			Udata;
+typedef std::pair<uintptr_t, std::string> 			Event;
+typedef std::map<uintptr_t, std::string>::iterator	Event_iter;
 
 #endif

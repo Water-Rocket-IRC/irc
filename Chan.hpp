@@ -1,12 +1,13 @@
 #pragma once
 
 #include "Sender.hpp"
+#include "Udata.hpp"
 #include <vector>
 #include <algorithm>
 #include <sstream>
 
 
-enum e_send_switch { JOIN, PART, PRIV, KICK, QUIT, NOTICE, TOPIC, WALL, NICK, MODE };
+enum e_send_switch { JOIN, PART, PRIV, KICK, QUIT, NOTICE, TOPIC, WALL, NICK, MODE, WHO};
 /*
  * JOIN : 나를 포함해서 모두에게 보여주는 메세지(메세지가 다름)
  * PART : 나를 포함해서 모두에게 보여주는 메세지(메세지가 다름)
@@ -23,6 +24,8 @@ class Chan
 		std::vector<user>	connectors_;		// connectors.at(0) => operator
 		std::string			access_;
 
+
+//TODO: 메시지를 전송하는 모든 명령은 udata로 리턴할 것. Udata.hpp 참고
 	public:
 		std::string			get_info(void);
 
@@ -33,13 +36,15 @@ class Chan
 		void				set_access(const std::string& access);
 		void				set_topic(std::string& topic);
 		bool 				is_user(user& usr);
-		
+		void				change_nick(user& usr, std::string new_nick);
 		void 				add_user(user& joiner);
 		void 				set_channel_name(std::string& chan_name);
 		void				delete_user(user& usr);
 		std::string			get_user_list_str(void);
 
-		std::vector<Udata>	send_all(user& sender, user& target, std::string msg, int remocon);
+
+		//std::vector<Udata>	send_all(user& sender, user& target, std::string msg, int remocon);
+		Udata	send_all(user& sender, user& target, std::string msg, int remocon);
 
 		std::vector<user>&	get_users(void);
 		std::vector<user>	sort_users(void);
@@ -67,6 +72,18 @@ void	DebugshowChannels(std::vector<Chan>& target) {
 std::string&	Chan::get_access(void) { return access_; }
 void			Chan::set_access(const std::string& access) { access_ = access; }
 
+void			Chan::change_nick(user& usr, std::string new_nick)
+{
+	std::vector<user>::iterator it;
+	for (it = connectors_.begin(); it != connectors_.end(); it++)
+	{
+		if (it->nickname_ == usr.nickname_)
+		{
+			usr.nickname_ = new_nick;
+			break ;
+		}
+	}
+}
 
 std::vector<user>	Chan::sort_users(void)
 {
@@ -109,23 +126,22 @@ std::string		Chan::get_user_list_str(void)
 	return ret;
 }
 
-
 /*
 ///@ brief 기본형 : 나 빼고 다 보냄, flag 1 -> PART
 */
-std::vector<Udata> Chan::send_all(user& sender, user& target, std::string msg, int remocon)
+//TODO : Sender가 event를 잘 리턴하는지 파악해야 함
+Udata Chan::send_all(user& sender, user& target, std::string msg, int remocon)
 {
-	std::vector<Udata>			ret;
+	Udata			ret;
 	std::vector<user>::iterator it;
 
 	if (is_user(sender) == false)
 	{
 		//throw noUserException();
 	}
-
 	for (it = connectors_.begin(); it != connectors_.end(); it++)
 	{
-		Udata packet;
+		Event packet;
 
 		switch (remocon)
 		{
@@ -162,18 +178,19 @@ std::vector<Udata> Chan::send_all(user& sender, user& target, std::string msg, i
 				}
 				packet = Sender::wall_message(sender, this->get_host(), this->get_name(), msg);
 			case TOPIC:
-				packet.msg = msg;
+				//Sender::
 				break ;
 			case NICK:
 				if (sender == *it)
 				{
 					continue ;
 				}
-				packet.sock_fd = it->client_sock_;
-				packet.msg = msg;
 				break ;
+			case WHO:
+				packet = Sender::who_joiner_352_message(sender, this->get_name());
+				break;
 		}
-		ret.push_back(packet);
+		ret.insert(packet);
 	}
 	return ret;
 }

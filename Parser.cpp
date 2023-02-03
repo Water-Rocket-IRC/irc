@@ -1,17 +1,36 @@
 #include "Parser.hpp"
 #include "Receiver.hpp"
+#include "Sender.hpp"
+#include "Udata.hpp"
+#include "user.hpp"
+#include <netdb.h>
+#include <sys/_types/_size_t.h>
+#include <sys/_types/_uintptr_t.h>
 
-// const std::string Parser::commands[N_COMMAND] = {"NICK", "USER", "PING", "QUIT", "PRIVMSG", "NOTICE", "WALL", "JOIN", "MODE", "WHO", "PART", "TOPIC", "KICK"};
-// void (Parser::*Parser::func_ptr[N_COMMAND])_(uintptr_t&, std::stringstream&, std::string&) = \
-// 								{&Parser::parser_nick_, &Parser::parser_user_, &Parser::parser_ping_, &Parser::parser_quit_, &Parser::parser_privmsg_, &Parser::parser_notice_
-// 							   , &Parser::parser_wall_, &Parser::parser_join_, &Parser::parser_mode_, &Parser::parser_who_,  &Parser::parser_part_, &Parser::parser_topic_, &Parser::parser_kick_ };
-const std::string Parser::commands[N_COMMAND] = {"NICK", "USER", "PING", "JOIN", "MODE", "WHO", "PART"};
-void (Parser::*Parser::func_ptr[N_COMMAND])(uintptr_t&, std::stringstream&, std::string&) = \
+const std::string Parser::commands[N_COMMAND] = {"NICK", "USER", "PING", "QUIT", "PRIVMSG", "NOTICE", "WALL", "JOIN", "MODE", "WHO", "PART", "TOPIC", "KICK"};
+void (Parser::*Parser::func_ptr[N_COMMAND])(const uintptr_t&, std::stringstream&, std::string&, const std::string&) = \
+								{&Parser::parser_nick_, &Parser::parser_user_, &Parser::parser_ping_, &Parser::parser_quit_, &Parser::parser_privmsg_, &Parser::parser_notice_
+								, &Parser::parser_wall_, &Parser::parser_join_, &Parser::parser_mode_, &Parser::parser_who_,  &Parser::parser_part_, &Parser::parser_topic_, &Parser::parser_kick_};
+
+// const std::string Parser::commands[N_COMMAND] = {"NICK", "USER", "PING", "JOIN", "MODE", "WHO", "PART"};
+// void (Parser::*Parser::func_ptr[N_COMMAND])(const uintptr_t&, std::stringstream&, std::string&) = \
 								{&Parser::parser_nick_, &Parser::parser_user_, &Parser::parser_ping_
-							   , &Parser::parser_join_, &Parser::parser_mode_, &Parser::parser_who_,  &Parser::parser_part_ };
+							//    , &Parser::parser_join_, &Parser::parser_mode_, &Parser::parser_who_,  &Parser::parser_part_ };
 	// ret = channel.send_all(moder, trash, chan_name, MODE);
 
-Parser::Parser(/* args */)
+const std::string Parser::command_toupper(const char* command)
+{
+	std::string	ret;
+	
+	for (std::size_t i(0); i < std::strlen(command); ++i)
+	{
+		ret += std::toupper(static_cast<int>(command[i]));
+	}
+	return ret;
+}
+
+Parser::Parser(Udata& serv_udata)
+: parser_udata_(serv_udata)
 {
 }
 
@@ -19,9 +38,18 @@ Parser::~Parser()
 {
 }
 
-std::string	Parser::set_message_(std::string &msg, size_t start, size_t end)
+std::string	Parser::set_message_(std::string& msg, size_t start, size_t end)
 {
 	std::string	ret = msg.substr(start, end);
+	return ret;
+}
+
+std::string	Parser::message_resize_(std::stringstream& line_ss, std::string& to_send)
+{
+	std::string tmp;
+	line_ss >> tmp;
+	std::string	ret = to_send.size() ? to_send : tmp;
+	(ret.size() > 510) ? ret.resize(510) : ret.resize(ret.size());
 	return ret;
 }
 
@@ -41,7 +69,7 @@ static void _print_title(const std::string& title)
 			  << RESET << std::endl;
 }
 
-void	Parser::command_parser(uintptr_t& ident, std::string &command)
+void	Parser::command_parser(const uintptr_t& ident, std::string &command)
 {
 	std::stringstream	ss(command);
 	std::string			line;
@@ -50,10 +78,12 @@ void	Parser::command_parser(uintptr_t& ident, std::string &command)
 	{
 		std::stringstream	line_ss(line);
 		std::string			command_type;
+		std::size_t 		i(0);
 
 		line_ss >> command_type;
+		command_type = command_toupper(command_type.c_str());
 		_print_title(command_type);
-		for (int i(0); i < N_COMMAND; ++i)
+		for (; i < N_COMMAND; ++i)
 		{
 			if (command_type == Parser::commands[i])
 			{
@@ -61,394 +91,401 @@ void	Parser::command_parser(uintptr_t& ident, std::string &command)
 				std::string	to_send;
 				if (pos == std::string::npos)
 					to_send.clear();
-				// to_send = set_message_(line, pos + 1, (line.length() - (pos + 2)));
-				// (this->*Parser::func_ptr[i])(ident, line_ss, to_send);
-			}
-			else 
-			{
-				std::cerr << BOLDRED << "We don't support these : \n" << RESET << command_type << std::endl;
+				to_send = set_message_(line, pos + 1, (line.length() - (pos + 2)));
+				try
+				{
+					(this->*Parser::func_ptr[i])(ident, line_ss, to_send, command_type);
+				}
+				catch (Event& e)
+				{
+					push_write_event_(e);
+				}
+				break ;
 			}
 		}
+		if (i == N_COMMAND)
+			std::cerr << BOLDRED << "We don't support these : \n" << RESET << command_type << std::endl;
 	}
+}
+
+void	Parser::valid_user_checker_(const uintptr_t& ident, const std::string& command_type)
+{
+	try
+	{
+		user&	cur_user = users_.search_user_by_ident(ident, 0);
+		if (!users_.is_has_nick(ident))
+		{
+			throw Sender::command_not_registered_451(ident, command_type);
+		}
+		else if (!users_.is_has_username(ident))
+		{
+			throw Sender::command_not_registered_451(cur_user, command_type);
+		}
+	}
+	catch (std::exception& e) { }
 }
 
 	//check_argument(2, )
 	// NICK은 채널에 있을 때 모에게 NICK 변경되었음을 알리고, 로비에 있을 때는 본인에게만 알린다.
-void	Parser::parser_nick_(uintptr_t& ident, std::stringstream& line_ss, std::string& to_send)
+void	Parser::parser_nick_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send, const std::string& cmd)
 {
 	static_cast<void>(to_send);
 	std::string	nick;
-	Udata		tmp;
+	Udata		ret;
 
-	bzero(&tmp, sizeof(tmp));
 	line_ss >> nick;
 	if (nick.empty()) // no nickname error
 	{
-		tmp = Sender::command_empty_argument_461(ident, "NICK"); // TODO: name respecify
-		push_write_event_(tmp, ident);
-		return ;
+		throw Sender::command_empty_argument_461(ident, "NICK");
 	}
-	tmp = users_.command_nick(nick, ident);
-	if (tmp.msg.empty()) {
+	if (nick.size() && nick.at(0) == '#')
+	{
+		user&	tmp_user = users_.search_user_by_ident(ident, 432);
+		throw Sender::nick_wrong_message(tmp_user, nick);
+	}
+	ret = users_.command_nick(nick, ident);
+	if (ret.empty())
+	{
 		// Client first enter
-		push_write_event_(tmp, ident);
+		Event	ret;
+
+		ret.first = ident;
+		push_write_event_(ret);
 		return ;
 	}
-	std::vector<Udata>	events;
-	events.push_back(tmp);
-	try
-	{
-		// Success change nick
-		user& 	who = users_.search_user_by_ident(ident);
-		std::vector<Udata> tmp_events = channels_.nick_channel(who, tmp.msg);
-		events.insert(events.end(), tmp_events.begin(), tmp_events.end());
-		push_multiple_write_events_(events);
-	}
-	catch (const std::exception& e)
-	{
-		// cannot found who want to change the nick
-		push_write_event_(tmp, ident);
-	}
+	// Success change nick
+	user& 	who = users_.search_user_by_ident(ident, 451);
+	Udata	ret_events = channels_.nick_channel(who, ret[ident]);
+	ret.insert(ret_events.begin(), ret_events.end());
 }
 
-void	Parser::parser_user_(uintptr_t& ident, std::stringstream& line_ss, std::string& real_name)
+void	Parser::parser_user_(const uintptr_t& ident, std::stringstream& line_ss, std::string& real_name, const std::string& cmd)
 {
-
-	Udata	tmp;
+	Event		ret;
 	std::string	argument[4];
 	
-	bzero(&tmp, sizeof(tmp));
 	line_ss >> argument[0] >> argument[1] >> argument[2] >> argument[3];
 	for (size_t i(0); i < 4; ++i)
 	{
-		if (argument[i].empty())
+		if (real_name.empty() || argument[i].empty())
 		{
-			try
-			{
-				user&	cur_user = users_.search_user_by_ident(ident);
-				if (cur_user.is_user_has_nick())
-				{
-					tmp = Sender::command_not_registered_451(cur_user, "USER");
-					push_write_event_(tmp, ident);
-					return ;
-				}
-				tmp = Sender::command_empty_argument_461(cur_user, "USER"); // TODO: low argument with user command
-				push_write_event_(tmp, ident);
-			}
-			catch(const std::exception&)
-			{
-				tmp = Sender::command_not_registered_451(ident, "USER");
-				push_write_event_(tmp, ident);
-			}
+			throw Sender::command_empty_argument_461(ident, "USER");
 		}
 	}
+	user&	cur_user = users_.search_user_by_ident(ident, 0); // NO THROW
 	if (real_name.size())
 	{
 		argument[3] = real_name;
 	}
-	tmp = users_.command_user(argument, ident); // USER TODO: have to change argument and logic
-	push_write_event_(tmp, ident);
+	ret = users_.command_user(argument, ident); // USER TODO: have to change argument and logic
+	push_write_event_(ret);
 }
 
-void	Parser::parser_ping_(uintptr_t& ident, std::stringstream& line_ss, std::string& to_send)
+void	Parser::parser_ping_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send, const std::string& cmd)
 {
+	valid_user_checker_(ident, cmd);
+	static_cast<void>(to_send);
 	std::string serv_addr;
-	Udata		tmp;
+	Event		ret;
 
 	line_ss >> serv_addr;
-	bzero(&tmp, sizeof(tmp));
-	// if (serv_addr.empty())
-	// {
-	// 	tmp = Sender::ping_461_error(); // TODO: ping no parameter
-	// 	push_write_event_(tmp, ident);
-	// 	return ;
-	// }
-	// if (serv_addr.size() == 1 && serv_addr.at(0) == ':' && to_send.empty())
-	// {
-	// 	tmp = Sender::ping_409_error(); // TODO: ping empty parameter
-	// 	push_write_event_(tmp, ident);
-	// 	return ;
-	// }
-	try
+	if (serv_addr.empty())
 	{
-		user&	cur_user = users_.search_user_by_ident(ident);
-
-		tmp = Sender::pong(ident, serv_addr);
-		push_write_event_(tmp, ident);
+		throw Sender::command_empty_argument_461(ident, "PING");
 	}
-	catch(const std::exception& e)
+	user&	cur_user = users_.search_user_by_ident(ident, 451); // NO SUCH USER
+	if (serv_addr.size() == 1 && serv_addr.at(0) == ':' && to_send.empty())
 	{
-		// tmp = Sender::pong_451_error(); // TODO: ping no user found
-		// push_write_event_(tmp, ident);
+		throw Sender::command_no_origin_specified_409(cur_user, "PING");
+	}
+	ret = Sender::pong(ident, serv_addr);
+	push_write_event_(ret);
+}
+
+void	Parser::parser_quit_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send, const std::string& cmd)
+{
+	valid_user_checker_(ident, cmd);
+	Udata		ret;
+	const std::string	msg = message_resize_(line_ss, to_send);
+
+	user&	cur_user = users_.search_user_by_ident(ident, 1); // QUIT 할 때 유저가 없음
+	ret = channels_.quit_channel(cur_user, msg); // USER TODO: Have to change logic
+	if (channels_.is_user_in_channel(cur_user))
+	{
+		ret = channels_.quit_channel(cur_user, msg);
+	}
+	else
+	{
+		ret = users_.command_quit(cur_user, msg);
+	}
+	push_multiple_write_events_(ret, ident);
+}
+
+// TODO : not yet
+void	Parser::parser_privmsg_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send, const std::string& cmd)
+{
+	valid_user_checker_(ident, cmd);
+	std::string target;
+
+	line_ss >> target;
+	const std::string msg = message_resize_(line_ss, to_send);
+
+	(to_send.size() > 510) ? to_send.resize(510) : to_send.resize(to_send.size());
+	if (target.at(0) == '#')
+	{
+		try
+		{
+			user&	sender = users_.search_user_by_ident(ident); // USER is unregistered
+			
+			try
+			{
+				Channels&	ret_chan = Channels::select_channel(user); // TODO: user is not in channel
+				// if success
+				std::vector<Udata>	udata_events = channels_.channel_msg(sender, target, msg);
+				push_multiple_write_events_(udata_events);
+			}
+			catch(const std::exception& e)
+			{
+				Udata	ret = Sender::privmsg_no_user_error_message(sender, target);
+				push_write_event_(ret, ident);
+			}
+			
+		}
+		catch(const std::exception& e)
+		{
+			Udata	ret = Sender::privmsg_no_user_error_message_in_channel(); // TODO: no user in channel
+			push_write_event_(ret, ident);
+		}
+	}
+	else
+	{
+		Udata	ret = users_.command_privmsg(target, to_send, ident); // TODO: USER have to change logic
+		push_write_event_(ret, ident);
 	}
 }
 
-// void	Parser::parser_quit_(uintptr_t& ident, std::stringstream& line_ss, std::string& to_send)
-// {
-// 	std::string	nick, msg;
-// 	Udata		tmp;
-
-// 	line_ss >> nick >> msg;
-// 	bzero(&tmp, sizeof(tmp));
-// 	try
-// 	{
-// 		user&	cur_user = users_.search_user_by_ident(ident);
-
-// 		tmp = users_.command_quit(nick, to_send, ident); // USER TODO: Have to change logic
-// 		push_write_event_(tmp, ident);
-// 	}
-// 	catch(const std::exception& e)
-// 	{
-// 		tmp = Sender::user_quit_error(); // TODO: no user found
-// 		push_write_event_(tmp, ident);
-// 	}
-	
-// }
-
-// void	Parser::parser_privmsg_(uintptr_t& ident, std::stringstream& line_ss, std::string& to_send)
-// {
-// 	std::string target, msg;
-
-// 	line_ss >> target >> msg;
-// 	(to_send.size() > 510) ? to_send.resize(510) : to_send.resize(to_send.size());
-// 	if (target.at(0) == '#')
-// 	{
-// 		try
-// 		{
-// 			user&	sender = users_.search_user_by_ident(ident); // USER is unregistered
-			
-// 			try
-// 			{
-// 				Channels&	tmp_chan = Channels::select_channel(user); // TODO: user is not in channel
-// 				// if success
-// 				std::vector<Udata>	udata_events = channels_.channel_msg(sender, target, msg);
-// 				push_multiple_write_events_(udata_events);
-// 			}
-// 			catch(const std::exception& e)
-// 			{
-// 				Udata	tmp = Sender::privmsg_no_user_error_message(sender, target);
-// 				push_write_event_(tmp, ident);
-// 			}
-			
-// 		}
-// 		catch(const std::exception& e)
-// 		{
-// 			Udata	tmp = Sender::privmsg_no_user_error_message_in_channel(); // TODO: no user in channel
-// 			push_write_event_(tmp, ident);
-// 		}
-// 	}
-// 	else
-// 	{
-// 		Udata	tmp = users_.command_privmsg(target, to_send, ident); // TODO: USER have to change logic
-// 		push_write_event_(tmp, ident);
-// 	}
-// }
-
-// void	Parser::parser_notice_(uintptr_t& ident, std::stringstream& line_ss, std::string& to_send)
-// {
-// 	std::string target, msg;
-
-// 	line_ss >> target >> msg;
-// 	(to_send.size() > 510) ? to_send.resize(510) : to_send.resize(to_send.size());
-// 	if (target.at(0) == '#')
-// 	{
-// 		try
-// 		{
-// 			user&	sender = users_.search_user_by_ident(ident); // USER is unregistered
-			
-// 			try
-// 			{
-// 				Channels&	tmp_chan = Channels::select_channel(sender); // TODO: user is not in channel
-// 				// if success
-// 				std::vector<Udata>	udata_events = channels_.channel_notice(sender, target, msg);
-// 				push_multiple_write_events_(udata_events);
-// 			}
-// 			catch(const std::exception& e)
-// 			{
-// 				Udata	tmp = Sender::notice_no_user_error_message(sender, target); // TODO: no user found with notice
-// 				push_write_event_(tmp, ident);
-// 			}
-			
-// 		}
-// 		catch(const std::exception& e)
-// 		{
-// 			Udata	tmp = Sender::notice_no_user_error_message_in_channel(); // TODO: no user in channel
-// 			push_write_event_(tmp, ident);
-// 		}
-// 	}
-// 	else
-// 	{
-// 		Udata	tmp = users_.command_notice(target, to_send, ident); // TODO: USER have to change logic
-// 		push_write_event_(tmp, ident);
-// 	}
-// }
-
-// void	Parser::parser_wall_(uintptr_t& ident, std::stringstream& line_ss, std::string& to_send)
-// {
-// 	std::string chan_name, msg;
-
-// 	line_ss >> chan_name >> msg;
-// 	if (msg[0] != ':')
-// 	{
-// 		//오류
-// 	}
-// 	else
-// 	{
-// 		try
-// 		{
-// 			user sender = users_.search_user_by_ident(ident);
-
-// 			std::size_t	pos = line.find(':');
-// 			msg = set_message_(line, pos + 1, (line.length() - (pos + 2)));
-// 			(msg.size() > 510) ? msg.resize(510) : msg.resize(msg.size());
-
-// 			std::vector<Udata>	udata_events = channels_.channel_notice(sender, chan_name, msg);
-// 			push_multiple_write_events_(udata_events);
-// 		}
-// 		catch (std::exception &e)
-// 		{
-// 			std::cout << "FUck" << std::endl;
-// 		}
-// 	}
-// }
-
-void	Parser::parser_join_(uintptr_t& ident, std::stringstream& line_ss, std::string& to_send)
+// TODO : not yet
+void	Parser::parser_notice_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send, const std::string& cmd)
 {
-	std::string	chan_name, error;
+	valid_user_checker_(ident, cmd);
+	std::string target;
 
+	line_ss >> target;
+	const std::string msg = message_resize_(line_ss, to_send);
 
-	line_ss >> chan_name >> error;
-
-	if (!error.empty())
+	if (target.at(0) == '#')
 	{
-		//error 나중에 nc로 넣어보기
+		try
+		{
+			user&	sender = users_.search_user_by_ident(ident); // USER is unregistered
+			
+			try
+			{
+				Channels&	ret_chan = Channels::select_channel(sender); // TODO: user is not in channel
+				// if success
+				std::vector<Udata>	udata_events = channels_.channel_notice(sender, target, msg);
+				push_multiple_write_events_(udata_events);
+			}
+			catch(const std::exception& e)
+			{
+				Udata	ret = Sender::notice_no_user_error_message(sender, target); // TODO: no user found with notice
+				push_write_event_(ret, ident);
+			}
+			
+		}
+		catch(const std::exception& e)
+		{
+			Udata	ret = Sender::notice_no_user_error_message_in_channel(); // TODO: no user in channel
+			push_write_event_(ret, ident);
+		}
+	}
+	else
+	{
+		Udata	ret = users_.command_notice(target, to_send, ident); // TODO: USER have to change logic
+		push_write_event_(ret, ident);
+	}
+}
+// TODO : not yet
+void	Parser::parser_wall_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send, const std::string& cmd)
+{
+	valid_user_checker_(ident, cmd);
+	std::string chan_name;
+
+	line_ss >> chan_name;
+	const std::string msg = message_resize_(line_ss, to_send);
+	if (msg[0] != ':')
+	{
+		//오류
 	}
 	else
 	{
 		try
 		{
-			user chan_user = users_.search_user_by_ident(ident);
-			std::vector<Udata>	udata_events = channels_.join_channel(chan_user, chan_name);
+			user sender = users_.search_user_by_ident(ident);
+
+			std::size_t	pos = line.find(':');
+			msg = set_message_(line, pos + 1, (line.length() - (pos + 2)));
+			(msg.size() > 510) ? msg.resize(510) : msg.resize(msg.size());
+
+			std::vector<Udata>	udata_events = channels_.channel_notice(sender, chan_name, msg);
 			push_multiple_write_events_(udata_events);
 		}
-		catch(const std::exception& e)
+		catch (std::exception &e)
 		{
-			// Udata	tmp = Sender::no_user_found_with_join(); // TODO: 
+			std::cout << "FUck" << std::endl;
 		}
-		
 	}
-
 }
 
-void	Parser::parser_mode_(uintptr_t& ident, std::stringstream& line_ss, std::string& to_send)
+void	Parser::parser_join_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send, const std::string& cmd)
 {
-	std::string	arguments[3];
+	static_cast<void>(to_send);
+	valid_user_checker_(ident, cmd);
+	std::string	chan_name;
+	Udata		ret;
 
-	line_ss >> arguments[0] >> arguments[1] >> arguments[2];
-
-	if (arguments[2].size() || arguments[0].empty())
+	line_ss >> chan_name;
+	if (chan_name.empty())
 	{
-		// error
+		user&	tmp_user = users_.search_user_by_ident(ident, 461);	// <- '*' 461로 넣어야?
+		throw Sender::command_empty_argument_461(tmp_user, "MODE");
+	}
+	user&	cur_user = users_.search_user_by_ident(ident, 451); // JOIN 시 해당 닉네임의 유저가 없음
+	if (chan_name.at(0) != '#')
+		throw Sender::join_invaild_channel_name_message(user, chan_name)
+	ret = channels_.join_channel(cur_user, chan_name);
+	push_multiple_write_events_(ret, ident);
+}
+
+void	Parser::parser_mode_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send, const std::string& cmd)
+{
+	static_cast<void>(to_send);
+	valid_user_checker_(ident, cmd);
+	std::string	target, mode;
+
+	line_ss >> target >> mode;
+	if (target.empty())
+	{
+		user&	tmp_user = users_.search_user_by_ident(ident, 461);	// <- '*' 461로 넣어야?
+		throw Sender::command_empty_argument_461(tmp_user, "MODE");
+	}
+	user	cur_user = users_.search_user_by_ident(ident, 451);
+	Udata	ret;
+	if (target.at(0) == '#')
+	{
+		ret = channels_.mode_channel(cur_user, target, (mode.size() == 1 && mode == "b"));
 	}
 	else
 	{
-		if (arguments[0].at(0) == '#')
-		{
-			user	cur_user = users_.search_user_by_ident(ident);
-			Udata	tmp = channels_.mode_channel(cur_user, arguments[0], (arguments[1].size() == 1 && arguments[1] == "b"));
-			push_write_event_(tmp, ident);
-		}
-		else
-		{
-			// Udata	tmp = users_.command_mode(arguments[0], (arguments[1].size () == 2 && arguments[1] == "+i"));
-			// push_write_event_(tmp, ident);
-		}
+		ret = users_.command_mode(target, (mode.size () == 2 && mode == "+i"));
 	}
+	push_multiple_write_events_(ret, ident);
 }
 
-void	Parser::parser_who_(uintptr_t& ident, std::stringstream& line_ss, std::string& to_send)
+void	Parser::parser_who_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send, const std::string& cmd)
 {
-	std::string	arguments[2];
+	static_cast<void>(to_send);
+	valid_user_checker_(ident, cmd);
+	std::string	target;
 
-	line_ss	>> arguments[0] >> arguments[1];
-	if (arguments[0].empty() || arguments[1].size())
+	line_ss	>> target;
+	if (target.empty())
 	{
-		// error
+		user&	tmp_user = users_.search_user_by_ident(ident, 461);	// <- '*' 461로 넣어야?
+		throw Sender::command_empty_argument_461(tmp_user, "MODE");
 	}
-	else
-	{
-		Udata	tmp = channels_.who_channel(ident, arguments[0]);
-		push_write_event_(tmp, ident);
-	}
+	Udata	ret = channels_.who_channel(ident, target);
+	push_multiple_write_events_(ret, ident);
 }
 
-void	Parser::parser_part_(uintptr_t& ident, std::stringstream& line_ss, std::string& to_send)
+void	Parser::parser_part_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send, const std::string& cmd)
 {
-	std::string chan_name, msg;
+	valid_user_checker_(ident, cmd);
+	std::string chan_name;
 
-	line_ss >> chan_name >> msg;
-	user leaver = users_.search_user_by_ident(ident);
+
+	line_ss >> chan_name;
+	const std::string msg = message_resize_(line_ss, to_send);
+
+	user& leaver = users_.search_user_by_ident(ident);
 	std::vector<Udata>	udata_events = channels_.leave_channel(leaver, chan_name, msg);
 	push_multiple_write_events_(udata_events);
 }
 
-// void	Parser::parser_topic_(uintptr_t& ident, std::stringstream& line_ss, std::string& to_send)
-// {
-// 	std::string chan_name, topic;
-// 	line_ss >> chan_name >> topic;
-
-// 	try
-// 	{
-// 		user sender = users_.search_user_by_ident(ident);
-// 		std::size_t	pos = line.find(':');
-// 		topic = set_message_(line, pos + 1, (line.length() - (pos + 2)));
-// 		(topic.size() > 510) ? topic.resize(510) : topic.resize(topic.size());
-
-// 		std::vector<Udata>	udata_events = channels_.set_topic(sender, chan_name, topic);
-// 		push_multiple_write_events_(udata_events);
-// 	}
-// 	catch (std::exception &e)
-// 	{
-// 		std::cout << "FUck" << std::endl;
-// 	}
-// }
-
-// void	Parser::parser_kick_(uintptr_t& ident, std::stringstream& line_ss, std::string& to_send)
-// {
-// 	std::string chan_name, target_name, msg;
-
-// 	line_ss >> chan_name >> target_name;
-// 	try
-// 	{
-// 		user kicker = users_.search_user_by_ident(ident);
-// 		user target = users_.search_user_by_nick(target_name);
-// 		std::size_t	pos = line.find(':');
-// 		msg = set_message_(line, pos + 1, (line.length() - (pos + 2)));
-// 		(msg.size() > 510) ? msg.resize(510) : msg.resize(msg.size());
-// 		std::vector<Udata>	udata_events = channels_.kick_channel(kicker, target, chan_name, msg);
-// 		push_multiple_write_events_(udata_events);
-// 	}
-// 	catch (std::exception &e)
-// 	{
-// 		std::cout << "FUck" << std::endl;
-// 	}
-// }
-
-
-void	Parser::push_write_event_(Udata& tmp, uintptr_t& ident)
+void	Parser::parser_topic_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send, const std::string& cmd)
 {
-	if (tmp.msg.size())
+	valid_user_checker_(ident, cmd);
+	std::string chan_name;
+	line_ss >> chan_name;
+
+	const std::string topic = message_resize_(line_ss, to_send);
+	try
 	{
-		udata_.push_back(tmp);
-		(Receiver::get_Kevent_Handler()).set_write(ident);
+		user sender = users_.search_user_by_ident(ident);
+		std::size_t	pos = line.find(':');
+		topic = set_message_(line, pos + 1, (line.length() - (pos + 2)));
+		(topic.size() > 510) ? topic.resize(510) : topic.resize(topic.size());
+
+		Udata	udata_events = channels_.set_topic(sender, chan_name, topic);
+		// push_multiple_write_events_(udata_events); -> todo 바꿔야함
+	}
+	catch (std::exception &e)
+	{
+		std::cout << "FUck" << std::endl;
 	}
 }
 
-void	Parser::push_multiple_write_events_(std::vector<Udata>& udata_events)
+void	Parser::parser_kick_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send, const std::string& cmd)
 {
-	for (std::size_t i(0); i < udata_events.size(); ++i)
+	valid_user_checker_(ident, cmd);
+	std::string chan_name, target_name;
+
+	line_ss >> chan_name >> target_name;
+	const std::string msg = message_resize_(line_ss, to_send);
+	try
 	{
-		udata_.push_back(udata_events[i]);
+		user kicker = users_.search_user_by_ident(ident);
+		user target = users_.search_user_by_nick(target_name);
+		std::size_t	pos = line.find(':');
+		msg = set_message_(line, pos + 1, (line.length() - (pos + 2)));
+		(msg.size() > 510) ? msg.resize(510) : msg.resize(msg.size());
+		std::vector<Udata>	udata_events = channels_.kick_channel(kicker, target, chan_name, msg);
+		push_multiple_write_events_(udata_events);
+	}
+	catch (std::exception &e)
+	{
+		std::cout << "FUck" << std::endl;
+	}
+}
+
+void	Parser::push_write_event_(Event& ret)
+{
+	if (ret.second.size())
+	{
+		parser_udata_.insert(ret);
+		(Receiver::get_Kevent_Handler()).set_write(e.first);
+	}
+}
+
+void	Parser::push_multiple_write_events_(Udata& ret, const uintptr_t& ident)
+{
+	Event_iter	target = ret.find(ident); //이게 없으면 내 자신한테 보내는게 아님
+
+	// 내가 있으면 나를 먼저 보내고 모두에게 보냄
+	if (target != ret.end())
+	{
+		Receiver::get_Kevent_Handler().set_write(ident);
+	}
+	// 내가 없으면 나를 제외한 모두에게 보냄
+	for (Event_iter iter = ret.begin(); iter != ret.end(); ++iter)
+	{
+		parser_udata_.insert(*iter);
+		if (target != ret.end() && iter->first == ident)
+		{
+			continue ;
+		}
 		(Receiver::get_Kevent_Handler()).set_write(udata_events[i].sock_fd);
 	}
 }
+
+// 혹시 멀티플 write에서 빈 Udata를 해야되나?

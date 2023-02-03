@@ -1,54 +1,60 @@
 #ifndef SENDER_HPP
 # define SENDER_HPP
 
-#include "user.hpp"
+//#include "Chan.hpp" 재귀호출
+#include "Chan.hpp"
 #include "Udata.hpp"
+#include "user.hpp"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <iostream>
 #include "color.hpp"
 
 // struct user;
+enum e_error
+{
+
+};
 
 class Sender
 { 
 	public:
-		static Udata	unknown_command_message_421(const user& sender, const std::string command);
-		static Udata	pong(uintptr_t socket, const std::string& serv_addr);
-		static Udata	command_no_origin_specified_409(const user& sender, const std::string command);
-		static Udata	command_not_registered_451(const user& sender, const std::string command);
-		static Udata	command_not_registered_451(const uintptr_t& sock, const std::string command);
-		static Udata	command_empty_argument_461(const user& sender, const std::string command);
-		static Udata	command_empty_argument_461(const uintptr_t& sock, const std::string command);
-		static Udata	welcome_message_connect(const user& sender); // 아직 모름 -> 1번 바꿈
-		static Udata	nick_well_message(const user& sender, const user& receiver, const std::string& new_nick);
-		static Udata	nick_error_message(const user& sender, const std::string& new_nick);
-		static Udata	nick_error_message(const std::string& new_nick, uintptr_t& sock);
-		static Udata	nick_wrong_message(const user& sender, const std::string& new_nick);
-		static Udata	quit_channel_message(const user& sender, const user& receiver, std::string leave_message);
-		static Udata	quit_lobby_message(const user& sender, std::string leave_message);
-		static Udata	privmsg_p2p_message(const user& sender, const user& target, const std::string& msg);
-		static Udata	privmsg_channel_message(const user& sender, const user& receiver, const std::string& channel, const std::string& msg);
-		static Udata	privmsg_no_user_error_message(const user& sender, const std::string& target);
-		static Udata	privmsg_external_error_message(const user& sender, const std::string channel);
-		static Udata	join_message(const user& sender, const user& receiver, const std::string& channel);
-		static Udata	join_invaild_channel_name_message(const user& sender, const std::string invaild_channel);
-		static Udata	part_message(const user& sender, const user& receiver, const std::string& channel, const std::string& msg);
-		static Udata	kick_message(const user& sender, const user& receiver, const std::string& subject, const std::string& channel, const std::string& msg);
-		static Udata	kick_error_not_op_message(const user& sender, const std::string& host, const std::string& channel);
-		static Udata	kick_error_no_user_message(const user& sender, const std::string& host, const std::string& subject, const std::string& channel);
-		static Udata	topic_message(const user& sender, const user& receiver, const std::string& channel, const std::string& topic);
-		static Udata	topic_error_message(const user& sender, const std::string& channel);
-		static Udata	notice_p2p_message(const user& sender, const user& target, const std::string& msg);
-		static Udata	notice_channel_message(const user& sender, const user& receiver, const std::string& channel, const std::string& msg);
-		static Udata 	notice_no_nick_message(const user& sender, const user& receiver);
-		static Udata	wall_message(const user& sender, const user& receiver, const std::string& channel, const std::string& msg);
-		static Udata	no_channel_message(const user& sender, const std::string& channel);
-		static Udata	no_user_message(const user& sender, const std::string& target);
-		static Udata	mode_324_message(const user& sender, const std::string channel);
-		static Udata	mode_no_option_error_message(const user& sender, const std::string wrong_option);
-		static Udata	mode_not_operator_error_message(const user& sender, const std::string channel);
-		static Udata	who_joiner_352_message(const user& sender, const std::string channel);
+		static Event	unknown_command_message_421(const user& sender, const std::string command);
+		static Event	pong(uintptr_t socket, const std::string& serv_addr);
+		static Event	command_no_origin_specified_409(const user& sender, const std::string command);
+		static Event	command_not_registered_451(const user& sender, const std::string command);
+		static Event	command_not_registered_451(const uintptr_t& sock, const std::string command);
+		static Event	command_empty_argument_461(const user& sender, const std::string command);
+		static Event	command_empty_argument_461(const uintptr_t& sock, const std::string command);
+		static Event	welcome_message_connect(const user& sender); // 아직 모름 -> 1번 바꿈
+		static Event	nick_well_message(const user& sender, const user& receiver, const std::string& new_nick);
+		static Event	nick_error_message(const user& sender, const std::string& new_nick);
+		static Event	nick_error_message(const std::string& new_nick, uintptr_t& sock);
+		static Event	nick_wrong_message(const user& sender, const std::string& new_nick);
+		static Event	quit_channel_message(const user& sender, const user& receiver, std::string leave_message);
+		static Event	quit_lobby_message(const user& sender, std::string leave_message);
+		static Event	privmsg_p2p_message(const user& sender, const user& target, const std::string& msg);
+		static Event	privmsg_channel_message(const user& sender, const user& receiver, const std::string& channel, const std::string& msg);
+		static Event	privmsg_no_user_error_message(const user& sender, const std::string& target);
+		static Event	privmsg_external_error_message(const user& sender, const std::string channel);
+		static Event	join_message(const user& sender, const user& receiver, const std::string& channel);
+		static Event	join_invaild_channel_name_message(const user& sender, const std::string invaild_channel);
+		static Event	part_message(const user& sender, const user& receiver, const std::string& channel, const std::string& msg);
+		static Event	kick_message(const user& sender, const user& receiver, const std::string& subject, const std::string& channel, const std::string& msg);
+		static Event	kick_error_not_op_message(const user& sender, const std::string& host, const std::string& channel);
+		static Event	kick_error_no_user_message(const user& sender, const std::string& host, const std::string& subject, const std::string& channel);
+		static Event	topic_message(const user& sender, const user& receiver, const std::string& channel, const std::string& topic);
+		static Event	topic_error_message(const user& sender, const std::string& channel);
+		static Event	notice_p2p_message(const user& sender, const user& target, const std::string& msg);
+		static Event	notice_channel_message(const user& sender, const user& receiver, const std::string& channel, const std::string& msg);
+		static Event 	notice_no_nick_message(const user& sender, const user& receiver);
+		static Event	wall_message(const user& sender, const user& receiver, const std::string& channel, const std::string& msg);
+		static Event	no_channel_message(const user& sender, const std::string& channel);
+		static Event	no_user_message(const user& sender, const std::string& target);
+		static Event	mode_324_message(const user& sender, const std::string channel);
+		static Event	mode_no_option_error_message(const user& sender, const std::string wrong_option);
+		static Event	mode_not_operator_error_message(const user& sender, const std::string channel);
+		static Event	who_joiner_352_message(const user& sender, const std::string channel);
 		static std::string	who_352_target_message(const user& sender, const std::string channel, const std::string target);
 		static std::string	who_315_message(const user& sender, const std::string channel);
 		static std::string	mode_329_message(const user& sender, const std::string channel, const std::string time_stamp);
@@ -57,6 +63,20 @@ class Sender
 	private:
 		static const std::string	server_name_;
 };
+
+/**************************** TODO: Have to FIX THIS FIRST ******************************************/
+// void	error_message(uintptr_t& sock, int error_code) {
+// 	switch (error_code) {
+// 		case 353:
+// 			throw Sender::error_353_message(sock);
+// 			break;
+// 		case 366:
+// 			throw Sender::error_366_message(sock);
+// 			break;
+// 	}
+// }
+/***************************************************************************************************/
+
 
 const std::string	Sender::server_name_ = "webserv.local";
 /****************************       <PING && PONG && USE && etc>       ****************************/
@@ -67,81 +87,75 @@ const std::string	Sender::server_name_ = "webserv.local";
  @param sender.hostname_ 서버 주소
 */
 
-// Udata	Sender::pong(uintptr_t socket, const std::string& serv_addr) // 1st done
-// {
-// 	Udata ret;
+Event	Sender::pong(uintptr_t socket, const std::string& serv_addr) // 1st done
+{
+	Event ret;
 
-// 	std::string pong_reply = ":" + serv_addr + " PONG " \
-// 		+ serv_addr + " :" + serv_addr + "\r\n";
-// 	ret.sock_fd = socket;
-// 	ret.msg = pong_reply;
-// 	return ret;
-// }
+	std::string pong_reply = ":" + serv_addr + " PONG " \
+		+ serv_addr + " :" + serv_addr + "\r\n";
+	ret = std::make_pair(socket, pong_reply);
+	return ret;
+}
+/// @brief 461
+Event	Sender::command_empty_argument_461(const user& sender, const std::string command)
+{
+	Event ret;
 
-// Udata	Sender::command_empty_argument_461(const user& sender, const std::string command)
-// {
-// 	Udata ret;
+	std::string error_message = ":" + Sender::server_name_ + " 461 " \
+		+ sender.nickname_ + " " + command  + " :Not enough parameters\r\n";
+	ret = std::make_pair(sender.client_sock_, error_message);
+	return ret;
+}
+/// @brief 461
+Event	Sender::command_empty_argument_461(const uintptr_t& sock, const std::string command)
+{
+	Event ret;
 
-// 	std::string error_message = ":" + Sender::server_name_ + " 461 " \
-// 		+ sender.nickname_ + " " + command  + " :Not enough parameters\r\n";
-// 	ret.sock_fd = sender.client_sock_;
-// 	ret.msg = error_message;
-// 	return ret;
-// }
+	std::string error_message = ":" + Sender::server_name_ + " 461 * " \
+	+ command  + " :Not enough parameters\r\n";
+	ret = std::make_pair(sock, error_message);
+	return ret;
+}
+/// @brief 451
+Event	Sender::command_not_registered_451(const user& sender, const std::string command)
+{
+	Event ret;
 
-// Udata	Sender::command_empty_argument_461(const uintptr_t& sock, const std::string command)
-// {
-// 	Udata ret;
+	std::string error_message = ":" + Sender::server_name_ + " 451 " \
+		+ sender.nickname_ + " " + command  + " :You have not registered\r\n";
+	ret = std::make_pair(sender.client_sock_, error_message);
+	return ret;
+}
+/// @brief 451
+Event	Sender::command_not_registered_451(const uintptr_t& sock, const std::string command)
+{
+	Event ret;
 
-// 	std::string error_message = ":" + Sender::server_name_ + " 461 * " + command  + " :Not enough parameters\r\n";
-// 	ret.sock_fd = sock;
-// 	ret.msg = error_message;
-// 	return ret;
-// }
+	std::string error_message = ":" + Sender::server_name_ + " 451 * " \
+		+ " " + command  + " :You have not registered\r\n";
+	ret = std::make_pair(sock, error_message);
+	return ret;
+}
+/// @brief 409
+Event	Sender::command_no_origin_specified_409(const user& sender, const std::string command)
+{
+	Event ret;
 
-// Udata	Sender::command_not_registered_451(const user& sender, const std::string command)
-// {
-// 	Udata ret;
+	std::string error_message = ":" + Sender::server_name_ + " 409 " \
+		+ sender.nickname_ + " " + command  + " :No origin specified\r\n";
+	
+	return ret;
+}
+/// @brief 421
+Event	Sender::unknown_command_message_421(const user& sender, const std::string command)
+{
+	Event ret;
 
-// 	std::string error_message = ":" + Sender::server_name_ + " 451 " \
-// 		+ sender.nickname_ + " " + command  + " :You have not registered\r\n";
-// 	ret.sock_fd = sender.client_sock_;
-// 	ret.msg = error_message;
-// 	return ret;
-// }
-
-// Udata	Sender::command_not_registered_451(const uintptr_t& sock, const std::string command)
-// {
-// 	Udata ret;
-
-// 	std::string error_message = ":" + Sender::server_name_ + " 451 * " \
-// 		+ " " + command  + " :You have not registered\r\n";
-// 	ret.sock_fd = sock;
-// 	ret.msg = error_message;
-// 	return ret;
-// }
-
-// Udata	Sender::command_no_origin_specified_409(const user& sender, const std::string command)
-// {
-// 	Udata ret;
-
-// 	std::string error_message = ":" + Sender::server_name_ + " 409 " \
-// 		+ sender.nickname_ + " " + command  + " :No origin specified\r\n";
-// 	ret.sock_fd = sender.client_sock_;
-// 	ret.msg = error_message;
-// 	return ret;
-// }
-
-// Udata	Sender::unknown_command_message_421(const user& sender, const std::string command)
-// {
-// 	Udata ret;
-
-// 	std::string error_message = ":" + Sender::server_name_ + " 421 " \
-// 		+ sender.nickname_ + " " + command  + " :Unknown command\r\n";
-// 	ret.sock_fd = sender.client_sock_;
-// 	ret.msg = error_message;
-// 	return ret;	
-// }
+	std::string error_message = ":" + Sender::server_name_ + " 421 " \
+		+ sender.nickname_ + " " + command  + " :Unknown command\r\n";
+	ret = std::make_pair(sender.client_sock_, error_message);
+	return ret;	
+}
 // /****************************       <NICK>       ****************************/
 // /*
 //  @brief NICK명령 시 정상 적으로 작동
@@ -151,69 +165,61 @@ const std::string	Sender::server_name_ = "webserv.local";
 //  @param host 호스트네임
 //  @param new_nick 새로운 닉네임
 // */
-// Udata	Sender::nick_well_message(const user& sender, const user& receiver, const std::string& new_nick) // 1st done
-// {
-// 	Udata	ret;
+Event	Sender::nick_well_message(const user& sender, const user& receiver, const std::string& new_nick) // 1st done
+{
+	Event	ret;
 
-// 	std::string nick_msg = ":" + sender.nickname_ + "!" + sender.username_ \
-// 					+ "@" + sender.unused_ + " NICK :" + new_nick + "\r\n";
-// 	ret.sock_fd = receiver.client_sock_;
-// 	ret.msg = nick_msg;
-// 	return ret;
-// }
+	std::string nick_msg = ":" + sender.nickname_ + "!" + sender.username_ \
+					+ "@" + sender.unused_ + " NICK :" + new_nick + "\r\n";
+	ret = std::make_pair(receiver.client_sock_, nick_msg);
+	return ret;
+}
 
-// /*
-//  @brief NICK명령 시 중복일 경우 메세지
-//  @param const user.event.indent const user 소캣 
-//  @param host 서버 주소
-//  @param nick 현재 닉네임
-//  @param new_nick 새로운 닉네임
-// */
-// Udata	Sender::nick_error_message(const user& sender, const std::string& new_nick) // 1st done
-// {
-// 	Udata	ret;
+/// @brief 433
+Event	Sender::nick_error_message(const user& sender, const std::string& new_nick) // 1st done
+{
+	Event	ret;
 
-// 	std::string nick_msg = ":" + Sender::server_name_ + " 433 " + sender.nickname_ \
-// 					+ " " + new_nick + " :Nickname is already in use.\r\n";
-// 	ret.sock_fd = sender.client_sock_;
-// 	ret.msg = nick_msg;
-// 	return ret;
-// }
+	std::string nick_msg = ":" + Sender::server_name_ + " 433 " + sender.nickname_ \
+					+ " " + new_nick + " :Nickname is already in use.\r\n";
+	ret = std::make_pair(sender.client_sock_, nick_msg);
+	return ret;
+}
 
-// Udata	Sender::nick_error_message(const std::string& new_nick, uintptr_t& sock)
-// {
-// 	Udata	ret;
+/// @brief 433
+Event	Sender::nick_error_message(const std::string& new_nick, uintptr_t& sock)
+{
+	Event	ret;
 
-// 	std::string nick_msg = ":" + Sender::server_name_ + " 433 * " + new_nick + " :Nickname is already in use.\r\n";
-// 	ret.sock_fd = sock;
-// 	ret.msg = nick_msg;
-// 	return ret;
-// }
+	std::string nick_msg = ":" + Sender::server_name_ + " 433 * " \
+	+ new_nick + " :Nickname is already in use.\r\n";
+	ret = std::make_pair(sock, new_nick);
+	return ret;
+}
 
-// Udata	Sender::nick_wrong_message(const user& sender, const std::string& new_nick)
-// {
-// 	Udata	ret;
+/// @brief 432
+Event	Sender::nick_wrong_message(const user& sender, const std::string& new_nick)
+{
+	Event	ret;
 
-// 	std::string nick_msg = ":" + Sender::server_name_ + " 432 " + sender.nickname_ \
-// 					+ " " + new_nick + "Erroneous Nickname.\r\n";
-// 	ret.sock_fd = sender.client_sock_;
-// 	ret.msg = nick_msg;
-// 	return ret;
-// }
+	std::string nick_msg = ":" + Sender::server_name_ + " 432 " + sender.nickname_ \
+					+ " " + new_nick + "Erroneous Nickname.\r\n";
+	ret = std::make_pair(sender.client_sock_, nick_msg);
+	return ret;
+}
 // /****************************       <Connect server || channel>       ****************************/
 
 // // :irc.local 001 root :Welcome to the Localnet IRC Network root!root@127.0.0.1
-// // Udata Sender::welcome_message_connect(int usr_sock, const std::string& server, const std::string& nick, const std::string& host)
-// Udata	Sender::welcome_message_connect(const user& sender) // 1st done
-// {
-// 	Udata ret; 
+// // Event Sender::welcome_message_connect(int usr_sock, const std::string& server, const std::string& nick, const std::string& host)
+Event	Sender::welcome_message_connect(const user& sender) // 1st done
+{
+	Event ret; 
 
-// 	std::string msg001 = ":" + Sender::server_name_ + " 001 " + sender.nickname_ \
-// 	+ " :Welcome to the 42's irc network " + sender.nickname_ + "!" + sender.mode_ + "\r\n";	
-// 	ret.sock_fd = sender.client_sock_;
-// 	ret.msg = msg001;
-// 	return ret;
-// }
+	std::string msg001 = ":" + Sender::server_name_ + " 001 " + sender.nickname_ \
+	+ " :Welcome to the 42's irc network " + sender.nickname_ + "!" + sender.mode_ + "\r\n";	
+	ret = std::make_pair(sender.client_sock_, msg001);
+	return ret;
+}
 
 // /****************************       <QUIT>       ****************************/
 
@@ -229,31 +235,33 @@ const std::string	Sender::server_name_ = "webserv.local";
 //  @param nick 현재 닉네임
 //  @param leave_message quit 할 때 사용자가 입력할 수도 있는 메세지
 // */
-// Udata	Sender::quit_channel_message(const user& sender, const user& receiver, std::string leave_message) // 2st done
-// {
-// 	Udata	ret;
+Event	Sender::quit_channel_message(const user& sender, const user& receiver, std::string leave_message) // 2st done
+{
+	Event	ret;
 
-// 	if (leave_message.empty())
-// 		leave_message = "leaving";
-// 	std::string  quit_channel_message = "ERROR :Closing link: (" \
-// 		+ sender.realname_ + ") [Quit: " + leave_message + "\r\n"; 
-// 	ret.sock_fd = receiver.client_sock_;
-// 	ret.msg = quit_channel_message;
-// 	return ret;
-// }
+	if (leave_message.empty())
+	{
+		leave_message = "leaving";
+	}
+	std::string  quit_channel_message = "ERROR :Closing link: (" \
+		+ sender.realname_ + ") [Quit: " + leave_message + "\r\n"; 
+	ret = std::make_pair(receiver.client_sock_, quit_channel_message);
+	return ret;
+}
 // // @brief quit을 입력한 유저는 채팅방 속 다른 유저들과 다른 메세지를 호출함
-// Udata	Sender::quit_lobby_message(const user& sender, std::string leave_message) // 2st done
-// {
-// 	Udata	ret;
+Event	Sender::quit_lobby_message(const user& sender, std::string leave_message) // 2st done
+{
+	Event	ret;
 
-// 	if (leave_message.empty())
-// 		leave_message = "leaving";
-// 	std::string  quit_message = ":" + sender.nickname_ + "! " \
-// 				+ sender.realname_ + " QUIT :Quit: " + leave_message + "\r\n";
-// 	ret.sock_fd = sender.client_sock_;
-// 	ret.msg = quit_message;
-// 	return ret;
-// }
+	if (leave_message.empty())
+	{
+		leave_message = "leaving";
+	}
+	std::string  quit_message = ":" + sender.nickname_ + "! " \
+				+ sender.realname_ + " QUIT :Quit: " + leave_message + "\r\n";
+	ret = std::make_pair(sender.client_sock_, quit_message);
+	return ret;
+}
 // /****************************       <JOIN>       ****************************/
 
 // // 127.000.000.001.39548-127.000.000.001.06667: PRIVMSG #test :hihi
@@ -270,7 +278,7 @@ const std::string	Sender::server_name_ = "webserv.local";
 //  @param target 메세지를 받는 클라이언트
 //  @param msg 유저가 입력한 메세지
 // */
-// // Udata	privmsg_p2p(const user sender, const std::string& target, const std::string msg);
+// // Event	privmsg_p2p(const user sender, const std::string& target, const std::string msg);
 
 
 // // 127.000.000.001.06667-127.000.000.001.39474: :hong!root@127.0.0.1 JOIN :#test
@@ -281,25 +289,24 @@ const std::string	Sender::server_name_ = "webserv.local";
 //  @param nick 현재 닉네임
 //  @param const user 유저네임
 // */
-// Udata	Sender::join_message(const user& sender, const user& receiver, const std::string& channel) // 2st->done
-// {
-// 	Udata	ret;
+Event	Sender::join_message(const user& sender, const user& receiver, const std::string& channel) // 2st->done
+{
+	Event	ret;
 
-// 	std::string  join_message = ":" + sender.nickname_ + "!" \
-// 				+ sender.realname_ + "@" + sender.unused_ + " JOIN " + channel + "\r\n";
-// 	ret.sock_fd = receiver.client_sock_;//receciver의 ident
-// 	ret.msg = join_message;
-// 	return ret;
-// }
+	std::string  join_message = ":" + sender.nickname_ + "!" \
+				+ sender.realname_ + "@" + sender.unused_ + " JOIN " + channel + "\r\n";
+	ret = make_pair(receiver.client_sock_, join_message);
+	return ret;
+}
 
-// Udata	Sender::join_invaild_channel_name_message(const user& sender, const std::string invaild_channel)
-// {
-// 	Udata ret;
+/// @brief 476
+Event	Sender::join_invaild_channel_name_message(const user& sender, const std::string invaild_channel)
+{
+	Event ret;
 
-// 	std::string error_message = ":" + Sender::server_name_ + " 476 " \
-// 		+ sender.nickname_ + " " + invaild_channel  + " :Invaild channel name\r\n";
-// 	ret.sock_fd = sender.client_sock_;
-	ret.msg = error_message;
+	std::string error_message = ":" + Sender::server_name_ + " 476 " \
+		+ sender.nickname_ + " " + invaild_channel  + " :Invaild channel name\r\n";
+	ret = std::make_pair(sender.client_sock_, error_message);
 	return ret;	
 }
 
@@ -364,62 +371,59 @@ std::string	Sender::join_366_message(const user& sender, const std::string& chan
 
 // 127.000.000.001.06667-127.000.000.001.45062: :irc.local 368 root #test :End of channel ban list
 
-Udata	Sender::mode_324_message(const user& sender, const std::string channel)
+/// @brief 324
+Event	Sender::mode_324_message(const user& sender, const std::string channel)
 {
-	Udata	ret;
+	Event	ret;
 
 	std::string  mode_message = ":" + Sender::server_name_ \
 			+ " 324 " + sender.nickname_ + " " + channel + ":+nt\r\n";
-
-	ret.sock_fd = sender.client_sock_;
-	ret.msg = mode_message;
+	ret = std::make_pair(sender.client_sock_, mode_message);
 	return ret;
 }
-
+/// @brief 329
 std::string	Sender::mode_329_message(const user& sender, const std::string channel, const std::string time_stamp)
 {
 	std::string ret = ":" + Sender::server_name_ + " 329 " \
 			+ sender.nickname_ + " " + channel + " :" + time_stamp + "\r\n";
 	return ret;
 }
-
-Udata	Sender::mode_no_option_error_message(const user& sender, const std::string channel)
+/// @brief 472
+Event	Sender::mode_no_option_error_message(const user& sender, const std::string channel)
 {
-	Udata ret;
+	Event ret;
 
 	std::string mode_message = ":" + Sender::server_name_ + " 472 " + sender.nickname_ \
 		+ " " +channel + " :You must have channel op access or above to set channel mode p\r\n"; 
-	ret.sock_fd = sender.client_sock_;
-	ret.msg = mode_message;
+	ret = std::make_pair(sender.client_sock_, mode_message);
 	return ret;
 }
-
-Udata	Sender::mode_not_operator_error_message(const user& sender, const std::string wrong_option)
+/// @brief 482
+Event	Sender::mode_not_operator_error_message(const user& sender, const std::string wrong_option)
 {
-	Udata ret;
+	Event ret;
 
 	std::string mode_message = ":" + Sender::server_name_ + " 482 " + sender.nickname_ \
 		+ " " + wrong_option + " :is not a recognised channel mode\r\n"; 
-	ret.sock_fd = sender.client_sock_;
-	ret.msg = mode_message;
+	ret = std::make_pair(sender.client_sock_, mode_message);
 	return ret;
 }
 /* 
- @brief join 할때 joiner(조인 하는 자신)에게도 메세지가 보내짐.
+ @brief 352 join 할때 joiner(조인 하는 자신)에게도 메세지가 보내짐.
 */
-Udata	Sender::who_joiner_352_message(const user& sender, const std::string channel)
+Event	Sender::who_joiner_352_message(const user& sender, const std::string channel) // parameter로 user user
 {
-	Udata ret;
+	Event ret;
 
 	std::string who_message = ":" + Sender::server_name_ + " 352 " + sender.nickname_ \
 			+ " " + channel + " " + sender.username_ + " " + sender.mode_ + " " \
 			+ sender.unused_ + " " + sender.nickname_ + " H :0 root\r\n";
-	ret.sock_fd = sender.client_sock_;
-	ret.msg = who_message;
+	// who_352_target_message를 joiner 이외에 다른 사람들의 메세지로 이어 붙어야 한다.
+	ret = std::make_pair(sender.client_sock_, who_message);
 	return ret;
 }
 /*
- @brief who_joiner_352_message 함수 호출 직후에 호출되는 함수
+ @brief 352 who_joiner_352_message 함수 호출 직후에 호출되는 함수
 */ 
 std::string	Sender::who_352_target_message(const user& sender, const std::string channel, const std::string target)
 {
@@ -430,7 +434,7 @@ std::string	Sender::who_352_target_message(const user& sender, const std::string
 }
 
 /*
- @brief who_352_target_message 함수 호출 직후에 호출되는 함수
+ @brief 315 who_352_target_message 함수 호출 직후에 호출되는 함수
 */
 std::string	Sender::who_315_message(const user& sender, const std::string channel)
 {
@@ -449,14 +453,13 @@ std::string	Sender::who_315_message(const user& sender, const std::string channe
 
 // 127.000.000.001.06667-127.000.000.001.39548: :mypark!root@127.0.0.1 PART :#test
 
-Udata	Sender::part_message(const user& sender, const user& receiver, const std::string& channel, const std::string& msg) // 2st done
+Event	Sender::part_message(const user& sender, const user& receiver, const std::string& channel, const std::string& msg) // 2st done
 {
-	Udata	ret;
+	Event	ret;
 
 	std::string  part_message = ":" + sender.nickname_ + "!" \
 				+ sender.username_ + "@" + receiver.mode_ + " PART " + channel + " " + msg + "\r\n";
-	ret.sock_fd = receiver.client_sock_;
-	ret.msg = part_message;
+	ret = std::make_pair(receiver.client_sock_, part_message);
 	return ret;
 }
 
@@ -470,171 +473,150 @@ Udata	Sender::part_message(const user& sender, const user& receiver, const std::
 
 // 127.000.000.001.06667-127.000.000.001.39546: :junoh!root@127.0.0.1 KICK #test mypark :
 
-Udata	Sender::kick_message(const user& sender, const user& receiver, const std::string& target, const std::string& channel, const std::string& msg) // 1st done
+Event	Sender::kick_message(const user& sender, const user& receiver, const std::string& target, const std::string& channel, const std::string& msg) // 1st done
 {
-	Udata	ret;
+	Event	ret;
 
 	std::string  kick_message = ":" + sender.nickname_ + "!" + \
 				sender.realname_ + '@' + sender.unused_ + " KICK " + channel + " " + target + " :" + msg + "\r\n";
 	// const std::string  kick_message = ":" + host + "!" + \
 	// 			sender.realname_ + " KICK " + channel + " " + subject + "\r\n";
-	ret.sock_fd = receiver.client_sock_;
-	ret.msg = kick_message;
+	ret = std::make_pair(receiver.client_sock_, kick_message);
 	return ret;
 }
 
 //127.000.000.001.06667-127.000.000.001.39552: :irc.local 482 mypark #test :You must be a channel operator
-Udata	Sender::kick_error_not_op_message(const user& sender, const std::string& host, const std::string& channel) // 1st done
+/// @brief 482
+Event	Sender::kick_error_not_op_message(const user& sender, const std::string& host, const std::string& channel) // 1st done
 {
-	Udata	ret;
+	Event	ret;
 
 	std::string  kick_message = ":" + Sender::server_name_ + \
 		" 482 " + host + " " + channel + " You must be a channel operator\r\n";
-	ret.sock_fd = sender.client_sock_;
-	ret.msg = kick_message;
+	ret = std::make_pair(sender.client_sock_, kick_message);
 	return ret;	
 }
 
 //127.000.000.001.06667-127.000.000.001.39552: :irc.local 441 mypark junoh #ttt :They are not on that channel
-Udata	Sender::kick_error_no_user_message(const user& sender, const std::string& host, const std::string& subject, const std::string& channel)
+/// @brief 441
+Event	Sender::kick_error_no_user_message(const user& sender, const std::string& host, const std::string& subject, const std::string& channel)
 {
-	Udata	ret;
+	Event	ret;
 
 	std::string  kick_message = ":" + Sender::server_name_ + \
 		" 441 " + host + " " + subject + " " + channel + " :They are not on that channel\r\n";
-	ret.sock_fd = sender.client_sock_;
-	ret.msg = kick_message;
+	ret = std::make_pair(sender.client_sock_, kick_message);
 	return ret;
 }
 
 /****************************       <Privmsg>       ****************************/
-Udata	Sender::privmsg_p2p_message(const user& sender, const user& target, const std::string& msg) //2st done
+Event	Sender::privmsg_p2p_message(const user& sender, const user& target, const std::string& msg) //2st done
 {
-	std::string privmsg;
-	Udata		ret;
+	Event		ret;
 
-	privmsg = ":" + sender.nickname_ + "@" + sender.unused_ + " PRIVMSG " + \
+	std::string privmsg = ":" + sender.nickname_ + "@" + sender.unused_ + " PRIVMSG " + \
 		target.nickname_ + " :" + msg + "\r\n";
-
-	ret.sock_fd = target.client_sock_;
-	ret.msg = privmsg;
+	ret = std::make_pair(target.client_sock_, privmsg);
 	return (ret);
 }
 
-Udata	Sender::privmsg_channel_message(const user& sender, const user& receiver, const std::string& msg, const std::string& channel) // 2st done
+Event	Sender::privmsg_channel_message(const user& sender, const user& receiver, const std::string& msg, const std::string& channel) // 2st done
 {
-	Udata		ret;
+	Event		ret;
 
 	std::string privmsg = ":" + sender.nickname_ + "@" + sender.unused_ + " PRIVMSG " + \
 		channel + " :" + msg + "\r\n";
-
-	ret.sock_fd = receiver.client_sock_;
-	ret.msg = privmsg;
+	ret = std::make_pair(receiver.client_sock_, privmsg);
 	return (ret);
 }
-
-Udata	Sender::privmsg_no_user_error_message(const user& sender, const std::string& target)
+/// @brief 401
+Event	Sender::privmsg_no_user_error_message(const user& sender, const std::string& target)
 {
-	Udata		ret;
+	Event		ret;
 
 	std::string privmsg = ":" + sender.nickname_ + " 401 " + sender.nickname_ + " " + target \
 	+ " :No such nick\r\n";
-
-	ret.sock_fd = sender.client_sock_;
-	ret.msg = privmsg;
+	ret = std::make_pair(sender.client_sock_, privmsg);
 	return (ret);
 }
-
-Udata	Sender::privmsg_external_error_message(const user& sender, const std::string channel)
+/// @brief 404
+Event	Sender::privmsg_external_error_message(const user& sender, const std::string channel)
 {
-	Udata		ret;
+	Event		ret;
 
 	std::string privmsg = ":" + sender.nickname_ + " 404 " + sender.nickname_ + " " + channel \
 	+ " :You cannot send external messages to this channel whilist the +n (noextmsg) mode is set\r\n";
-
-	ret.sock_fd = sender.client_sock_;
-	ret.msg = privmsg;
+	ret = std::make_pair(sender.client_sock_, privmsg);
 	return (ret);
 }
 
 /****************************       <NOTICE && WALL>       ****************************/
-Udata	Sender::notice_p2p_message(const user& sender, const user& target, const std::string& msg) //2st done
+Event	Sender::notice_p2p_message(const user& sender, const user& target, const std::string& msg) //2st done
 {
-	Udata		ret;
+	Event		ret;
 
 	std::string privmsg = ":" + sender.nickname_ + "@" + sender.unused_ + " NOTICE " + \
 		target.nickname_ + " :" + msg + "\r\n";
-
-	ret.sock_fd = target.client_sock_;
-	ret.msg = privmsg;
+	ret = std::make_pair(target.client_sock_, privmsg);
 	return (ret);
 }
 
-Udata	Sender::notice_channel_message(const user& sender, const user& receiver, const std::string& msg, const std::string& channel) // 2st done
+Event	Sender::notice_channel_message(const user& sender, const user& receiver, const std::string& msg, const std::string& channel) // 2st done
 {
-	Udata		ret;
+	Event		ret;
 
 	std::string privmsg = ":" + sender.nickname_ + "@" + sender.unused_ + " NOTICE " + \
 		channel + " :" + msg + "\r\n";
-
-	ret.sock_fd = receiver.client_sock_;
-	ret.msg = privmsg;
+	ret = std::make_pair(receiver.client_sock_, privmsg);
 	return (ret);
 }
 
-Udata 	Sender::notice_no_nick_message(const user& sender, const user& receiver)
+Event 	Sender::notice_no_nick_message(const user& sender, const user& receiver)
 {
-	Udata		ret;
+	Event		ret;
 
 	std::string privmsg = ":" + Sender::server_name_ + " 401 " + sender.nickname_ + " " + receiver.username_ + \
 	" No such nick\r\n";
-
-	ret.sock_fd = sender.client_sock_;
-	ret.msg = privmsg;
+	ret = std::make_pair(sender.client_sock_, privmsg);
 	return (ret);
 }
 
-Udata	Sender::wall_message(const user& sender, const user& receiver, const std::string& channel, const std::string& msg)
+Event	Sender::wall_message(const user& sender, const user& receiver, const std::string& channel, const std::string& msg)
 {
-	Udata		ret;
+	Event		ret;
 
 	std::string privmsg = ":" + sender.nickname_ + "!" + sender.username_ + "@" + receiver.unused_ + \
 	" NOTICE @" + channel + " :" + msg + "\r\n";
-	ret.sock_fd = receiver.client_sock_;
-	ret.msg = privmsg;
+	ret = std::make_pair(receiver.client_sock_, privmsg);
 	return (ret);
 }
 /****************************       <TOPIC>       ****************************/
-Udata	Sender::topic_message(const user& sender, const user& receiver, const std::string& channel, const std::string& topic) //2st done
+Event	Sender::topic_message(const user& sender, const user& receiver, const std::string& channel, const std::string& topic) //2st done
 {
-	Udata		ret;
+	Event		ret;
 
 	std::string topic_msg = ":" + sender.unused_ + "!" + sender.username_ + " TOPIC " + \
 		channel + " " + topic + "\r\n";
-
-	ret.sock_fd = receiver.client_sock_;
-	ret.msg = topic_msg;
+	ret = std::make_pair(receiver.client_sock_, topic_msg);
 	return (ret);
 }
-
-Udata	Sender::topic_error_message(const user& sender, const std::string& channel) // 2st done
+/// @brief 482
+Event	Sender::topic_error_message(const user& sender, const std::string& channel) // 2st done
 {
-	Udata		ret;
+	Event		ret;
 
 	std::string topic_msg = ":" + Sender::server_name_ + " 482 " + sender.nickname_ + " " + \
 		channel + " " + "You do not have access to change the topic on this channel"  + "\r\n";
-
-	ret.sock_fd = sender.client_sock_;
-	ret.msg = topic_msg;
+	ret = std::make_pair(sender.client_sock_, topic_msg);
 	return (ret);
 }
 
 /****************************       <NO ** message>       ****************************/
 //127.000.000.001.06667-127.000.000.001.59898: :irc.local 403 two #111 :No such channel
-
-Udata	Sender::no_channel_message(const user& sender, const std::string& channel)
+/// @brief 403
+Event	Sender::no_channel_message(const user& sender, const std::string& channel)
 {
-	Udata		ret;
+	Event		ret;
 	std::string no_msg;
 
 	if (channel == "#")
@@ -647,31 +629,20 @@ Udata	Sender::no_channel_message(const user& sender, const std::string& channel)
 		no_msg = ":" + Sender::server_name_ + " 403 " + sender.nickname_ + " " + \
 			channel + " " + ":No such channel"  + "\r\n";
 	}
-	ret.sock_fd = sender.client_sock_;
-	ret.msg = no_msg;
+	ret = std::make_pair(sender.client_sock_, no_msg);
 	return (ret);
 }
 
 //127.000.000.001.06667-127.000.000.001.59898: :irc.local 401 junoh dd :No such nick
-Udata	Sender::no_user_message(const user& sender, const std::string& target)
+/// @brief 401
+Event	Sender::no_user_message(const user& sender, const std::string& target)
 {
-	Udata		ret;
+	Event		ret;
 
 	std::string no_msg = ":" + Sender::server_name_ + " 401 " + sender.nickname_ + " " + \
 		target + " " + ":No such const user"  + "\r\n";
-
-	ret.sock_fd = sender.client_sock_;
-	ret.msg = no_msg;
+	ret = std::make_pair(sender.client_sock_, no_msg);
 	return (ret);
 }
-// sender : 보내려고 했던 대상, receiver : 잘못 닉네임을 입력해서 오류를 받아야 하는 대상
-// Udata	Sender::send_err(const user sender, const user receiver, const std::string msg)
-// {
-// 	const std::string errmsg;
-
-// 	errmsg = ":" + receiver.servername_ + " 401 " + receiver.nickname_ + " " + \
-// 		sender.nickname_ + " :No such nick\r\n";
-// 	send(receiver.client_sock_, errmsg.c_str(), errmsg.length(), 0);
-// }
 
 #endif

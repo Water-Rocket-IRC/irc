@@ -20,6 +20,7 @@ struct user
 	bool	operator>(const user& obj) const { return this->client_sock_ > obj.client_sock_; };
 	bool	operator<(const user& obj) const { return this->client_sock_ < obj.client_sock_; };
 	bool	is_user_has_nick(void) const;
+
 	//그 외 기타등등
 };
 
@@ -32,4 +33,5 @@ bool user::is_user_has_nick(void) const
 {
 	return this->nickname_ != "" ? true : false;
 }
+
 #endif

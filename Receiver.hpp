@@ -29,15 +29,15 @@ class Receiver
 	private:
 		static KeventHandler	kq_;
 		Parser					parser_;
-		sockaddr_in				server_addr_;
 		Udata					udata_;
+		sockaddr_in				server_addr_;
 		std::string				port_;
 		std::string				password_;
 		uintptr_t				server_sock_;
 		uintptr_t				client_sock_;
 
 		int						clientReadEventHandler_(struct kevent &cur_event);
-		int						clientWriteEventHandler_(struct kevent &cur_event);
+		void					clientWriteEventHandler_(struct kevent &cur_event);
 
 		void					init_socket_(int &port);
 		void					bind_socket_();

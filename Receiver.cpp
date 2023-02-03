@@ -10,7 +10,7 @@ KeventHandler	Receiver::get_Kevent_Handler(void)
 /// @brief Receiver 생성자
 /// @param port 소켓을 생성할 포켓 번호
 Receiver::Receiver(int port, Udata& serv_udata)
-: udata_(serv_udata)
+: parser_(serv_udata), udata_(serv_udata)
 {
 	init_socket_(port);
 	bind_socket_();
@@ -78,12 +78,11 @@ void	Receiver::start()
 				else if (cur_event.filter == EVFILT_WRITE)
 				{
 					// TODO: LEAK CHECK
-					if (clientWriteEventHandler_(cur_event))
-					{
-						int	tmp_fd = cur_event.ident;
-						kq_.delete_event(cur_event);
-						kq_.set_read(tmp_fd);
-					}
+					clientWriteEventHandler_(cur_event);
+					uintptr_t	tmp_fd = cur_event.ident;
+
+					kq_.delete_event(cur_event);
+					kq_.set_read(tmp_fd);
 				}
 			}
 		}
@@ -94,9 +93,7 @@ int	Receiver::clientReadEventHandler_(struct kevent &cur_event)
 {
 	char	buffer[1024];
 
-
 	memset(buffer, 0, sizeof(buffer));
-	// TODO: LEAK CHECK
 	if (cur_event.flags & EV_EOF)
 	{
 		std::cout << "sock was fucked!" << std::endl;
@@ -113,26 +110,17 @@ int	Receiver::clientReadEventHandler_(struct kevent &cur_event)
 	std::cout << BOLDYELLOW << "Received: " << cur_event.ident << "\n" << buffer << RESET<< std::endl;
 	std::string			command(buffer, byte_received);
 
-	 parser_.command_parser(cur_event.ident, command);
+	parser_.command_parser(cur_event.ident, command);
 	return (0);
 }
 
-int	Receiver::clientWriteEventHandler_(struct kevent &cur_event)
+void	Receiver::clientWriteEventHandler_(struct kevent &cur_event)
 {
-	if ()
-	{
-		for (std::size_t i(0); i < udata_.size(); ++i)
-		{
-			if (udata_[i].sock_fd == cur_event.ident)
-			{
-				std::cout << BOLDGREEN
-						  << "socket: " << udata_[i].sock_fd << "\nmsg: " << udata_[i].msg
-						  << RESET << std::endl;
-				send(cur_event.ident, udata_[i].msg.c_str(), udata_[i].msg.length(), 0);
-				udata_.erase(udata_.begin() + i);
-			}
-		}
-		return (1);
-	}
-	return (0);
+	Event_iter target = udata_.find(cur_event.ident);
+
+	std::cout << BOLDGREEN
+				<< "socket: " << target->first << "\nmsg: " << target->second
+				<< RESET << std::endl;
+	send(cur_event.ident, target->second.c_str(), target->second.length(), 0);
+	udata_.erase(target);
 }
