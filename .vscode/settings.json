@@ -65,6 +65,8 @@
 		"functional": "cpp",
 		"iterator": "cpp",
 		"utility": "cpp",
-		"iomanip": "cpp"
+		"iomanip": "cpp",
+		"map": "cpp",
+		"__tree": "cpp"
 	}
 }

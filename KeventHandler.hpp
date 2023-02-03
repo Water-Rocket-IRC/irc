@@ -19,9 +19,9 @@ class KeventHandler
 		~KeventHandler();
 
 		std::vector<struct kevent>	set_monitor();
-		void	set_read(uintptr_t ident);
-		void	set_write(uintptr_t ident);
-		void	delete_event(const struct kevent &event);
+		void						set_read(uintptr_t ident);
+		void						set_write(uintptr_t ident);
+		void						delete_event(const struct kevent &event);
 };
 
 void exit_with_perror(const std::string& msg)

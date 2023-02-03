@@ -3,14 +3,8 @@
 #ifndef PARSER_HPP
 # define PARSER_HPP
 
-#include <iostream>
 #include <cstring>
-#include <sys/types.h>
-#include <sys/socket.h>
 #include <unistd.h>
-#include <sys/event.h>
-#include <sys/types.h>
-#include <netdb.h>
 
 #include "Users.hpp"
 #include "Channels.hpp"

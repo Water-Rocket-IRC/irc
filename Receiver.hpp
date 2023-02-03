@@ -2,12 +2,17 @@
 # define RECEIVER_HPP
 
 #include <sys/socket.h>
+#include <sys/event.h>
+#include <sys/types.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <netdb.h>
+
 #include "KeventHandler.hpp"
 #include "Udata.hpp"
 #include "Users.hpp"
 #include "Channels.hpp"
+#include "Parser.hpp"
 
 // class Users;
 // class Channels;
@@ -24,15 +29,15 @@ class Receiver
 {
 	private:
 		static KeventHandler	kq_;
+		Parser					parser_;
 		sockaddr_in				server_addr_;
-		// std::vector<Udata>	udata_;
+		Udata					udata_;
 		std::string				port_;
 		std::string				password_;
 		uintptr_t				server_sock_;
 		uintptr_t				client_sock_;
 
 		int						clientReadEventHandler_(struct kevent &cur_event);
-		// void					parser_(struct kevent &cur_event, std::string& command);
 		int						clientWriteEventHandler_(struct kevent &cur_event);
 
 		void					init_socket_(int &port);
