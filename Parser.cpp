@@ -61,8 +61,8 @@ void	Parser::command_parser(uintptr_t& ident, std::string &command)
 				std::string	to_send;
 				if (pos == std::string::npos)
 					to_send.clear();
-				to_send = set_message_(line, pos + 1, (line.length() - (pos + 2)));
-				(this->*Parser::func_ptr[i])(ident, line_ss, to_send);
+				// to_send = set_message_(line, pos + 1, (line.length() - (pos + 2)));
+				// (this->*Parser::func_ptr[i])(ident, line_ss, to_send);
 			}
 			else 
 			{

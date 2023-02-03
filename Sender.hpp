@@ -67,238 +67,238 @@ const std::string	Sender::server_name_ = "webserv.local";
  @param sender.hostname_ 서버 주소
 */
 
-Udata	Sender::pong(uintptr_t socket, const std::string& serv_addr) // 1st done
-{
-	Udata ret;
+// Udata	Sender::pong(uintptr_t socket, const std::string& serv_addr) // 1st done
+// {
+// 	Udata ret;
 
-	std::string pong_reply = ":" + serv_addr + " PONG " \
-		+ serv_addr + " :" + serv_addr + "\r\n";
-	ret.sock_fd = socket;
-	ret.msg = pong_reply;
-	return ret;
-}
+// 	std::string pong_reply = ":" + serv_addr + " PONG " \
+// 		+ serv_addr + " :" + serv_addr + "\r\n";
+// 	ret.sock_fd = socket;
+// 	ret.msg = pong_reply;
+// 	return ret;
+// }
 
-Udata	Sender::command_empty_argument_461(const user& sender, const std::string command)
-{
-	Udata ret;
+// Udata	Sender::command_empty_argument_461(const user& sender, const std::string command)
+// {
+// 	Udata ret;
 
-	std::string error_message = ":" + Sender::server_name_ + " 461 " \
-		+ sender.nickname_ + " " + command  + " :Not enough parameters\r\n";
-	ret.sock_fd = sender.client_sock_;
-	ret.msg = error_message;
-	return ret;
-}
+// 	std::string error_message = ":" + Sender::server_name_ + " 461 " \
+// 		+ sender.nickname_ + " " + command  + " :Not enough parameters\r\n";
+// 	ret.sock_fd = sender.client_sock_;
+// 	ret.msg = error_message;
+// 	return ret;
+// }
 
-Udata	Sender::command_empty_argument_461(const uintptr_t& sock, const std::string command)
-{
-	Udata ret;
+// Udata	Sender::command_empty_argument_461(const uintptr_t& sock, const std::string command)
+// {
+// 	Udata ret;
 
-	std::string error_message = ":" + Sender::server_name_ + " 461 * " + command  + " :Not enough parameters\r\n";
-	ret.sock_fd = sock;
-	ret.msg = error_message;
-	return ret;
-}
+// 	std::string error_message = ":" + Sender::server_name_ + " 461 * " + command  + " :Not enough parameters\r\n";
+// 	ret.sock_fd = sock;
+// 	ret.msg = error_message;
+// 	return ret;
+// }
 
-Udata	Sender::command_not_registered_451(const user& sender, const std::string command)
-{
-	Udata ret;
+// Udata	Sender::command_not_registered_451(const user& sender, const std::string command)
+// {
+// 	Udata ret;
 
-	std::string error_message = ":" + Sender::server_name_ + " 451 " \
-		+ sender.nickname_ + " " + command  + " :You have not registered\r\n";
-	ret.sock_fd = sender.client_sock_;
-	ret.msg = error_message;
-	return ret;
-}
+// 	std::string error_message = ":" + Sender::server_name_ + " 451 " \
+// 		+ sender.nickname_ + " " + command  + " :You have not registered\r\n";
+// 	ret.sock_fd = sender.client_sock_;
+// 	ret.msg = error_message;
+// 	return ret;
+// }
 
-Udata	Sender::command_not_registered_451(const uintptr_t& sock, const std::string command)
-{
-	Udata ret;
+// Udata	Sender::command_not_registered_451(const uintptr_t& sock, const std::string command)
+// {
+// 	Udata ret;
 
-	std::string error_message = ":" + Sender::server_name_ + " 451 * " \
-		+ " " + command  + " :You have not registered\r\n";
-	ret.sock_fd = sock;
-	ret.msg = error_message;
-	return ret;
-}
+// 	std::string error_message = ":" + Sender::server_name_ + " 451 * " \
+// 		+ " " + command  + " :You have not registered\r\n";
+// 	ret.sock_fd = sock;
+// 	ret.msg = error_message;
+// 	return ret;
+// }
 
-Udata	Sender::command_no_origin_specified_409(const user& sender, const std::string command)
-{
-	Udata ret;
+// Udata	Sender::command_no_origin_specified_409(const user& sender, const std::string command)
+// {
+// 	Udata ret;
 
-	std::string error_message = ":" + Sender::server_name_ + " 409 " \
-		+ sender.nickname_ + " " + command  + " :No origin specified\r\n";
-	ret.sock_fd = sender.client_sock_;
-	ret.msg = error_message;
-	return ret;
-}
+// 	std::string error_message = ":" + Sender::server_name_ + " 409 " \
+// 		+ sender.nickname_ + " " + command  + " :No origin specified\r\n";
+// 	ret.sock_fd = sender.client_sock_;
+// 	ret.msg = error_message;
+// 	return ret;
+// }
 
-Udata	Sender::unknown_command_message_421(const user& sender, const std::string command)
-{
-	Udata ret;
+// Udata	Sender::unknown_command_message_421(const user& sender, const std::string command)
+// {
+// 	Udata ret;
 
-	std::string error_message = ":" + Sender::server_name_ + " 421 " \
-		+ sender.nickname_ + " " + command  + " :Unknown command\r\n";
-	ret.sock_fd = sender.client_sock_;
-	ret.msg = error_message;
-	return ret;	
-}
-/****************************       <NICK>       ****************************/
-/*
- @brief NICK명령 시 정상 적으로 작동
- @param const user.event.indent const user& 소캣 
- @param nick 현재 닉네임
- @param user_name 유저 네임
- @param host 호스트네임
- @param new_nick 새로운 닉네임
-*/
-Udata	Sender::nick_well_message(const user& sender, const user& receiver, const std::string& new_nick) // 1st done
-{
-	Udata	ret;
+// 	std::string error_message = ":" + Sender::server_name_ + " 421 " \
+// 		+ sender.nickname_ + " " + command  + " :Unknown command\r\n";
+// 	ret.sock_fd = sender.client_sock_;
+// 	ret.msg = error_message;
+// 	return ret;	
+// }
+// /****************************       <NICK>       ****************************/
+// /*
+//  @brief NICK명령 시 정상 적으로 작동
+//  @param const user.event.indent const user& 소캣 
+//  @param nick 현재 닉네임
+//  @param user_name 유저 네임
+//  @param host 호스트네임
+//  @param new_nick 새로운 닉네임
+// */
+// Udata	Sender::nick_well_message(const user& sender, const user& receiver, const std::string& new_nick) // 1st done
+// {
+// 	Udata	ret;
 
-	std::string nick_msg = ":" + sender.nickname_ + "!" + sender.username_ \
-					+ "@" + sender.unused_ + " NICK :" + new_nick + "\r\n";
-	ret.sock_fd = receiver.client_sock_;
-	ret.msg = nick_msg;
-	return ret;
-}
+// 	std::string nick_msg = ":" + sender.nickname_ + "!" + sender.username_ \
+// 					+ "@" + sender.unused_ + " NICK :" + new_nick + "\r\n";
+// 	ret.sock_fd = receiver.client_sock_;
+// 	ret.msg = nick_msg;
+// 	return ret;
+// }
 
-/*
- @brief NICK명령 시 중복일 경우 메세지
- @param const user.event.indent const user 소캣 
- @param host 서버 주소
- @param nick 현재 닉네임
- @param new_nick 새로운 닉네임
-*/
-Udata	Sender::nick_error_message(const user& sender, const std::string& new_nick) // 1st done
-{
-	Udata	ret;
+// /*
+//  @brief NICK명령 시 중복일 경우 메세지
+//  @param const user.event.indent const user 소캣 
+//  @param host 서버 주소
+//  @param nick 현재 닉네임
+//  @param new_nick 새로운 닉네임
+// */
+// Udata	Sender::nick_error_message(const user& sender, const std::string& new_nick) // 1st done
+// {
+// 	Udata	ret;
 
-	std::string nick_msg = ":" + Sender::server_name_ + " 433 " + sender.nickname_ \
-					+ " " + new_nick + " :Nickname is already in use.\r\n";
-	ret.sock_fd = sender.client_sock_;
-	ret.msg = nick_msg;
-	return ret;
-}
+// 	std::string nick_msg = ":" + Sender::server_name_ + " 433 " + sender.nickname_ \
+// 					+ " " + new_nick + " :Nickname is already in use.\r\n";
+// 	ret.sock_fd = sender.client_sock_;
+// 	ret.msg = nick_msg;
+// 	return ret;
+// }
 
-Udata	Sender::nick_error_message(const std::string& new_nick, uintptr_t& sock)
-{
-	Udata	ret;
+// Udata	Sender::nick_error_message(const std::string& new_nick, uintptr_t& sock)
+// {
+// 	Udata	ret;
 
-	std::string nick_msg = ":" + Sender::server_name_ + " 433 * " + new_nick + " :Nickname is already in use.\r\n";
-	ret.sock_fd = sock;
-	ret.msg = nick_msg;
-	return ret;
-}
+// 	std::string nick_msg = ":" + Sender::server_name_ + " 433 * " + new_nick + " :Nickname is already in use.\r\n";
+// 	ret.sock_fd = sock;
+// 	ret.msg = nick_msg;
+// 	return ret;
+// }
 
-Udata	Sender::nick_wrong_message(const user& sender, const std::string& new_nick)
-{
-	Udata	ret;
+// Udata	Sender::nick_wrong_message(const user& sender, const std::string& new_nick)
+// {
+// 	Udata	ret;
 
-	std::string nick_msg = ":" + Sender::server_name_ + " 432 " + sender.nickname_ \
-					+ " " + new_nick + "Erroneous Nickname.\r\n";
-	ret.sock_fd = sender.client_sock_;
-	ret.msg = nick_msg;
-	return ret;
-}
-/****************************       <Connect server || channel>       ****************************/
+// 	std::string nick_msg = ":" + Sender::server_name_ + " 432 " + sender.nickname_ \
+// 					+ " " + new_nick + "Erroneous Nickname.\r\n";
+// 	ret.sock_fd = sender.client_sock_;
+// 	ret.msg = nick_msg;
+// 	return ret;
+// }
+// /****************************       <Connect server || channel>       ****************************/
 
-// :irc.local 001 root :Welcome to the Localnet IRC Network root!root@127.0.0.1
-// Udata Sender::welcome_message_connect(int usr_sock, const std::string& server, const std::string& nick, const std::string& host)
-Udata	Sender::welcome_message_connect(const user& sender) // 1st done
-{
-	Udata ret; 
+// // :irc.local 001 root :Welcome to the Localnet IRC Network root!root@127.0.0.1
+// // Udata Sender::welcome_message_connect(int usr_sock, const std::string& server, const std::string& nick, const std::string& host)
+// Udata	Sender::welcome_message_connect(const user& sender) // 1st done
+// {
+// 	Udata ret; 
 
-	std::string msg001 = ":" + Sender::server_name_ + " 001 " + sender.nickname_ \
-	+ " :Welcome to the 42's irc network " + sender.nickname_ + "!" + sender.mode_ + "\r\n";	
-	ret.sock_fd = sender.client_sock_;
-	ret.msg = msg001;
-	return ret;
-}
+// 	std::string msg001 = ":" + Sender::server_name_ + " 001 " + sender.nickname_ \
+// 	+ " :Welcome to the 42's irc network " + sender.nickname_ + "!" + sender.mode_ + "\r\n";	
+// 	ret.sock_fd = sender.client_sock_;
+// 	ret.msg = msg001;
+// 	return ret;
+// }
 
-/****************************       <QUIT>       ****************************/
+// /****************************       <QUIT>       ****************************/
 
-// 127.000.000.001.06667-127.000.000.001.39470: ERROR :Closing link: (root@127.0.0.1) [Quit: byby]
+// // 127.000.000.001.06667-127.000.000.001.39470: ERROR :Closing link: (root@127.0.0.1) [Quit: byby]
 
-// 127.000.000.001.06667-127.000.000.001.39460: :root_!root@127.0.0.1 QUIT :Quit: byby
+// // 127.000.000.001.06667-127.000.000.001.39460: :root_!root@127.0.0.1 QUIT :Quit: byby
 
-// 127.000.000.001.06667-127.000.000.001.39466: :root_!root@127.0.0.1 QUIT :Quit: byby
+// // 127.000.000.001.06667-127.000.000.001.39466: :root_!root@127.0.0.1 QUIT :Quit: byby
 
-/*
- @brief quit 명령 시 메세지 - quit을 한 유저가 아닌 다른 유저들 
- @param const user.event.indent const user& 소캣
- @param nick 현재 닉네임
- @param leave_message quit 할 때 사용자가 입력할 수도 있는 메세지
-*/
-Udata	Sender::quit_channel_message(const user& sender, const user& receiver, std::string leave_message) // 2st done
-{
-	Udata	ret;
+// /*
+//  @brief quit 명령 시 메세지 - quit을 한 유저가 아닌 다른 유저들 
+//  @param const user.event.indent const user& 소캣
+//  @param nick 현재 닉네임
+//  @param leave_message quit 할 때 사용자가 입력할 수도 있는 메세지
+// */
+// Udata	Sender::quit_channel_message(const user& sender, const user& receiver, std::string leave_message) // 2st done
+// {
+// 	Udata	ret;
 
-	if (leave_message.empty())
-		leave_message = "leaving";
-	std::string  quit_channel_message = "ERROR :Closing link: (" \
-		+ sender.realname_ + ") [Quit: " + leave_message + "\r\n"; 
-	ret.sock_fd = receiver.client_sock_;
-	ret.msg = quit_channel_message;
-	return ret;
-}
-// @brief quit을 입력한 유저는 채팅방 속 다른 유저들과 다른 메세지를 호출함
-Udata	Sender::quit_lobby_message(const user& sender, std::string leave_message) // 2st done
-{
-	Udata	ret;
+// 	if (leave_message.empty())
+// 		leave_message = "leaving";
+// 	std::string  quit_channel_message = "ERROR :Closing link: (" \
+// 		+ sender.realname_ + ") [Quit: " + leave_message + "\r\n"; 
+// 	ret.sock_fd = receiver.client_sock_;
+// 	ret.msg = quit_channel_message;
+// 	return ret;
+// }
+// // @brief quit을 입력한 유저는 채팅방 속 다른 유저들과 다른 메세지를 호출함
+// Udata	Sender::quit_lobby_message(const user& sender, std::string leave_message) // 2st done
+// {
+// 	Udata	ret;
 
-	if (leave_message.empty())
-		leave_message = "leaving";
-	std::string  quit_message = ":" + sender.nickname_ + "! " \
-				+ sender.realname_ + " QUIT :Quit: " + leave_message + "\r\n";
-	ret.sock_fd = sender.client_sock_;
-	ret.msg = quit_message;
-	return ret;
-}
-/****************************       <JOIN>       ****************************/
+// 	if (leave_message.empty())
+// 		leave_message = "leaving";
+// 	std::string  quit_message = ":" + sender.nickname_ + "! " \
+// 				+ sender.realname_ + " QUIT :Quit: " + leave_message + "\r\n";
+// 	ret.sock_fd = sender.client_sock_;
+// 	ret.msg = quit_message;
+// 	return ret;
+// }
+// /****************************       <JOIN>       ****************************/
 
-// 127.000.000.001.39548-127.000.000.001.06667: PRIVMSG #test :hihi
+// // 127.000.000.001.39548-127.000.000.001.06667: PRIVMSG #test :hihi
 
-// 127.000.000.001.06667-127.000.000.001.39552: :junoh!root@127.0.0.1 PRIVMSG #test :hihi
+// // 127.000.000.001.06667-127.000.000.001.39552: :junoh!root@127.0.0.1 PRIVMSG #test :hihi
 
-// 127.000.000.001.06667-127.000.000.001.39546: :junoh!root@127.0.0.1 PRIVMSG #test :hihi
+// // 127.000.000.001.06667-127.000.000.001.39546: :junoh!root@127.0.0.1 PRIVMSG #test :hihi
 
-/*
- @brief 채팅 시 메세지
- @param const user.event.indent const user 소캣 
- @param nick 현재 닉네임
- @param const user 유저네임
- @param target 메세지를 받는 클라이언트
- @param msg 유저가 입력한 메세지
-*/
-// Udata	privmsg_p2p(const user sender, const std::string& target, const std::string msg);
+// /*
+//  @brief 채팅 시 메세지
+//  @param const user.event.indent const user 소캣 
+//  @param nick 현재 닉네임
+//  @param const user 유저네임
+//  @param target 메세지를 받는 클라이언트
+//  @param msg 유저가 입력한 메세지
+// */
+// // Udata	privmsg_p2p(const user sender, const std::string& target, const std::string msg);
 
 
-// 127.000.000.001.06667-127.000.000.001.39474: :hong!root@127.0.0.1 JOIN :#test
-// [/join #] 로 명령어 입력 시 채널 방 이름은 #이다
-/*
- @param const user.event.indent const user 소캣
- @brief join 시 메세지
- @param nick 현재 닉네임
- @param const user 유저네임
-*/
-Udata	Sender::join_message(const user& sender, const user& receiver, const std::string& channel) // 2st->done
-{
-	Udata	ret;
+// // 127.000.000.001.06667-127.000.000.001.39474: :hong!root@127.0.0.1 JOIN :#test
+// // [/join #] 로 명령어 입력 시 채널 방 이름은 #이다
+// /*
+//  @param const user.event.indent const user 소캣
+//  @brief join 시 메세지
+//  @param nick 현재 닉네임
+//  @param const user 유저네임
+// */
+// Udata	Sender::join_message(const user& sender, const user& receiver, const std::string& channel) // 2st->done
+// {
+// 	Udata	ret;
 
-	std::string  join_message = ":" + sender.nickname_ + "!" \
-				+ sender.realname_ + "@" + sender.unused_ + " JOIN " + channel + "\r\n";
-	ret.sock_fd = receiver.client_sock_;//receciver의 ident
-	ret.msg = join_message;
-	return ret;
-}
+// 	std::string  join_message = ":" + sender.nickname_ + "!" \
+// 				+ sender.realname_ + "@" + sender.unused_ + " JOIN " + channel + "\r\n";
+// 	ret.sock_fd = receiver.client_sock_;//receciver의 ident
+// 	ret.msg = join_message;
+// 	return ret;
+// }
 
-Udata	Sender::join_invaild_channel_name_message(const user& sender, const std::string invaild_channel)
-{
-	Udata ret;
+// Udata	Sender::join_invaild_channel_name_message(const user& sender, const std::string invaild_channel)
+// {
+// 	Udata ret;
 
-	std::string error_message = ":" + Sender::server_name_ + " 476 " \
-		+ sender.nickname_ + " " + invaild_channel  + " :Invaild channel name\r\n";
-	ret.sock_fd = sender.client_sock_;
+// 	std::string error_message = ":" + Sender::server_name_ + " 476 " \
+// 		+ sender.nickname_ + " " + invaild_channel  + " :Invaild channel name\r\n";
+// 	ret.sock_fd = sender.client_sock_;
 	ret.msg = error_message;
 	return ret;	
 }
