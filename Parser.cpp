@@ -72,7 +72,6 @@ void	Parser::command_parser(uintptr_t& ident, std::string &command)
 	}
 }
 
-
 	//check_argument(2, )
 	// NICK은 채널에 있을 때 모에게 NICK 변경되었음을 알리고, 로비에 있을 때는 본인에게만 알린다.
 void	Parser::parser_nick_(uintptr_t& ident, std::stringstream& line_ss, std::string& to_send)
@@ -86,13 +85,13 @@ void	Parser::parser_nick_(uintptr_t& ident, std::stringstream& line_ss, std::str
 	if (nick.empty()) // no nickname error
 	{
 		tmp = Sender::command_empty_argument_461(ident, "NICK"); // TODO: name respecify
-		Receiver::push_write_event(tmp, cur_event);
+		push_write_event_(tmp, ident);
 		return ;
 	}
 	tmp = users_.command_nick(nick, ident);
 	if (tmp.msg.empty()) {
 		// Client first enter
-		push_write_event(tmp, cur_event);
+		push_write_event_(tmp, ident);
 		return ;
 	}
 	std::vector<Udata>	events;
@@ -108,7 +107,7 @@ void	Parser::parser_nick_(uintptr_t& ident, std::stringstream& line_ss, std::str
 	catch (const std::exception& e)
 	{
 		// cannot found who want to change the nick
-		push_write_event(tmp, cur_event);
+		push_write_event_(tmp, ident);
 	}
 }
 
@@ -130,16 +129,16 @@ void	Parser::parser_user_(uintptr_t& ident, std::stringstream& line_ss, std::str
 				if (cur_user.is_user_has_nick())
 				{
 					tmp = Sender::command_not_registered_451(cur_user, "USER");
-					push_write_event(tmp, cur_event);
+					push_write_event_(tmp, ident);
 					return ;
 				}
 				tmp = Sender::command_empty_argument_461(cur_user, "USER"); // TODO: low argument with user command
-				push_write_event(tmp, cur_event);
+				push_write_event_(tmp, ident);
 			}
 			catch(const std::exception&)
 			{
 				tmp = Sender::command_not_registered_451(ident, "USER");
-				push_write_event(tmp, cur_event);
+				push_write_event_(tmp, ident);
 			}
 		}
 	}
@@ -148,7 +147,7 @@ void	Parser::parser_user_(uintptr_t& ident, std::stringstream& line_ss, std::str
 		argument[3] = real_name;
 	}
 	tmp = users_.command_user(argument, ident); // USER TODO: have to change argument and logic
-	push_write_event(tmp, cur_event);
+	push_write_event_(tmp, ident);
 }
 
 void	Parser::parser_ping_(uintptr_t& ident, std::stringstream& line_ss, std::string& to_send)
@@ -161,13 +160,13 @@ void	Parser::parser_ping_(uintptr_t& ident, std::stringstream& line_ss, std::str
 	// if (serv_addr.empty())
 	// {
 	// 	tmp = Sender::ping_461_error(); // TODO: ping no parameter
-	// 	push_write_event(tmp, cur_event);
+	// 	push_write_event_(tmp, ident);
 	// 	return ;
 	// }
 	// if (serv_addr.size() == 1 && serv_addr.at(0) == ':' && to_send.empty())
 	// {
 	// 	tmp = Sender::ping_409_error(); // TODO: ping empty parameter
-	// 	push_write_event(tmp, cur_event);
+	// 	push_write_event_(tmp, ident);
 	// 	return ;
 	// }
 	try
@@ -175,12 +174,12 @@ void	Parser::parser_ping_(uintptr_t& ident, std::stringstream& line_ss, std::str
 		user&	cur_user = users_.search_user_by_ident(ident);
 
 		tmp = Sender::pong(ident, serv_addr);
-		push_write_event(tmp, cur_event);
+		push_write_event_(tmp, ident);
 	}
 	catch(const std::exception& e)
 	{
 		// tmp = Sender::pong_451_error(); // TODO: ping no user found
-		// push_write_event(tmp, cur_event);
+		// push_write_event_(tmp, ident);
 	}
 }
 
@@ -196,12 +195,12 @@ void	Parser::parser_ping_(uintptr_t& ident, std::stringstream& line_ss, std::str
 // 		user&	cur_user = users_.search_user_by_ident(ident);
 
 // 		tmp = users_.command_quit(nick, to_send, ident); // USER TODO: Have to change logic
-// 		push_write_event(tmp, cur_event);
+// 		push_write_event_(tmp, ident);
 // 	}
 // 	catch(const std::exception& e)
 // 	{
 // 		tmp = Sender::user_quit_error(); // TODO: no user found
-// 		push_write_event(tmp, cur_event);
+// 		push_write_event_(tmp, ident);
 // 	}
 	
 // }
@@ -228,20 +227,20 @@ void	Parser::parser_ping_(uintptr_t& ident, std::stringstream& line_ss, std::str
 // 			catch(const std::exception& e)
 // 			{
 // 				Udata	tmp = Sender::privmsg_no_user_error_message(sender, target);
-// 				push_write_event(tmp, cur_event);
+// 				push_write_event_(tmp, ident);
 // 			}
 			
 // 		}
 // 		catch(const std::exception& e)
 // 		{
 // 			Udata	tmp = Sender::privmsg_no_user_error_message_in_channel(); // TODO: no user in channel
-// 			push_write_event(tmp, cur_event);
+// 			push_write_event_(tmp, ident);
 // 		}
 // 	}
 // 	else
 // 	{
 // 		Udata	tmp = users_.command_privmsg(target, to_send, ident); // TODO: USER have to change logic
-// 		push_write_event(tmp, cur_event);
+// 		push_write_event_(tmp, ident);
 // 	}
 // }
 
@@ -267,20 +266,20 @@ void	Parser::parser_ping_(uintptr_t& ident, std::stringstream& line_ss, std::str
 // 			catch(const std::exception& e)
 // 			{
 // 				Udata	tmp = Sender::notice_no_user_error_message(sender, target); // TODO: no user found with notice
-// 				push_write_event(tmp, cur_event);
+// 				push_write_event_(tmp, ident);
 // 			}
 			
 // 		}
 // 		catch(const std::exception& e)
 // 		{
 // 			Udata	tmp = Sender::notice_no_user_error_message_in_channel(); // TODO: no user in channel
-// 			push_write_event(tmp, cur_event);
+// 			push_write_event_(tmp, ident);
 // 		}
 // 	}
 // 	else
 // 	{
 // 		Udata	tmp = users_.command_notice(target, to_send, ident); // TODO: USER have to change logic
-// 		push_write_event(tmp, cur_event);
+// 		push_write_event_(tmp, ident);
 // 	}
 // }
 
@@ -357,12 +356,12 @@ void	Parser::parser_mode_(uintptr_t& ident, std::stringstream& line_ss, std::str
 		{
 			user	cur_user = users_.search_user_by_ident(ident);
 			Udata	tmp = channels_.mode_channel(cur_user, arguments[0], (arguments[1].size() == 1 && arguments[1] == "b"));
-			push_write_event(tmp, cur_event);
+			push_write_event_(tmp, ident);
 		}
 		else
 		{
 			// Udata	tmp = users_.command_mode(arguments[0], (arguments[1].size () == 2 && arguments[1] == "+i"));
-			// push_write_event(tmp, cur_event);
+			// push_write_event_(tmp, ident);
 		}
 	}
 }
@@ -379,7 +378,7 @@ void	Parser::parser_who_(uintptr_t& ident, std::stringstream& line_ss, std::stri
 	else
 	{
 		Udata	tmp = channels_.who_channel(ident, arguments[0]);
-		push_write_event(tmp, cur_event);
+		push_write_event_(tmp, ident);
 	}
 }
 
@@ -436,12 +435,12 @@ void	Parser::parser_part_(uintptr_t& ident, std::stringstream& line_ss, std::str
 // }
 
 
-void	Parser::push_write_event_(Udata& tmp, struct kevent &cur_event)
+void	Parser::push_write_event_(Udata& tmp, uintptr_t& ident)
 {
 	if (tmp.msg.size())
 	{
 		udata_.push_back(tmp);
-		kq_.set_write(cur_event.ident);
+		(Receiver::get_Kevent_Handler()).set_write(ident);
 	}
 }
 
@@ -450,6 +449,6 @@ void	Parser::push_multiple_write_events_(std::vector<Udata>& udata_events)
 	for (std::size_t i(0); i < udata_events.size(); ++i)
 	{
 		udata_.push_back(udata_events[i]);
-		kq_.set_write(udata_events[i].sock_fd);
+		(Receiver::get_Kevent_Handler()).set_write(udata_events[i].sock_fd);
 	}
 }

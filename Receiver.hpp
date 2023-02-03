@@ -23,29 +23,27 @@ class Parser;
 class Receiver
 {
 	private:
-		KeventHandler		kq_;
-		sockaddr_in			server_addr_;
+		static KeventHandler	kq_;
+		sockaddr_in				server_addr_;
 		// std::vector<Udata>	udata_;
-		std::string			port_;
-		std::string			password_;
-		uintptr_t			server_sock_;
-		uintptr_t			client_sock_;
+		std::string				port_;
+		std::string				password_;
+		uintptr_t				server_sock_;
+		uintptr_t				client_sock_;
 
-		int					clientReadEventHandler_(struct kevent &cur_event);
-		// void				parser_(struct kevent &cur_event, std::string& command);
-		int					clientWriteEventHandler_(struct kevent &cur_event);
+		int						clientReadEventHandler_(struct kevent &cur_event);
+		// void					parser_(struct kevent &cur_event, std::string& command);
+		int						clientWriteEventHandler_(struct kevent &cur_event);
 
-		void				init_socket_(int &port);
-		void				bind_socket_();
-
-	protected:
-		
+		void					init_socket_(int &port);
+		void					bind_socket_();
 
 	public:
 		Receiver(int port);
 		~Receiver();
 
-		void 	start();
+		void 					start();
+		static KeventHandler	get_Kevent_Handler();
 };
 
 #endif 

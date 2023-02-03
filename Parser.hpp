@@ -28,7 +28,7 @@ class Parser
 
 		std::string	set_message_(std::string &msg, size_t start, size_t end);
 
-		void		push_write_event_(Udata &tmp, struct kevent &cur_event);
+		void		push_write_event_(Udata &tmp, uintptr_t& ident);
 		void		push_multiple_write_events_(std::vector<Udata>& udata_events);
 
 		void		parser_nick_(uintptr_t& ident, std::stringstream& line_ss, std::string& to_send);

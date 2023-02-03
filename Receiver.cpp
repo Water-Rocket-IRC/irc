@@ -1,6 +1,10 @@
 #include "Receiver.hpp"
 #include "Parser.hpp"
 
+KeventHandler	Receiver::get_Kevent_Handler(void)
+{
+	return kq_;
+}
 
 // class Parser;
 /*    Receiver Class     */
