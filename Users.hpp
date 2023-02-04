@@ -19,12 +19,11 @@ class Users
 	private:
 		std::vector<user>	user_list_;
 	public:
-		Udata	command_nick(std::string& nick_name, const uintptr_t& ident);
+		Event	command_nick(std::string& nick_name, const uintptr_t& ident);
 		Event	command_user(const std::string input[4], const uintptr_t& ident);
-		Udata	command_quit(user& leaver, const std::string& leave_msg);
-		Udata	command_privmsg(std::string &target_name, std::string &line, const uintptr_t& ident);
-		Udata	command_mode(std::string &target_name, std::string &line, const uintptr_t& ident);
-
+		Event	command_quit(user& leaver, const std::string& leave_msg);
+		Event	command_privmsg(std::string &target_name, std::string &line, const uintptr_t& ident);
+		// Event	command_mode(std::string &target_name, std::string &line, const uintptr_t& ident);
 
 		user&	search_user_by_ident(const uintptr_t& ident, int error_code);
 		user&	search_user_by_nick(std::string nickname, int error_code);
@@ -72,7 +71,7 @@ user&	Users::search_user_by_ident(const uintptr_t& ident, int error_code)
 		}
 	}
 	throw error_code;
-	// Sender::error_message(error_code);
+	Sender::error_message(ident, "PRIVMSG", error_code);
 	return (*it);
 }
 
@@ -89,7 +88,7 @@ user&	Users::search_user_by_nick(std::string nickname, int error_code)
 			return (*it);
 		}
 	}
-	// Sender::error_message(error_code);
+	Sender::error_message(it->client_sock_, "NICK", error_code);
 	return (*it);
 }
 
@@ -172,31 +171,31 @@ void	Users::delete_user(user& leaver)
 
 /// @brief 
 //	이 command에는 privmsg가 정상작동 될 때만 존재
-Udata	Users::command_privmsg(std::string &target_name, std::string &line, const uintptr_t& ident)
+Event	Users::command_privmsg(std::string &target_name, std::string &line, const uintptr_t& ident)
 {
-	Udata	ret;
+	Event	ret;
 	user&	sender_user = search_user_by_ident(ident, 0);
 	user&	target_user = search_user_by_nick(target_name, 0);
 
 		
 	// static Event	privmsg_p2p_message(const user& sender, const user& target, const std::string& msg);
-	ret.insert(Sender::privmsg_p2p_message(sender_user, target_user, line));
+	ret = Sender::privmsg_p2p_message(sender_user, target_user, line);
 	return ret;
 }
 
 /// @brief
 // quit을 실행하는 함수
-Udata	Users::command_quit(user& leaver, const std::string& leave_msg)
+Event	Users::command_quit(user& leaver, const std::string& leave_msg)
 {
-	Udata	ret;
+	Event	ret;
 
 	delete_user(leaver);
 	if (leave_msg.empty())
 	{
-		ret.insert(Sender::quit_lobby_message(leaver, ""));
+		ret = Sender::quit_lobby_message(leaver, "");
 		return ret;
 	}
-	ret.insert(Sender::quit_lobby_message(leaver, leave_msg));
+	ret = Sender::quit_lobby_message(leaver, leave_msg);
 	return ret;
 }
 
@@ -225,9 +224,9 @@ Event	Users::command_user(const std::string input[4], const uintptr_t& ident)
 
 /// @brief 
 // nick을 실행하는 함복
-Udata	Users::command_nick(std::string& new_nick, const uintptr_t& ident)
+Event	Users::command_nick(std::string& new_nick, const uintptr_t& ident)
 {
-	Udata		ret;
+	Event		ret;
 	int			error_code;
 
 	// 새로 닉이 기존에 잇으면 433에러
@@ -237,7 +236,7 @@ Udata	Users::command_nick(std::string& new_nick, const uintptr_t& ident)
 		// 기존 유저 닉네임 변경
 		cur_user = search_user_by_ident(ident, 0);
 		cur_user.nickname_ = new_nick;
-		ret.insert(Sender::nick_well_message(cur_user, cur_user, new_nick));
+		ret = Sender::nick_well_message(cur_user, cur_user, new_nick);
 	}
 	catch(std::exception& e)
 	{
@@ -249,6 +248,17 @@ Udata	Users::command_nick(std::string& new_nick, const uintptr_t& ident)
 	}
 	return ret;
 }
+
+
+/// @brief 
+// mode는 오류에 대한 것은 안 만들기로 함
+// Event	command_mode(std::string &target_name, int flag)
+// {
+// 	Event	ret;
+
+// 	ret = Sender::mode_well_message();
+// 	return (ret);
+// }
 
 //debug 함수
 void Users::print_all_user()
