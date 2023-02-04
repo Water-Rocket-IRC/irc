@@ -29,6 +29,7 @@ class Parser
 		void				push_write_event_(Event& tmp);
 		void				push_multiple_write_events_(Udata& tmp, const uintptr_t& ident);
 
+		void				parser_pass_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send, const std::string& cmd);
 		void				parser_nick_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send, const std::string& cmd);
 		void				parser_user_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send, const std::string& cmd);
 		void				parser_ping_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send, const std::string& cmd);

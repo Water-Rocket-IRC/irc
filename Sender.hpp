@@ -2,7 +2,7 @@
 # define SENDER_HPP
 
 //#include "Chan.hpp" 재귀호출
-#include "Chan.hpp"
+//#include "Chan.hpp"
 #include "Udata.hpp"
 #include "user.hpp"
 #include <sys/types.h>

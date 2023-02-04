@@ -3,16 +3,16 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: sesim <sesim@student.42seoul.kr>           +#+  +:+       +#+         #
+#    By: jinwoole <indibooks@naver.com>             +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/01/27 10:57:54 by sesim             #+#    #+#              #
-#    Updated: 2023/02/03 23:42:14 by sesim            ###   ########.fr        #
+#    Updated: 2023/02/04 15:26:16 by jinwoole         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 CXX			=	c++
-CXXFLAGS	=	-g3 -Wall -Wextra -Werror -fsanitize=address
-CXXFLAGS_TMP	=	-g3 #-fsanitize=address 
+CXXFLAGS	=	#-g3 -Wall -Wextra -Werror -fsanitize=address
+CXXFLAGS_TMP	= #	-g3 #-fsanitize=address 
 RM			=	rm -rf
 
 OBJS_DIR	:=	objs/

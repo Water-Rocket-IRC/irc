@@ -36,7 +36,6 @@ class Receiver
 
 		int						clientReadEventHandler_(struct kevent &cur_event);
 		void					clientWriteEventHandler_(struct kevent &cur_event);
-
 		void					init_socket_(const uintptr_t &port);
 		void					bind_socket_();
 

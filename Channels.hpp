@@ -2,8 +2,6 @@
 # define CHANNELS_HPP
 
 #include "Chan.hpp"
-#include "Udata.hpp"
-#include "Users.hpp"
 
 /*********************** TODO: 왜 채널의 기본 생성자가 없다고 뜨죠...?? *********************/
 class Channels
@@ -13,7 +11,6 @@ class Channels
 
 	public:
 	//TODO: 메시지를 전송하는 모든 명령은 udata로 리턴할 것. map안에 집어넣으면 됨. Udata hpp참고
-		Channels(Users &users);
 		Udata				channel_msg(user& sender, std::string chan_name, std::string& msg);
 		Udata				channel_notice(user& sender, std::string chan_name, std::string& msg);
 		Udata				channel_wall(user& sender, std::string chan_name, std::string& msg);
@@ -100,7 +97,7 @@ Chan&	Channels::select_channel(std::string& chan_name, int error_code, user& sen
 			return *it;
 		}
 	}
-	Sender::error_message(sender.client_sock_, command, error_code);
+	//Sender::error_message(sender.client_sock_, command, error_code);
 	return *it;
 }
 
@@ -114,7 +111,7 @@ Chan&	Channels::select_channel(user& connector, int error_code, std::string& com
 			return *it;
 		}
 	}
-	Sender::error_message(connector.client_sock_, command, error_code);
+	//Sender::error_message(connector.client_sock_, command, error_code);
 	return *it;
 }
 
@@ -144,7 +141,7 @@ Udata	Channels::join_channel(user& joiner, std::string& chan_name)
 
 	return ret;
 }
-
+ 
 Udata	Channels::leave_channel(user&leaver, std::string& chan_name, std::string& msg)
 {
 	Event				tmp;

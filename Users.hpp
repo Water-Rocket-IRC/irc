@@ -71,7 +71,7 @@ user&	Users::search_user_by_ident(const uintptr_t& ident, int error_code)
 		}
 	}
 	throw error_code;
-	Sender::error_message(ident, "PRIVMSG", error_code);
+	//Sender::error_message(ident, "PRIVMSG", error_code);
 	return (*it);
 }
 
@@ -88,7 +88,7 @@ user&	Users::search_user_by_nick(std::string nickname, int error_code)
 			return (*it);
 		}
 	}
-	Sender::error_message(it->client_sock_, "NICK", error_code);
+	//Sender::error_message(it->client_sock_, "NICK", error_code);
 	return (*it);
 }
 

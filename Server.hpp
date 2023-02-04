@@ -1,8 +1,8 @@
 #ifndef SERVER_HPP
 # define SERVER_HPP
 
-#include "Udata.hpp"
 #include <iostream>
+#include "Receiver.hpp"
 
 // class Reciever;
 

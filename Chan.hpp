@@ -137,7 +137,7 @@ Udata Chan::send_all(user& sender, user& target, std::string msg, int remocon)
 
 	if (is_user(sender) == false)
 	{
-		Sender::error_message(sender.client_sock_, "")
+		//Sender::error_message(sender.client_sock_, "")
 	}
 	for (it = connectors_.begin(); it != connectors_.end(); it++)
 	{
