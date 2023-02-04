@@ -17,12 +17,12 @@ enum e_send_switch { JOIN, PART, PRIV, KICK, QUIT, NOTICE, TOPIC, WALL, NICK, MO
 class ChatRoom
 {
 	private:
-		std::string				name_;
-		std::string				topic_;
-		int						error_;
 		ChatUser				host_;				// operator
 		std::vector<ChatUser>	connectors_;		// connectors.at(0) => operator
+		std::string				name_;
+		std::string				topic_;
 		std::string				access_;
+		int						error_;
 
 
 //TODO: 메시지를 전송하는 모든 명령은 udata로 리턴할 것. Udata.hpp 참고
@@ -40,7 +40,6 @@ class ChatRoom
 		void 					set_channel_name(std::string& chan_name);
 		void					delete_user(ChatUser& usr);
 		std::string				get_user_list_str(void);
-
 
 		Udata					send_all(ChatUser& sender, ChatUser& target, std::string msg, int remocon);
 
