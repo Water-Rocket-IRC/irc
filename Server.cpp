@@ -1,6 +1,6 @@
 #include "Server.hpp"
-#include "Receiver.hpp"
-#include "Udata.hpp"
+
+void exit_with_perror(const std::string& msg);
 
 static bool	_port_checker(const std::string &str)
 {

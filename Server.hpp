@@ -1,9 +1,6 @@
-#ifndef SERVER_HPP
-# define SERVER_HPP
+#pragma once
 
-#include "Udata.hpp"
-#include <iostream>
-
+#include "Receiver.hpp"
 // class Reciever;
 
 class Server
@@ -20,5 +17,3 @@ class Server
 		void	start();
 		Udata&	get_server_udata(void);
 };
-
-#endif

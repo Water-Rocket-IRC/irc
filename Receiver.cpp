@@ -1,5 +1,9 @@
 #include "Receiver.hpp"
 
+void exit_with_perror(const std::string& msg);
+
+KeventHandler	Receiver::kq_ = KeventHandler();
+
 KeventHandler	Receiver::get_Kevent_Handler(void)
 {
 	return kq_;

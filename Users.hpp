@@ -1,11 +1,10 @@
-#ifndef USERS_HPP
-# define USERS_HPP
+#pragma once
 
 // ident는 있는데 nick이 있는 지 확인해야함
 
 #include "Sender.hpp"
 #include "Udata.hpp"
-#include "user.hpp"
+#include "ChatUser.hpp"
 #include <cstdlib>
 #include <string>
 #include <vector>
@@ -17,17 +16,17 @@
 class Users
 {
 	private:
-		std::vector<user>	user_list_;
+		std::vector<ChatUser>	user_list_;
 	public:
 		Event	command_nick(std::string& nick_name, const uintptr_t& ident);
 		Event	command_user(const std::string input[4], const uintptr_t& ident);
-		Event	command_quit(user& leaver, const std::string& leave_msg);
+		Event	command_quit(ChatUser& leaver, const std::string& leave_msg);
 		Event	command_privmsg(std::string &target_name, std::string &line, const uintptr_t& ident);
 		Event	command_mode(std::string &target_name, int flag);
 
-		user&	search_user_by_ident(const uintptr_t& ident, int error_code);
-		user&	search_user_by_nick(std::string nickname, int error_code);
-		void	delete_user(user& leaver);
+		ChatUser&	search_user_by_ident(const uintptr_t& ident, int error_code);
+		ChatUser&	search_user_by_nick(std::string nickname, int error_code);
+		void	delete_user(ChatUser& leaver);
 		bool 	is_duplicate_ident(const uintptr_t& ident);
 		bool 	is_duplicate_nick(std::string& nick_name);
 
@@ -59,9 +58,9 @@ const char*	Users::duplicated_user_found_exception::what(void) const throw()
 
 /// @brief 
 // ident 즉 socket을 이용해 지금 명령어 친 user가 누군 지 알아낸다. 
-user&	Users::search_user_by_ident(const uintptr_t& ident, int error_code)
+ChatUser&	Users::search_user_by_ident(const uintptr_t& ident, int error_code)
 {
-	std::vector<user>::iterator	it;
+	std::vector<ChatUser>::iterator	it;
 
 	for (it = user_list_.begin(); it != user_list_.end(); it++)
 	{
@@ -71,15 +70,15 @@ user&	Users::search_user_by_ident(const uintptr_t& ident, int error_code)
 		}
 	}
 	throw error_code;
-	Sender::error_message(ident, "PRIVMSG", error_code);
+	// Sender::error_message(ident, "PRIVMSG", error_code);
 	return (*it);
 }
 
 /// @brief 
 // nick 이용해 user가 누군 지 알아낸다. <- 중복검사 활용
-user&	Users::search_user_by_nick(std::string nickname, int error_code)
+ChatUser&	Users::search_user_by_nick(std::string nickname, int error_code)
 {
-	std::vector<user>::iterator	it;
+	std::vector<ChatUser>::iterator	it;
 
 	for (it = user_list_.begin(); it != user_list_.end(); it++)
 	{
@@ -88,7 +87,7 @@ user&	Users::search_user_by_nick(std::string nickname, int error_code)
 			return (*it);
 		}
 	}
-	Sender::error_message(it->client_sock_, "NICK", error_code);
+	// Sender::error_message(it->client_sock_, "NICK", error_code);
 	return (*it);
 }
 
@@ -96,7 +95,7 @@ bool	Users::is_duplicate_ident(const uintptr_t& ident)
 {
 	try
 	{
-		user&	tmp_user = search_user_by_ident(ident, 0); //duplicate일 때 에러 넘버를 체크
+		ChatUser&	tmp_user = search_user_by_ident(ident, 0); //duplicate일 때 에러 넘버를 체크
 	}
 	catch (const std::exception& e)
 	{
@@ -109,7 +108,7 @@ bool	Users::is_duplicate_nick(std::string& nick_name)
 {
 	try
 	{
-		user&	tmp_user = search_user_by_nick(nick_name, 0);
+		ChatUser&	tmp_user = search_user_by_nick(nick_name, 0);
 	}
 	catch (std::exception&)
 	{
@@ -124,7 +123,7 @@ bool	Users::has_nick(const uintptr_t& ident)
 {
 	try
 	{
-		user tmp = search_user_by_ident(ident, 0);	// No THROW
+		ChatUser tmp = search_user_by_ident(ident, 0);	// No THROW
 		if (tmp.nickname_.empty())
 			return (false);
 	}
@@ -141,7 +140,7 @@ bool	Users::has_username(const uintptr_t& ident)
 {
 	try
 	{
-		user tmp = search_user_by_ident(ident, 0);	// No THROW
+		ChatUser tmp = search_user_by_ident(ident, 0);	// No THROW
 		if (tmp.username_.empty())
 			return (false);
 	}
@@ -153,9 +152,9 @@ bool	Users::has_username(const uintptr_t& ident)
 }
 
 
-void	Users::delete_user(user& leaver)
+void	Users::delete_user(ChatUser& leaver)
 {
-	std::vector<user>::iterator it;
+	std::vector<ChatUser>::iterator it;
 	int	idx = 0;
 
 	for (it = user_list_.begin(); it != user_list_.end(); it++)
@@ -173,19 +172,19 @@ void	Users::delete_user(user& leaver)
 //	이 command에는 privmsg가 정상작동 될 때만 존재
 Event	Users::command_privmsg(std::string &target_name, std::string &line, const uintptr_t& ident)
 {
-	Event	ret;
-	user&	sender_user = search_user_by_ident(ident, 0);
-	user&	target_user = search_user_by_nick(target_name, 0);
+	Event		ret;
+	ChatUser&	sender_user = search_user_by_ident(ident, 0);
+	ChatUser&	target_user = search_user_by_nick(target_name, 0);
 
 		
-	// static Event	privmsg_p2p_message(const user& sender, const user& target, const std::string& msg);
+	// static Event	privmsg_p2p_message(const ChatUser& sender, const ChatUser& target, const std::string& msg);
 	ret = Sender::privmsg_p2p_message(sender_user, target_user, line);
 	return ret;
 }
 
 /// @brief
 // quit을 실행하는 함수
-Event	Users::command_quit(user& leaver, const std::string& leave_msg)
+Event	Users::command_quit(ChatUser& leaver, const std::string& leave_msg)
 {
 	Event	ret;
 
@@ -207,11 +206,11 @@ Event	Users::command_user(const std::string input[4], const uintptr_t& ident)
 
 	try
 	{
-		user&	cur_user = search_user_by_ident(ident, 0);	// NO THROW
+		ChatUser&	cur_user = search_user_by_ident(ident, 0);	// NO THROW
 	}
 	catch(const std::exception&)
 	{
-		user	tmp_user;
+		ChatUser	tmp_user;
 		tmp_user.username_ = input[0];
 		tmp_user.mode_ = input[1];
 		tmp_user.unused_ = input[2];
@@ -230,7 +229,7 @@ Event	Users::command_nick(std::string& new_nick, const uintptr_t& ident)
 	int			error_code;
 
 	// 새로 닉이 기존에 있으면 433에러
-	user&	cur_user = search_user_by_nick(new_nick, 433); 
+	ChatUser&	cur_user = search_user_by_nick(new_nick, 433); 
 	try
 	{
 		// 기존 유저 닉네임 변경
@@ -241,7 +240,7 @@ Event	Users::command_nick(std::string& new_nick, const uintptr_t& ident)
 	catch(std::exception& e)
 	{
 		// 처음 접속 닉네임 설정
-		user		tmp_usr;
+		ChatUser		tmp_usr;
 		tmp_usr.nickname_ = new_nick;
 		tmp_usr.client_sock_ = ident;
 		user_list_.push_back(tmp_usr);
@@ -258,8 +257,8 @@ Event	Users::command_mode(std::string &target_name, int flag)
 
 	try 
 	{
-		user&	sender = search_user_by_nick(target_name, 0);
-		ret = Sender::connect_mode_message(sender);
+		ChatUser&	sender = search_user_by_nick(target_name, 0);
+		// ret = Sender::connect_mode_message(sender);
 		return (ret);
 	}
 	catch(std::exception& e)
@@ -272,7 +271,7 @@ Event	Users::command_mode(std::string &target_name, int flag)
 //debug 함수
 void Users::print_all_user()
 {
-	std::vector<user>::iterator it;
+	std::vector<ChatUser>::iterator it;
 
 	for (it = user_list_.begin(); it != user_list_.end(); ++it)
 	{
@@ -280,5 +279,3 @@ void Users::print_all_user()
 		std::cout << "socket " << it->client_sock_ << std::endl;
 	}
 }
-
-#endif

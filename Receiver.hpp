@@ -1,5 +1,4 @@
-#ifndef RECEIVER_HPP
-# define RECEIVER_HPP
+#pragma once
 
 #include <sys/socket.h>
 #include <sys/event.h>
@@ -9,8 +8,6 @@
 #include <netdb.h>
 
 #include "KeventHandler.hpp"
-#include "Users.hpp"
-#include "Channels.hpp"
 #include "Parser.hpp"
 
 // class Users;
@@ -47,5 +44,3 @@ class Receiver
 		void 					start();
 		static KeventHandler	get_Kevent_Handler();
 };
-
-#endif 
