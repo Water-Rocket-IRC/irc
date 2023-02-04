@@ -13,7 +13,6 @@ class Channels
 
 	public:
 	//TODO: 메시지를 전송하는 모든 명령은 udata로 리턴할 것. map안에 집어넣으면 됨. Udata hpp참고
-		Channels(Users &users);
 		Udata				channel_msg(user& sender, std::string chan_name, std::string& msg);
 		Udata				channel_notice(user& sender, std::string chan_name, std::string& msg);
 		Udata				channel_wall(user& sender, std::string chan_name, std::string& msg);

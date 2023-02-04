@@ -1,71 +1,113 @@
 #ifndef SENDER_HPP
 # define SENDER_HPP
 
-//#include "Chan.hpp" 재귀호출
-#include "Chan.hpp"
-#include "Udata.hpp"
-#include "user.hpp"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <iostream>
-#include "color.hpp"
+#include <vector>
+#include "Udata.hpp"
+#include "user.hpp"
+#include "Parser.hpp"
 
 // struct user;
+class user;
+class Chan;
+class Parser;
 
 class Sender
-{ 
+{
 	public:
-		static Event	unknown_command_message_421(const user& sender, const std::string command);
-		static Event	pong(uintptr_t socket, const std::string& serv_addr);
-		static Event	command_no_origin_specified_409(const user& sender, const std::string command);
-		static Event	command_not_registered_451(const user& sender, const std::string command);
-		static Event	command_not_registered_451(const uintptr_t& sock, const std::string command);
-		static Event	command_empty_argument_461(const user& sender, const std::string command);
-		static Event	command_empty_argument_461(const uintptr_t& sock, const std::string command);
-		static Event	welcome_message_connect(const user& sender); // 아직 모름 -> 1번 바꿈
-		static Event	nick_well_message(const user& sender, const user& receiver, const std::string& new_nick);
-		static Event	nick_error_message(const user& sender, const std::string& new_nick);
-		static Event	nick_error_message(const std::string& new_nick, uintptr_t& sock);
-		static Event	nick_wrong_message(const user& sender, const std::string& new_nick);
-		static Event	quit_channel_message(const user& sender, const user& receiver, std::string leave_message);
-		static Event	quit_lobby_message(const user& sender, std::string leave_message);
-		static Event	privmsg_p2p_message(const user& sender, const user& target, const std::string& msg);
-		static Event	privmsg_channel_message(const user& sender, const user& receiver, const std::string& channel, const std::string& msg);
-		static Event	privmsg_no_user_error_message(const user& sender, const std::string& target);
-		static Event	privmsg_external_error_message(const user& sender, const std::string channel);
-		static Event	join_message(const user& sender, const user& receiver, const std::string& channel);
-		static Event	join_invaild_channel_name_message(const user& sender, const std::string invaild_channel);
-		static Event	part_message(const user& sender, const user& receiver, const std::string& channel, const std::string& msg);
-		static Event	kick_message(const user& sender, const user& receiver, const std::string& subject, const std::string& channel, const std::string& msg);
-		static Event	kick_error_not_op_message(const user& sender, const std::string& host, const std::string& channel);
-		static Event	kick_error_no_user_message(const user& sender, const std::string& host, const std::string& subject, const std::string& channel);
-		static Event	topic_message(const user& sender, const user& receiver, const std::string& channel, const std::string& topic);
-		static Event	topic_error_message(const user& sender, const std::string& channel);
-		static Event	notice_p2p_message(const user& sender, const user& target, const std::string& msg);
-		static Event	notice_channel_message(const user& sender, const user& receiver, const std::string& channel, const std::string& msg);
-		static Event 	notice_no_nick_message(const user& sender, const user& receiver);
-		static Event	wall_message(const user& sender, const user& receiver, const std::string& channel, const std::string& msg);
-		static Event	no_channel_message(const user& sender, const std::string& channel);
-		static Event	no_user_message(const user& sender, const std::string& target);
-		static Event	mode_324_message(const user& sender, const std::string channel);
-		static Event	mode_no_option_error_message(const user& sender, const std::string wrong_option);
-		static Event	mode_not_operator_error_message(const user& sender, const std::string channel);
-		static Event	who_joiner_352_message(const user& sender, const std::string channel);
+		static Event		unknown_command_message_421(const user& sender, const std::string command);
+		static Event		pong(uintptr_t socket, const std::string& serv_addr);
+		static Event		command_no_origin_specified_409(const user& sender, const std::string command);
+		static Event		command_not_registered_451(const user& sender, const std::string command);
+		static Event		command_not_registered_451(const uintptr_t& sock, const std::string command);
+		static Event		command_empty_argument_461(const user& sender, const std::string command);
+		static Event		command_empty_argument_461(const uintptr_t& sock, const std::string command);
+		static Event		welcome_message_connect(const user& sender); // 아직 모름 -> 1번 바꿈
+		static Event		nick_well_message(const user& sender, const user& receiver, const std::string& new_nick);
+		static Event		nick_error_message(const user& sender, const std::string& new_nick);
+		static Event		nick_error_message(const std::string& new_nick, uintptr_t& sock);
+		static Event		nick_wrong_message(const user& sender, const std::string& new_nick);
+		static Event		quit_channel_message(const user& sender, const user& receiver, std::string leave_message);
+		static Event		quit_lobby_message(const user& sender, std::string leave_message);
+		static Event		privmsg_p2p_message(const user& sender, const user& target, const std::string& msg);
+		static Event		privmsg_channel_message(const user& sender, const user& receiver, const std::string& channel, const std::string& msg);
+		static Event		privmsg_no_user_error_message(const user& sender, const std::string& target);
+		static Event		privmsg_external_error_message(const user& sender, const std::string channel);
+		static Event		join_message(const user& sender, const user& receiver, const std::string& channel);
+		static Event		join_invaild_channel_name_message(const user& sender, const std::string invaild_channel);
+		static Event		part_message(const user& sender, const user& receiver, const std::string& channel, const std::string& msg);
+		static Event		kick_message(const user& sender, const user& receiver, const std::string& subject, const std::string& channel, const std::string& msg);
+		static Event		kick_error_not_op_message(const user& sender, const std::string& host, const std::string& channel);
+		static Event		kick_error_no_user_message(const user& sender, const std::string& host, const std::string& subject, const std::string& channel);
+		static Event		topic_message(const user& sender, const user& receiver, const std::string& channel, const std::string& topic);
+		static Event		topic_error_message(const user& sender, const std::string& channel);
+		static Event		notice_p2p_message(const user& sender, const user& target, const std::string& msg);
+		static Event		notice_channel_message(const user& sender, const user& receiver, const std::string& channel, const std::string& msg);
+		static Event		notice_no_nick_message(const user& sender, const user& receiver);
+		static Event		wall_message(const user& sender, const user& receiver, const std::string& channel, const std::string& msg);
+		static Event		no_channel_message(const user& sender, const std::string& channel);
+		static Event		no_user_message(const user& sender, const std::string& target);
+		static Event		mode_324_message(const user& sender, const std::string channel);
+		static Event		mode_no_option_error_message(const user& sender, const std::string wrong_option);
+		static Event		mode_not_operator_error_message(const user& sender, const std::string channel);
+		static Event		who_joiner_352_message(const user& sender, const std::string channel);
 		static std::string	who_352_target_message(const user& sender, const std::string channel, const std::string target);
 		static std::string	who_315_message(const user& sender, const std::string channel);
 		static std::string	mode_329_message(const user& sender, const std::string channel, const std::string time_stamp);
 		static std::string	join_353_message(const user& sender, const std::string& chan_name, const std::string& chan_status, const std::string& chan_user_list);
 		static std::string	join_366_message(const user& sender, const std::string& chan_name);
+
+		static void			error_message(uintptr_t& sock, std::string command_type, int error_code);
+		static std::vector<user>&		user_list_ = Parser::get_users();
+		static std::vector<Chan>&		channel_list = Parser::get_channels();
+
 	private:
-		static const std::string	server_name_;
+		// static const std::vector<user>&	user_list_;
+		// static const std::vector<Chan>&	channel_list;
+		static const std::string		server_name_;
 };
 
+const std::string				Sender::server_name_ = "webserv.local";
+
 /**************************** TODO: Have to FIX THIS FIRST ******************************************/
-// void	error_message(uintptr_t& sock, int error_code) {
+void	Sender::error_message(uintptr_t& sock, std::string command_type, int error_code)
+{
+	
+}
+
+
+// void	Sender::error_message(user& , int error_code) {
+
+	// if (error_code / 1000 = 1)
+	// {
+		// try {
+			// user& cur_user = user_list_	.select_channel();
+		// }
+		// catch (std::exception& e){ }
+	// }
+	// else if (error_code / 1000 = 2) {
+		// try {
+			// Chan& cur_chan =
+		// }
+	// }
+
+
+	// tr/
+	// {
+	// }
+	// catch% 2
+	// {
+	// }
+
 // 	switch (error_code) {
-// 		case 353:
-// 			throw Sender::error_353_message(sock);
-// 			break;
+// 		// case 353:
+
+// 		// case 1353:
+// 		// case 2353:
+// 			// break;
+// 		// case 353:
 // 		case 366:
 // 			throw Sender::error_366_message(sock);
 // 			break;
@@ -74,7 +116,6 @@ class Sender
 /***************************************************************************************************/
 
 
-const std::string	Sender::server_name_ = "webserv.local";
 /****************************       <PING && PONG && USE && etc>       ****************************/
 
 /*
@@ -294,7 +335,6 @@ Event	Sender::join_message(const user& sender, const user& receiver, const std::
 	ret = make_pair(receiver.client_sock_, join_message);
 	return ret;
 }
-/******** TODO: join_op_message // join_normal_message 2개로 오버로딩 하여 오퍼레이터와 일반 유저를 각각 처리하게 만들어야 됨.... ********/
 
 /// @brief 476
 Event	Sender::join_invaild_channel_name_message(const user& sender, const std::string invaild_channel)
@@ -643,3 +683,16 @@ Event	Sender::no_user_message(const user& sender, const std::string& target)
 }
 
 #endif
+
+
+/*
+ * uintptr_t
+ */
+
+
+
+
+
+
+
+
