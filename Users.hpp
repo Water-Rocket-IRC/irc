@@ -23,7 +23,7 @@ class Users
 		Event	command_user(const std::string input[4], const uintptr_t& ident);
 		Event	command_quit(user& leaver, const std::string& leave_msg);
 		Event	command_privmsg(std::string &target_name, std::string &line, const uintptr_t& ident);
-		// Event	command_mode(std::string &target_name, std::string &line, const uintptr_t& ident);
+		Event	command_mode(std::string &target_name, int flag);
 
 		user&	search_user_by_ident(const uintptr_t& ident, int error_code);
 		user&	search_user_by_nick(std::string nickname, int error_code);
@@ -229,7 +229,7 @@ Event	Users::command_nick(std::string& new_nick, const uintptr_t& ident)
 	Event		ret;
 	int			error_code;
 
-	// 새로 닉이 기존에 잇으면 433에러
+	// 새로 닉이 기존에 있으면 433에러
 	user&	cur_user = search_user_by_nick(new_nick, 433); 
 	try
 	{
@@ -252,13 +252,22 @@ Event	Users::command_nick(std::string& new_nick, const uintptr_t& ident)
 
 /// @brief 
 // mode는 오류에 대한 것은 안 만들기로 함
-// Event	command_mode(std::string &target_name, int flag)
-// {
-// 	Event	ret;
+Event	Users::command_mode(std::string &target_name, int flag)
+{
+	Event	ret;
 
-// 	ret = Sender::mode_well_message();
-// 	return (ret);
-// }
+	try 
+	{
+		user&	sender = search_user_by_nick(target_name, 0);
+		ret = Sender::connect_mode_message(sender);
+		return (ret);
+	}
+	catch(std::exception& e)
+	{
+		return (ret);
+	}
+	return (ret);
+}
 
 //debug 함수
 void Users::print_all_user()
