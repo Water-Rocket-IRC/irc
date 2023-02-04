@@ -7,14 +7,14 @@
 #include <sys/_types/_size_t.h>
 #include <sys/_types/_uintptr_t.h>
 
-// const std::string Parser::commands[N_COMMAND] = {"NICK", "USER", "PING", "QUIT", "PRIVMSG", "NOTICE", "WALL", "JOIN", "MODE", "WHO", "PART", "TOPIC", "KICK"};
+// const std::string Parser::commands[N_COMMAND] = {"PASS", "NICK", "USER", "PING", "QUIT", "PRIVMSG", "NOTICE", "WALL", "JOIN", "MODE", "WHO", "PART", "TOPIC", "KICK"};
 // void (Parser::*Parser::func_ptr[N_COMMAND])(const uintptr_t&, std::stringstream&, std::string&, const std::string&) = \
-								{&Parser::parser_nick_, &Parser::parser_user_, &Parser::parser_ping_, &Parser::parser_quit_, &Parser::parser_privmsg_, &Parser::parser_notice_, \
+								{&Parser::parser_pass_, &Parser::parser_nick_, &Parser::parser_user_, &Parser::parser_ping_, &Parser::parser_quit_, &Parser::parser_privmsg_, &Parser::parser_notice_, \
 								 &Parser::parser_wall_, &Parser::parser_join_, &Parser::parser_mode_, &Parser::parser_who_,  &Parser::parser_part_, &Parser::parser_topic_, &Parser::parser_kick_};
 
-const std::string Parser::commands[N_COMMAND] = {"NICK", "USER", "PING", "JOIN", "MODE", "WHO", "PART"};
+const std::string Parser::commands[N_COMMAND] = {"PASS", "NICK", "USER", "PING", "JOIN", "MODE", "WHO", "PART"};
 void (Parser::*Parser::func_ptr[N_COMMAND])(const uintptr_t&, std::stringstream&, std::string&, const std::string&) = \
-								{&Parser::parser_nick_, &Parser::parser_user_, &Parser::parser_ping_, \
+								{&Parser::parser_pass_, &Parser::parser_nick_, &Parser::parser_user_, &Parser::parser_ping_, \
 							    &Parser::parser_join_, &Parser::parser_mode_, &Parser::parser_who_,  &Parser::parser_part_};
 
 const std::string Parser::command_toupper(const char* command)
@@ -29,7 +29,7 @@ const std::string Parser::command_toupper(const char* command)
 }
 
 Parser::Parser(Udata& serv_udata, const std::string& password)
-: parser_udata_(serv_udata), channels_(), password_(password)
+: parser_udata_(serv_udata), password_(password)
 {
 }
 
@@ -123,6 +123,12 @@ void	Parser::valid_user_checker_(const uintptr_t& ident, const std::string& comm
 	}
 	catch (std::exception& e) { }
 }
+
+void	Parser::parser_pass_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send, const std::string& cmd)
+{
+	// TODO: have to make this
+}
+
 
 	//check_argument(2, )
 	// NICK은 채널에 있을 때 모에게 NICK 변경되었음을 알리고, 로비에 있을 때는 본인에게만 알린다.
@@ -393,7 +399,8 @@ void	Parser::parser_who_(const uintptr_t& ident, std::stringstream& line_ss, std
 		user&	tmp_user = users_.search_user_by_ident(ident, 461);	// <- '*' 461로 넣어야?
 		throw Sender::command_empty_argument_461(tmp_user, "MODE");
 	}
-	Udata	ret = channels_.who_channel(ident, target);
+	user&	asker = users_.search_user_by_ident(ident, 461);
+	Udata	ret = channels_.who_channel(asker, target);
 	push_multiple_write_events_(ret, ident);
 }
 

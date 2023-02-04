@@ -22,8 +22,8 @@ class Channels
 		bool				is_user_in_channel(user& leaver);
 		void 				create_channel(user& joiner, std::string& chan_name, std::string chan_access);
 		void 				delete_channel(std::string& chan_name);
-		Chan&				select_channel(std::string& chan_name, int error_code);
-		Chan&				select_channel(user& connector, int error_code);
+		Chan&				select_channel(std::string& chan_name, int error_code, user& sender, std::string& command);
+		Chan&				select_channel(user& connector, int error_code, std::string& command);
 
 		Udata				set_topic(user& sender, std::string& chan_name, std::string& topic);
 		Udata				kick_channel(user& host, user& target, std::string& chan_name, std::string& msg);
@@ -32,39 +32,10 @@ class Channels
 		Udata				leave_channel(user&leaver, std::string& chan_name, std::string& msg);
 		Udata				nick_channel(user& who, std::string& send_msg);
 		Udata				mode_channel(user& moder, const std::string& chan_name, const bool vaild);
-		Udata				who_channel(const uintptr_t& sock, std::string& chan_name);
+		Udata				who_channel(user& asker, std::string& chan_name);//(const uintptr_t& sock, std::string& chan_name);
 		std::vector<Chan>&	get_channels() { return	Channels_; };
-
-		class user_no_any_channels_exception : public std::exception
-		{
-			public:
-				const char*		what(void) const throw();
-		};
-		class no_match_channels_exception : public std::exception
-		{
-			public:
-				const char*		what(void) const throw();
-		};
 };
 
-Udata	Channels::who_channel(const uintptr_t& sock, std::string& chan_name)
-{
-	Udata	ret;	
-	Chan& chan = select_channel(chan_name, 0); // end of list만 보낸다. error 없음
-	
-	ret.insert((tmp));
-	return ret;
-}
-
-const	char*		Channels::user_no_any_channels_exception::what(void) const throw()
-{
-	return "err: user no any channel";
-}
-
-const	char*		Channels::no_match_channels_exception::what(void) const throw()
-{
-	return "err: no match channel";
-}
 
 bool	Channels::is_channel(std::string& chan_name)
 {
@@ -118,7 +89,8 @@ void	Channels::delete_channel(std::string& chan_name)
 	this->Channels_.erase(this->Channels_.begin() + size);
 }
 
-Chan&	Channels::select_channel(std::string& chan_name, int error_code) // 403 ERROR Sender::no_channel_message
+/// @brief sender, command -> error_message에 보낼 정보
+Chan&	Channels::select_channel(std::string& chan_name, int error_code, user& sender, std::string& command) // 403 ERROR Sender::no_channel_message
 {
 	std::vector<Chan>::iterator it = Channels_.begin();
 	for (; it != Channels_.end(); ++it)
@@ -128,11 +100,11 @@ Chan&	Channels::select_channel(std::string& chan_name, int error_code) // 403 ER
 			return *it;
 		}
 	}
-	Sender::error_message(error_code); //근데 이거 어딨지?
+	Sender::error_message(sender.client_sock_, command, error_code);
 	return *it;
 }
 
-Chan&	Channels::select_channel(user& connector, int error_code) // 476 ERROR Sender::join_invaild_channel_name_message
+Chan&	Channels::select_channel(user& connector, int error_code, std::string& command) // 476 ERROR Sender::join_invaild_channel_name_message
 {
 	std::vector<Chan>::iterator it = Channels_.begin();
 	for (; it != Channels_.end(); ++it)
@@ -142,7 +114,7 @@ Chan&	Channels::select_channel(user& connector, int error_code) // 476 ERROR Sen
 			return *it;
 		}
 	}
-	throw user_no_any_channels_exception();
+	Sender::error_message(connector.client_sock_, command, error_code);
 	return *it;
 }
 
@@ -151,36 +123,25 @@ Udata	Channels::join_channel(user& joiner, std::string& chan_name)
 {
 	Udata				ret;
 	Event				tmp;
+	std::string			command("JOIN");
 
-	try
+	Chan& chan = select_channel(chan_name, 476, joiner, command);
+	if (chan.is_user(joiner) == false)
 	{
-		Chan& chan = select_channel(chan_name, 476);
-		if (chan.is_user(joiner) == false)
-		{
-			tmp = Sender::no_user_message(joiner, chan_name);
-			ret.insert(tmp);
-		}
-		else
-		{
-			chan.add_user(joiner);
-			ret = chan.send_all(joiner, joiner, "Join \"" + chan_name + "\" channel, " + joiner.nickname_, JOIN);
-			const std::string& chan_user_list = chan.get_user_list_str();
-
-			Udata_iter it = ret.find(joiner.client_sock_);
-			it->second += Sender::join_353_message(joiner, chan.get_name(), chan.get_access(), chan_user_list);
-			it->second += Sender::join_366_message(joiner, chan.get_name());
-		}
+		tmp = Sender::no_user_message(joiner, chan_name);
+		ret.insert(tmp);
 	}
-	catch(const std::exception& e) //여기선 채널 없으면 새로 만들어야해서 밖으로 빠지면 안됨, 아무튼 채널 새로 만듦
+	else
 	{
-		ret.insert(Sender::join_message(joiner, joiner, chan_name));
-		create_channel(joiner, chan_name, "=");
+		chan.add_user(joiner);
+		ret = chan.send_all(joiner, joiner, "Join \"" + chan_name + "\" channel, " + joiner.nickname_, JOIN);
+		const std::string& chan_user_list = chan.get_user_list_str();
+
+		Udata_iter it = ret.find(joiner.client_sock_);
+		it->second += Sender::join_353_message(joiner, chan.get_name(), chan.get_access(), chan_user_list);
+		it->second += Sender::join_366_message(joiner, chan.get_name());
 	}
-	// 추가하기
 
-
-
-	//유저가 채널에 성공적으로 입장했다는 메시지 전송 + 서버 정보 전송
 	return ret;
 }
 
@@ -188,8 +149,9 @@ Udata	Channels::leave_channel(user&leaver, std::string& chan_name, std::string& 
 {
 	Event				tmp;
 	Udata				res;
+	std::string			command("PART");
 
-	Chan& chan = select_channel(chan_name, 403); // 403 ERROR Sender::no_channel_message
+	Chan& chan = select_channel(chan_name, 403, leaver, command); // 403 ERROR Sender::no_channel_message
 	//유저가 존재하지 않을 경우(로비에서 part하면 예외처리)
 	if (chan.is_user(leaver) == 0)
 	{
@@ -221,8 +183,9 @@ Udata	Channels::channel_msg(user& sender, std::string chan_name, std::string& ms
 {
 	Udata		ret;
 	Event		tmp;
+	std::string	command("PRIVMSG");
 
-	Chan&	channel = select_channel(chan_name, 403); // 403 ERROR Sender::no_channel_message
+	Chan&	channel = select_channel(chan_name, 403, sender, command); // 403 ERROR Sender::no_channel_message
 	ret = channel.send_all(sender, sender, msg, PRIV);
 	return ret;
 }
@@ -231,8 +194,9 @@ Udata	Channels::channel_notice(user& sender, std::string chan_name, std::string&
 {
 	Udata			ret;
 	Event			tmp;
+	std::string		command("NOTICE");
 
-	Chan &channel = select_channel(chan_name, 403); // 403 ERROR Sender::no_channel_message
+	Chan&	channel = select_channel(chan_name, 403, sender, command); // 403 ERROR Sender::no_channel_message
 	ret = channel.send_all(sender, sender, msg, NOTICE);
 	return ret;
 }
@@ -241,8 +205,9 @@ Udata	Channels::channel_wall(user& sender, std::string chan_name, std::string& m
 {
 	Udata			ret;
 	Event			tmp;
+	std::string		command("WALL");
 
-	Chan&	channel = select_channel(chan_name, 403); // 403 ERROR Sender::no_channel_message
+	Chan&	channel = select_channel(chan_name, 403, sender, command); // 403 ERROR Sender::no_channel_message
 	user	host = channel.get_host();
 
 	if (host == sender)
@@ -259,9 +224,10 @@ Udata	Channels::kick_channel(user& host, user& target, std::string& chan_name, s
 {
 	Udata			ret;
 	Event			tmp;
+	std::string		command("PRIVMSG");
 
 
-	Chan& channel = select_channel(chan_name, 403); // 403 ERROR Sender::no_channel_message
+	Chan&	channel = select_channel(chan_name, 403, host, command); // 403 ERROR Sender::no_channel_message
 	if (channel.get_host() == host)
 	{
 		if (channel.is_user(target) == true)
@@ -284,13 +250,28 @@ Udata	Channels::kick_channel(user& host, user& target, std::string& chan_name, s
 	return ret;
 }
 
+Udata	Channels::who_channel(user& asker, std::string& chan_name)
+{
+	Udata	ret;
+	Event	tmp;
+	std::string command("WHO");
+
+	Chan& chan = select_channel(chan_name, 315, asker, command); // 315 -> end of list만 보낸다.
+
+	tmp = Sender::who_joiner_352_message(asker, chan_name);
+	tmp.second += Sender::who_315_message(asker, chan_name);
+
+	ret.insert(tmp);
+	return ret;
+}
+
 Udata	Channels::quit_channel(user& leaver, std::string msg)
 {
 	Udata			ret;
 	Event			tmp;
+	std::string		command("QUIT");
 
-	//어떤 채널도 없으면 catch로 감
-	Chan& channel = select_channel(leaver, 401); // 401 no_such_nick
+	Chan& channel = select_channel(leaver, 401, command); // 401 no_such_nick
 	ret = channel.send_all(leaver, leaver, msg, QUIT);
 	channel.delete_user(leaver);
 	
@@ -300,17 +281,20 @@ Udata	Channels::quit_channel(user& leaver, std::string msg)
 Udata	Channels::mode_channel(user& moder, const std::string& chan_name, const bool vaild)
 {
 	Udata	ret;
+	Event	tmp;
 
-	user	trash;
+	std::time_t result = std::time(NULL);
+	std::stringstream	ss;
+	ss << result;
+	const std::string& time_stamp(ss.str());
+
 	if (vaild)	// true
 	{
-		ret = Sender::mode_324_message(moder, chan_name);
-		ret.msg += Sender::mode_329_message(moder, chan_name, timestamp);
+		tmp = Sender::mode_324_message(moder, chan_name);
+		tmp.second += Sender::mode_329_message(moder, chan_name, time_stamp);
+		ret.insert(tmp);
 	}
-	else
-	{
-		ret =
-	}
+
 	return ret;
 }
 
@@ -318,10 +302,11 @@ Udata	Channels::nick_channel(user& nicker, std::string& send_msg)
 {
 	Udata	ret;
 	user	trash;
+	std::string command("NICK");
 	
-	Chan& channel = select_channel(nicker, 401); // 401 no such nick
-	channel.change_nick(nicker, send_msg);
+	Chan& channel = select_channel(nicker, 401, command); // 401 no such nick
 
+	channel.change_nick(nicker, send_msg);
 	ret = channel.send_all(nicker, trash, send_msg, NICK);
 	return ret;
 }
@@ -330,26 +315,20 @@ Udata	Channels::set_topic(user& sender, std::string& chan_name, std::string& top
 {
 	Udata			ret;
 	Event			tmp;
+	std::string		command("TOPIC");
 
-	try
+
+	Chan& channel = select_channel(chan_name, 403, sender, command); // 403 ERROR Sender::no_channel_message
+	if (channel.get_host() == sender)
 	{
-		Chan& channel = select_channel(chan_name, 403); // 403 ERROR Sender::no_channel_message
-		if (channel.get_host() == sender)
-		{
-			std::string topic_msg = "Topic was changed to " + topic;
-			channel.set_topic(topic);
-			ret = channel.send_all(sender, sender, topic_msg, TOPIC);
-		}
-		else
-		{
-			std::string topic_msg = "You do not have access to change the topic on this channel";
-			ret = channel.send_all(sender, sender, topic_msg, TOPIC);
-		}
+		std::string topic_msg = "Topic was changed to " + topic;
+		channel.set_topic(topic);
+		ret = channel.send_all(sender, sender, topic_msg, TOPIC);
 	}
-	catch (std::exception&)
+	else
 	{
-		tmp = Sender::no_channel_message(sender, chan_name);
-		ret.insert(tmp);
+		std::string topic_msg = "You do not have access to change the topic on this channel";
+		ret = channel.send_all(sender, sender, topic_msg, TOPIC);
 	}
 	return	ret;
 }

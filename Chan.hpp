@@ -54,21 +54,21 @@ class Chan
 		int geterror();
 };
 
-void	DebugshowUsers(std::vector<user>& target) {
-	std::cout << YELLOW << "(begin) " << RESET << " ➜ ";
-	for (std::vector<user>::iterator it = target.begin(); it != target.end(); ++it) {
-		std::cout << (*it).nickname_ << " ➜ ";
-	}
-	std::cout << YELLOW << "(end)" << RESET << std::endl;
-}
+// void	DebugshowUsers(std::vector<user>& target) {
+// 	std::cout << YELLOW << "(begin) " << RESET << " ➜ ";
+// 	for (std::vector<user>::iterator it = target.begin(); it != target.end(); ++it) {
+// 		std::cout << (*it).nickname_ << " ➜ ";
+// 	}
+// 	std::cout << YELLOW << "(end)" << RESET << std::endl;
+// }
 
-void	DebugshowChannels(std::vector<Chan>& target) {
-	std::cout << YELLOW << "(begin) " << RESET << " ➜ ";
-	for (std::vector<Chan>::iterator it = target.begin(); it != target.end(); ++it) {
-		std::cout << (*it).get_name() << " ➜ ";
-	}
-	std::cout << YELLOW << "(end)" << RESET << std::endl;
-}
+// void	DebugshowChannels(std::vector<Chan>& target) {
+// 	std::cout << YELLOW << "(begin) " << RESET << " ➜ ";
+// 	for (std::vector<Chan>::iterator it = target.begin(); it != target.end(); ++it) {
+// 		std::cout << (*it).get_name() << " ➜ ";
+// 	}
+// 	std::cout << YELLOW << "(end)" << RESET << std::endl;
+// }
 
 std::string&	Chan::get_access(void) { return access_; }
 void			Chan::set_access(const std::string& access) { access_ = access; }
@@ -114,7 +114,6 @@ std::vector<user>	Chan::sort_users(void)
 	return ret;
 }
 
-
 std::string		Chan::get_user_list_str(void)
 {
 	std::string					ret;
@@ -138,7 +137,7 @@ Udata Chan::send_all(user& sender, user& target, std::string msg, int remocon)
 
 	if (is_user(sender) == false)
 	{
-		//throw noUserException();
+		Sender::error_message(sender.client_sock_, "")
 	}
 	for (it = connectors_.begin(); it != connectors_.end(); it++)
 	{
