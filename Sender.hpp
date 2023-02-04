@@ -15,6 +15,7 @@
 class Sender
 { 
 	public:
+		static void		error_message(const uintptr_t& sock, const std::string command, const std::string error_code);
 		static Event	unknown_command_message_421(const user& sender, const std::string command);
 		static Event	pong(uintptr_t socket, const std::string& serv_addr);
 		static Event	command_no_origin_specified_409(const user& sender, const std::string command);
@@ -47,6 +48,7 @@ class Sender
 		static Event	wall_message(const user& sender, const user& receiver, const std::string& channel, const std::string& msg);
 		static Event	no_channel_message(const user& sender, const std::string& channel);
 		static Event	no_user_message(const user& sender, const std::string& target);
+		static Event	mode_make_operator_message(const user& sender, const std::string channel, const std::string target);
 		static Event	mode_324_message(const user& sender, const std::string channel);
 		static Event	mode_no_option_error_message(const user& sender, const std::string wrong_option);
 		static Event	mode_not_operator_error_message(const user& sender, const std::string channel);
@@ -650,6 +652,83 @@ Event	Sender::no_user_message(const user& sender, const std::string& target)
 		target + " " + ":No such const user"  + "\r\n";
 	ret = std::make_pair(sender.client_sock_, no_msg);
 	return (ret);
+}
+
+Event	mode_make_operator_message(const user& sender, const std::string channel, const std::string target, const uintptr_t& receiver_sock)
+{
+	Event		ret;
+
+	std::string mode_msg = ":" + sender.nickname_ + " ! " + sender.mode_ \
+	+ " MODE " + channel + " +o :" + target + "\r\n";
+	if (sender.client_sock_ == receiver_sock)
+	{
+		ret = std::make_pair(sender.client_sock_, mode_msg);
+	}
+	else
+	{
+		ret = std::make_pair(receiver_sock, mode_msg);
+	}
+	return (ret);
+}
+
+void	Sender::error_message(const uintptr_t& sock, const std::string command, const int error_code)
+{
+	switch (int error_code)
+	{
+		case 401:
+			if (command == "?") //
+			{
+
+			}
+			else
+			{
+
+			}
+			break;
+		case 404:
+			//
+			break;
+		case 409:
+			//
+			break;
+		case 421:
+			//
+			break;
+		case 432:
+			//
+			break;
+		case 433:
+			//
+			break;
+		case 441:
+			//
+			break;
+		case 451:
+			//
+			break;
+		case 461:
+			//
+			break;
+		case 472:
+			//
+			break;
+		case 476:
+			//
+			break;
+		case 482:
+			if (command == "?") // mode_not_operator_error_message 함수 관련
+			{
+
+			}
+			else if (command == "??") // kick_error_not_op_message 함수 관련
+			{
+
+			}
+			else // topic_error_message 함수 관련
+			{
+
+			}
+	}
 }
 
 #endif
