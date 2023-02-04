@@ -33,7 +33,7 @@ class Sender
 		static Event	privmsg_channel_message(const user& sender, const user& receiver, const std::string& channel, const std::string& msg);
 		static Event	privmsg_no_user_error_message(const user& sender, const std::string& target);
 		static Event	privmsg_external_error_message(const user& sender, const std::string channel);
-		static Event	join_message(const user& sender, const user& receiver, const std::string& channel);
+		static Event	join_message(const user& sender, const user& receiver, const std::string& channel, int flag);
 		static Event	join_invaild_channel_name_message(const user& sender, const std::string invaild_channel);
 		static Event	part_message(const user& sender, const user& receiver, const std::string& channel, const std::string& msg);
 		static Event	kick_message(const user& sender, const user& receiver, const std::string& subject, const std::string& channel, const std::string& msg);
@@ -217,6 +217,15 @@ Event	Sender::welcome_message_connect(const user& sender) // 1st done
 	return ret;
 }
 
+// 127.000.000.001.06667-127.000.000.001.50886: :root_!root@127.0.0.1 MODE root_ :+i
+Event	Sender::connect_mode_message(const user& sender)
+{
+	Event ret; 
+
+	std::string mode_message = ":" + sender.nickname_ + "!" + sender.mode_ + " MODE " + sender.nickname_ + " :+i\r\n";
+	ret = std::make_pair(sender.client_sock_, mode_message);
+	return ret;
+}
 // /****************************       <QUIT>       ****************************/
 
 // // 127.000.000.001.06667-127.000.000.001.39470: ERROR :Closing link: (root@127.0.0.1) [Quit: byby]
@@ -284,8 +293,9 @@ Event	Sender::quit_lobby_message(const user& sender, std::string leave_message) 
 //  @brief join 시 메세지
 //  @param nick 현재 닉네임
 //  @param const user 유저네임
+//	@param flag joiner가 채널을 새로 파는 방장인지 일반 유저인지 확인.
 // */
-Event	Sender::join_message(const user& sender, const user& receiver, const std::string& channel) // 2st->done
+Event	Sender::join_message(const user& sender, const user& receiver, const std::string& channel, int flag) // 2st->done
 {
 	Event	ret;
 
