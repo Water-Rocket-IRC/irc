@@ -126,7 +126,7 @@ Event	Sender::nick_error_message(const User& sender, const std::string& new_nick
 }
 
 /// @brief 433
-Event	Sender::nick_error_message(const std::string& new_nick, uintptr_t& sock)
+Event	Sender::nick_error_message(const uintptr_t& sock, const std::string& new_nick)
 {
 	Event	ret;
 

@@ -1,17 +1,13 @@
 #include "Parser.hpp"
 #include "Receiver.hpp"
+#include "Udata.hpp"
 
 #include <sys/_types/_size_t.h>
 
-// const std::string Parser::commands[N_COMMAND] = {"PASS", "NICK", "USER", "PING", "QUIT", "PRIVMSG", "NOTICE", "WALL", "JOIN", "MODE", "WHO", "PART", "TOPIC", "KICK"};
-// void (Parser::*Parser::func_ptr[N_COMMAND])(const uintptr_t&, std::stringstream&, std::string&, const std::string&) = \
-								{&Parser::parser_pass_, &Parser::parser_nick_, &Parser::parser_user_, &Parser::parser_ping_, &Parser::parser_quit_, &Parser::parser_privmsg_, &Parser::parser_notice_, \
+const std::string Parser::commands[N_COMMAND] = {"NICK"};//, "USER", "PING", "QUIT", "PRIVMSG", "NOTICE", "WALL", "JOIN", "MODE", "WHO", "PART", "TOPIC", "KICK"};
+void (Parser::*Parser::func_ptr[N_COMMAND])(const uintptr_t&, std::stringstream&, std::string&, const std::string&) = \
+								{&Parser::parser_nick_};//, &Parser::parser_user_, &Parser::parser_ping_, &Parser::parser_quit_, &Parser::parser_privmsg_, &Parser::parser_notice_, \
 								 &Parser::parser_wall_, &Parser::parser_join_, &Parser::parser_mode_, &Parser::parser_who_,  &Parser::parser_part_, &Parser::parser_topic_, &Parser::parser_kick_};
-
-// const std::string Parser::commands[N_COMMAND] = {"NICK", "USER", "PING", "JOIN", "MODE", "WHO", "PART"};
-// void (Parser::*Parser::func_ptr[N_COMMAND])(const uintptr_t&, std::stringstream&, std::string&, const std::string&) = \
-// 								{&Parser::parser_nick_, &Parser::parser_user_, &Parser::parser_ping_, \
-// 							    &Parser::parser_join_, &Parser::parser_mode_, &Parser::parser_who_,  &Parser::parser_part_};
 
 const std::string Parser::command_toupper(const char* command)
 {
@@ -80,24 +76,14 @@ void	Parser::command_parser(const uintptr_t& ident, std::string& command)
 		_print_title(command_type);
 		for (; i < N_COMMAND; ++i)
 		{
-			// if (command_type == Parser::commands[i])
-			if (command_type == "GOOD")
+			if (command_type == Parser::commands[i])
 			{
 				std::size_t	pos(line.find(':'));
 				std::string	to_send;
 				if (pos == std::string::npos)
 					to_send.clear();
 				to_send = set_message_(line, pos + 1, (line.length() - (pos + 2)));
-				std::cout << "parser func " << std::endl;
-				// try
-				// {
-				// 	(this->*Parser::func_ptr[i])(ident, line_ss, to_send, command_type);
-				// }
-				// catch (Event& e)
-				// {
-				// 	push_write_event_(e);
-				// }
-				break ;
+				(this->*Parser::func_ptr[i])(ident, line_ss, to_send, command_type);
 			}
 		}
 		if (i == N_COMMAND)
@@ -105,22 +91,7 @@ void	Parser::command_parser(const uintptr_t& ident, std::string& command)
 	}
 }
 
-// void	Parser::valid_user_checker_(const uintptr_t& ident, const std::string& command_type)
-// {
-// 	try
-// 	{
-// 		user&	cur_user = users_.search_user_by_ident(ident, 0);
-// 		if (!users_.has_nick(ident))
-// 		{
-// 			throw Sender::command_not_registered_451(ident, command_type);
-// 		}
-// 		else if (!users_.has_username(ident))
-// 		{
-// 			throw Sender::command_not_registered_451(cur_user, command_type);
-// 		}
-// 	}
-// 	catch (std::exception& e) { }
-// }
+
 
 // void	Parser::parser_pass_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send, const std::string& cmd)
 // {
@@ -128,39 +99,25 @@ void	Parser::command_parser(const uintptr_t& ident, std::string& command)
 // }
 
 
-// 	//check_argument(2, )
-// 	// NICK은 채널에 있을 때 모에게 NICK 변경되었음을 알리고, 로비에 있을 때는 본인에게만 알린다.
-// void	Parser::parser_nick_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send, const std::string& cmd)
-// {
-// 	static_cast<void>(to_send);
-// 	std::string	nick;
-// 	Udata		ret;
+	//check_argument(2, )
+	// NICK은 채널에 있을 때 모에게 NICK 변경되었음을 알리고, 로비에 있을 때는 본인에게만 알린다.
+void	Parser::parser_nick_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send, const std::string& cmd)
+{
+	static_cast<void>(to_send);
+	std::string	nick;
+	Udata		ret;
 
-// 	line_ss >> nick;
-// 	if (nick.empty()) // no nickname error
-// 	{
-// 		throw Sender::command_empty_argument_461(ident, "NICK");
-// 	}
-// 	if (nick.size() && nick.at(0) == '#')
-// 	{
-// 		user&	tmp_user = users_.search_user_by_ident(ident, 432);
-// 		throw Sender::nick_wrong_message(tmp_user, nick);
-// 	}
-// 	ret = users_.command_nick(nick, ident);
-// 	if (ret.empty())
-// 	{
-// 		// Client first enter
-// 		Event	ret;
+	line_ss >> nick;
+	if (nick.empty()) // no nickname error
+	{
+		Event	tmp = Sender::command_empty_argument_461(ident, "NICK");
 
-// 		ret.first = ident;
-// 		push_write_event_(ret);
-// 		return ;
-// 	}
-// 	// Success change nick
-// 	user& 	who = users_.search_user_by_ident(ident, 451);
-// 	Udata	ret_events = channels_.nick_channel(who, ret[ident]);
-// 	ret.insert(ret_events.begin(), ret_events.end());
-// }
+		push_write_event_(tmp);
+		return ;
+	}
+	ret = database_.command_nick(ident, nick);
+	push_multiple_write_events_(ret, ident);
+}
 
 // void	Parser::parser_user_(const uintptr_t& ident, std::stringstream& line_ss, std::string& real_name, const std::string& cmd)
 // {
@@ -478,6 +435,10 @@ void	Parser::push_multiple_write_events_(Udata& ret, const uintptr_t& ident)
 	// 내가 있으면 나를 먼저 보내고 모두에게 보냄
 	if (target != ret.end())
 	{
+		if (target->second.empty())
+		{
+			return ;
+		}
 		Receiver::get_Kevent_Handler().set_write(ident);
 	}
 	// 내가 없으면 나를 제외한 모두에게 보냄

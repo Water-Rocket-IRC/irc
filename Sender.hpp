@@ -19,7 +19,7 @@ class Sender
 		static Event		welcome_message_connect(const User& sender); // 아직 모름 -> 1번 바꿈
 		static Event		nick_well_message(const User& sender, const User& receiver, const std::string& new_nick);
 		static Event		nick_error_message(const User& sender, const std::string& new_nick);
-		static Event		nick_error_message(const std::string& new_nick, uintptr_t& sock);
+		static Event		nick_error_message(const uintptr_t& sock, const std::string& new_nick);
 		static Event		nick_wrong_message(const User& sender, const std::string& new_nick);
 		static Event		quit_channel_message(const User& sender, const User& receiver, std::string leave_message);
 		static Event		quit_lobby_message(const User& sender, std::string leave_message);
