@@ -10,23 +10,14 @@
 #include "KeventHandler.hpp"
 #include "Parser.hpp"
 
-// class Database;
-// class Database;
-// class Udata;
 class Parser;
-
-// TODO: have to tommorow
-// USER 클래스를 Parser로 이동
-// std::vector<Udata>를 server에서 생성 후 Receiver에서 레퍼런스로 받아오면 좋을듯
-// >> Parser도 std::vector<Udata>를 레퍼런스로 받아오면 서로 참조가 가능하니 좋을듯?
-// ***생각해보니 Receiver 에서 Parser를 가져야된다. 아니면 Parser::command_parser함수를 못 부른다.***
 
 class Receiver
 {
 	private:
 		static KeventHandler	kq_;
 		Parser					parser_;
-		Udata					udata_;
+		Udata&					udata_;
 		sockaddr_in				server_addr_;
 		const uintptr_t			port_;
 		uintptr_t				server_sock_;

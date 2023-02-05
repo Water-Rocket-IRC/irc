@@ -1,10 +1,7 @@
 #include "Parser.hpp"
 #include "Receiver.hpp"
-#include "Sender.hpp"
-#include "User.hpp"
-#include <netdb.h>
+
 #include <sys/_types/_size_t.h>
-#include <sys/_types/_uintptr_t.h>
 
 // const std::string Parser::commands[N_COMMAND] = {"PASS", "NICK", "USER", "PING", "QUIT", "PRIVMSG", "NOTICE", "WALL", "JOIN", "MODE", "WHO", "PART", "TOPIC", "KICK"};
 // void (Parser::*Parser::func_ptr[N_COMMAND])(const uintptr_t&, std::stringstream&, std::string&, const std::string&) = \

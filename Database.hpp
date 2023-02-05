@@ -1,8 +1,6 @@
 #pragma once
 
 #include "Channel.hpp"
-#include "User.hpp"
-#include "Udata.hpp"
 
 /*********************** TODO: 왜 채널의 기본 생성자가 없다고 뜨죠...?? *********************/
 class Database
@@ -14,7 +12,6 @@ class Database
 	public:
 	
 	// Channel
-		Database(Database &users);
 		Udata					channel_msg(User& sender, std::string chan_name, std::string& msg);
 		Udata					channel_notice(User& sender, std::string chan_name, std::string& msg);
 		Udata					channel_wall(User& sender, std::string chan_name, std::string& msg);
@@ -51,5 +48,6 @@ class Database
 
 		bool	has_nick(const uintptr_t& ident);
 		bool	has_username(const uintptr_t& ident);
+
 		void	print_all_user(); //debug
 };

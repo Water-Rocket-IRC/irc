@@ -3,8 +3,6 @@
 #include <cstring>
 #include <unistd.h>
 
-#include "Udata.hpp"
-#include <sstream>
 #include "Database.hpp"
 
 class Receiver;
@@ -14,9 +12,8 @@ enum e_val { N_COMMAND = 13 };
 class Parser
 {
 	private:
-		Udata				&parser_udata_;
-		// Database				users_;
-		// Database			channels_;
+		Udata&				parser_udata_;
+		Database			database_;
 		const std::string&	password_;
 
 		static const std::string	commands[N_COMMAND];

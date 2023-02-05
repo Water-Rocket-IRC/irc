@@ -1,11 +1,12 @@
 #pragma once
 
 #include "Sender.hpp"
+#include "User.hpp"
 #include "Udata.hpp"
+
 #include <vector>
 #include <algorithm>
 #include <sstream>
-#include "User.hpp"
 
 enum e_send_switch { JOIN, PART, PRIV, KICK, QUIT, NOTICE, TOPIC, WALL, NICK, MODE, WHO};
 /*
@@ -29,7 +30,7 @@ class Channel
 	public:
 		std::string				get_info(void);
 		std::string&			get_name(void);
-		User&				get_host(void);
+		User&					get_host(void);
 		void					set_host(void);
 		std::string&			get_access(void);
 		void					set_access(const std::string& access);

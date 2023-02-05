@@ -1,9 +1,6 @@
 #pragma once
 
 #include "Udata.hpp"
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <iostream>
 #include "color.hpp"
 
 // struct user;

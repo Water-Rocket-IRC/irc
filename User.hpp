@@ -1,19 +1,19 @@
 #pragma once
 
 #include <iostream>
-#include <sys/event.h>
 
 struct User 
 {
-	User(void);
 	std::string	nickname_;
 	std::string username_;
 	std::string mode_;
 	std::string unused_;
 	std::string realname_;
+	uintptr_t	client_sock_;
+	int			mod;
 
-	uintptr_t		client_sock_; //legacy variable, 곧 kevent로 대체해야 함
-	int				mod;
+
+	User(void);
 	bool	operator==(const User& obj) const { return this->client_sock_ == obj.client_sock_; };
 	bool	operator!=(const User& obj) const { return this->client_sock_ != obj.client_sock_; };
 	bool	operator>(const User& obj) const { return this->client_sock_ > obj.client_sock_; };
