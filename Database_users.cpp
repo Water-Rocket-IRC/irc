@@ -1,22 +1,27 @@
 #include "Database.hpp"
+#include "Udata.hpp"
 #include <locale>
 
-// void	Database::valid_user_checker_(const uintptr_t& ident, const std::string& command_type)
-// {
-// 	try
-// 	{
-// 		user&	cur_user = users_.search_user_by_ident(ident, 0);
-// 		if (!users_.has_nick(ident))
-// 		{
-// 			throw Sender::command_not_registered_451(ident, command_type);
-// 		}
-// 		else if (!users_.has_username(ident))
-// 		{
-// 			throw Sender::command_not_registered_451(cur_user, command_type);
-// 		}
-// 	}
-// 	catch (std::exception& e) { }
-// }
+Event	Database::valid_user_checker_(const uintptr_t& ident, const std::string& command_type)
+{
+	Event	ret;
+
+	if (!is_user(ident))
+	{
+		ret = Sender::command_not_registered_451(ident, command_type);
+		return ret;
+	}
+	User&	cur_user = select_user(ident);
+	if (!does_has_nickname(ident))
+	{
+		ret = Sender::command_not_registered_451(ident, command_type);
+	}
+	else if (!does_has_username(ident))
+	{
+		ret = Sender::command_not_registered_451(cur_user, command_type);
+	}
+	return ret;
+}
 
 
 
@@ -109,37 +114,37 @@ bool	Database::is_user(const std::string& nickname)
 
 /// @brief 
 // ident로 찾고, nick이 있는 지 확인 
-// bool	Database::dose_has_nick(const uintptr_t& ident)
-// {
-// 	try
-// 	{
-// 		User tmp = select_user(ident, 0);	// No THROW
-// 		if (tmp.nickname_.empty())
-// 			return (false);
-// 	}
-// 	catch(const std::exception&)
-// 	{
-// 		return (false);
-// 	}
-// 	return (true);
-// }
+bool	Database::does_has_nickname(const uintptr_t& ident)
+{
+	try
+	{
+		User& tmp = select_user(ident);
+		if (tmp.nickname_.empty())
+			return (false);
+	}
+	catch(const std::exception&)
+	{
+		return (false);
+	}
+	return (true);
+}
 
 // /// @brief 
-// // ident로 찾고, username이 있는 지 확인 
-// bool	Database::does_has_username(const uintptr_t& ident)
-// {
-// 	try
-// 	{
-// 		User tmp = select_user(ident, 0);	// No THROW
-// 		if (tmp.username_.empty())
-// 			return (false);
-// 	}
-// 	catch(const std::exception&)
-// 	{
-// 		return (false);
-// 	}
-// 	return (true);
-// }
+// ident로 찾고, username이 있는 지 확인 
+bool	Database::does_has_username(const uintptr_t& ident)
+{
+	try
+	{
+		User& tmp = select_user(ident);
+		if (tmp.username_.empty())
+			return (false);
+	}
+	catch(const std::exception&)
+	{
+		return (false);
+	}
+	return (true);
+}
 
 
 
@@ -170,34 +175,90 @@ Udata	Database::command_nick(const uintptr_t& ident, std::string& new_nick)
 			// 432 eeror
 	// }
 
+	tmp.first = ident;
 	if (is_user(new_nick)) // 닉네임 중복된 상황 433 에러
 	{
+		std::cout << "duplicate" << std::endl;
 		tmp = Sender::nick_error_message(ident, new_nick);
-		ret.insert(tmp);
+		std::cout << tmp.second << std::endl;
 	}
-	else if (!is_user(ident)) // 처음 접속한 경우
+	else if (!does_has_nickname(ident) && does_has_username(ident))
+	{
+		User&	cur_usr = select_user(ident);
+
+		cur_usr.nickname_ = new_nick;
+		tmp = Sender::welcome_message_connect(cur_usr);;
+	}
+	else if (!is_user(ident))
 	{
 		User		tmp_usr;
 
-		tmp_usr.nickname_ = new_nick;
 		tmp_usr.client_sock_ = ident;
+		tmp_usr.nickname_ = new_nick;
 		user_list_.push_back(tmp_usr);
-		ret.insert(tmp);
 	}
 	else // 기존 유저 닉네임 변경
 	{
 		User& cur_user = select_user(ident);
-		cur_user.nickname_ = new_nick;
 		tmp = Sender::nick_well_message(cur_user, cur_user, new_nick);
+		cur_user.nickname_ = new_nick;
 		//채널에 있지 않으니, 닉네임만 바꿈
-		if (is_user_in_channel(cur_user)) // 채널에 있는 유저의 닉네임 변경
-		{
-			ret = nick_channel(cur_user, new_nick);
-		}
-		ret.insert(tmp);
+		// if (is_user_in_channel(cur_user)) // 채널에 있는 유저의 닉네임 변경
+		// {
+		// 	ret = nick_channel(cur_user, new_nick);
+		// }
+	}
+	ret.insert(tmp);
+	return ret;
+}
+
+Event	Database::command_user(const uintptr_t& ident
+								, const std::string& username, const std::string& mode
+								, const std::string& unused, const std::string& realname)
+{
+	Event	ret;
+
+	ret.first = ident;
+	if (does_has_nickname(ident) && !does_has_username(ident))
+	{
+		User&		cur_usr = select_user(ident);
+		cur_usr.username_ = username;
+		cur_usr.mode_ = mode;
+		cur_usr.unused_ = unused;
+		cur_usr.realname_ = realname;
+		ret = Sender::welcome_message_connect(cur_usr);;
+	}
+	else if (!is_user(ident))
+	{
+		User		tmp_usr;
+		tmp_usr.username_ = username;
+		tmp_usr.mode_ = mode;
+		tmp_usr.unused_ = unused;
+		tmp_usr.realname_ = realname;
+		tmp_usr.client_sock_ = ident;
+		user_list_.push_back(tmp_usr);
 	}
 	return ret;
 }
+
+Event	Database::command_pong(const uintptr_t& ident, const std::string& target, const std::string& msg)
+{
+	Event	ret;
+
+	ret.first = ident;
+	ret = valid_user_checker_(ident, "PING");
+	if (ret.second.size())
+		return ret;
+	User&	cur_user = select_user(ident);	// user가 있는 경우
+	if (msg.at(0) == ':')
+	{
+		ret = Sender::command_no_origin_specified_409(cur_user, "PING");
+		return ret;
+	}
+	ret = Sender::pong(ident, target, msg);
+	return ret;
+}
+
 /***************************************************************************************************/
 
 /// @brief 
@@ -232,26 +293,6 @@ Event	Database::command_quit(User& leaver, const std::string& leave_msg)
 
 /// @brief
 // user를 실행하는 함수 (command_user는 Event 반환)
-Event	Database::command_user(const std::string input[4], const uintptr_t& ident)
-{
-	Event	ret;
-
-	try
-	{
-		// User&	cur_user = search_user_by_ident(ident, 0);	// NO THROW
-	}
-	catch(const std::exception&)
-	{
-		User	tmp_user;
-		tmp_user.username_ = input[0];
-		tmp_user.mode_ = input[1];
-		tmp_user.unused_ = input[2];
-		tmp_user.realname_ = input[3].substr(1);
-		tmp_user.client_sock_ = ident;
-		ret = Sender::welcome_message_connect(tmp_user);
-	}
-	return (ret);
-}
 
 /// @brief 
 // nick을 실행하는 함복

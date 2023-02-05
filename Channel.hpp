@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Sender.hpp"
-#include "User.hpp"
 #include "Udata.hpp"
 
 #include <vector>

@@ -6,12 +6,12 @@
 #    By: sesim <sesim@student.42seoul.kr>           +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/01/27 10:57:54 by sesim             #+#    #+#              #
-#    Updated: 2023/02/04 21:32:23 by sesim            ###   ########.fr        #
+#    Updated: 2023/02/05 19:25:24 by sesim            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 CXX			=	c++
-CXXFLAGS	=	-Wall -Wextra -Werror -fsanitize=address
+# CXXFLAGS	=	-fsanitize=address -g3 #-Wall -Wextra -Werror 
 CXXFLAGS	=	-g3
 
 RM			=	rm -rf

@@ -7,10 +7,11 @@
 class Database
 {
 	private:
-		std::vector<Channel> 	Channels_;
+		std::vector<Channel> 	channel_list_;
 		std::vector<User>		user_list_;
 
 	public:
+		Event					valid_user_checker_(const uintptr_t& ident, const std::string& command_type);
 	
 	// Channel
 		Udata					channel_msg(User& sender, std::string chan_name, std::string& msg);
@@ -32,11 +33,13 @@ class Database
 		Udata					nick_channel(User& who, std::string& new_nick);
 		Udata					mode_channel(User& moder, std::string& chan_name, bool vaild);
 		Udata					who_channel(User& asker, std::string& chan_name);//(const uintptr_t& sock, std::string& chan_name);
-		std::vector<Channel>&	get_channels() { return	Channels_; };
+		std::vector<Channel>&	get_channels() { return	channel_list_; };
 
 	//User
 		Udata	command_nick(const uintptr_t& ident, std::string& nick_name);
-		Event	command_user(const std::string input[4], const uintptr_t& ident);
+		Event	command_user(const uintptr_t& ident, const std::string& username, const std::string& mode,
+							const std::string& unused, const std::string& realname);
+		Event	command_pong(const uintptr_t& ident, const std::string& target, const std::string& msg);
 		Event	command_quit(User& leaver, const std::string& leave_msg);
 		Event	command_privmsg(std::string &target_name, std::string &line, const uintptr_t& ident);
 		Event	command_mode(std::string &target_name, int flag);
@@ -49,8 +52,8 @@ class Database
 		bool 	is_duplicate_ident(const uintptr_t& ident);
 		bool 	is_duplicate_nick(std::string& nick_name);
 
-		bool	has_nick(const uintptr_t& ident);
-		bool	has_username(const uintptr_t& ident);
+		bool	does_has_nickname(const uintptr_t& ident);
+		bool	does_has_username(const uintptr_t& ident);
 
 		void	print_all_user(); //debug
 

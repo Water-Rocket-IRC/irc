@@ -1,12 +1,13 @@
 #include "Parser.hpp"
 #include "Receiver.hpp"
 #include "Udata.hpp"
+#include "color.hpp"
 
 #include <sys/_types/_size_t.h>
 
-const std::string Parser::commands[N_COMMAND] = {"NICK"};//, "USER", "PING", "QUIT", "PRIVMSG", "NOTICE", "WALL", "JOIN", "MODE", "WHO", "PART", "TOPIC", "KICK"};
+const std::string Parser::commands[N_COMMAND] = {"NICK", "USER", "PING"};//, "QUIT", "PRIVMSG", "NOTICE", "WALL", "JOIN", "MODE", "WHO", "PART", "TOPIC", "KICK"};
 void (Parser::*Parser::func_ptr[N_COMMAND])(const uintptr_t&, std::stringstream&, std::string&, const std::string&) = \
-								{&Parser::parser_nick_};//, &Parser::parser_user_, &Parser::parser_ping_, &Parser::parser_quit_, &Parser::parser_privmsg_, &Parser::parser_notice_, \
+								{&Parser::parser_nick_, &Parser::parser_user_, &Parser::parser_ping_};//, &Parser::parser_quit_, &Parser::parser_privmsg_, &Parser::parser_notice_, \
 								 &Parser::parser_wall_, &Parser::parser_join_, &Parser::parser_mode_, &Parser::parser_who_,  &Parser::parser_part_, &Parser::parser_topic_, &Parser::parser_kick_};
 
 const std::string Parser::command_toupper(const char* command)
@@ -74,20 +75,20 @@ void	Parser::command_parser(const uintptr_t& ident, std::string& command)
 		line_ss >> command_type;
 		command_type = command_toupper(command_type.c_str());
 		_print_title(command_type);
-		for (; i < N_COMMAND; ++i)
+		for (; i < N_COMMAND && (command_type != Parser::commands[i]); ++i) { }
+		if (i < N_COMMAND)
 		{
-			if (command_type == Parser::commands[i])
-			{
-				std::size_t	pos(line.find(':'));
-				std::string	to_send;
-				if (pos == std::string::npos)
-					to_send.clear();
-				to_send = set_message_(line, pos + 1, (line.length() - (pos + 2)));
-				(this->*Parser::func_ptr[i])(ident, line_ss, to_send, command_type);
-			}
+			std::size_t	pos(line.find(':'));
+			std::string	to_send;
+			if (pos == std::string::npos)
+				to_send.clear();
+			to_send = set_message_(line, pos + 1, (line.length() - (pos + 1)));
+			(this->*Parser::func_ptr[i])(ident, line_ss, to_send, command_type);
 		}
-		if (i == N_COMMAND)
+		else
+		{
 			std::cerr << BOLDRED << "We don't support these : \n" << RESET << command_type << std::endl;
+		}
 	}
 }
 
@@ -119,48 +120,51 @@ void	Parser::parser_nick_(const uintptr_t& ident, std::stringstream& line_ss, st
 	push_multiple_write_events_(ret, ident);
 }
 
-// void	Parser::parser_user_(const uintptr_t& ident, std::stringstream& line_ss, std::string& real_name, const std::string& cmd)
-// {
-// 	Event		ret;
-// 	std::string	argument[4];
+void	Parser::parser_user_(const uintptr_t& ident, std::stringstream& line_ss, std::string& real_name, const std::string& cmd)
+{
+	Udata		ret;
+	Event		tmp;
+	std::string	argument[4];
 	
-// 	line_ss >> argument[0] >> argument[1] >> argument[2] >> argument[3];
-// 	for (size_t i(0); i < 4; ++i)
-// 	{
-// 		if (real_name.empty() || argument[i].empty())
-// 		{
-// 			throw Sender::command_empty_argument_461(ident, "USER");
-// 		}
-// 	}
-// 	user&	cur_user = users_.search_user_by_ident(ident, 0); // NO THROW
-// 	if (real_name.size())
-// 	{
-// 		argument[3] = real_name;
-// 	}
-// 	ret = users_.command_user(argument, ident); // USER TODO: have to change argument and logic
-// 	push_write_event_(ret);
-// }
+	line_ss >> argument[0] >> argument[1] >> argument[2] >> argument[3];
+	for (std::size_t i(0); i < 4; ++i)
+	{
+		if (real_name.empty() || argument[i].empty())
+		{
+			tmp =  Sender::command_empty_argument_461(ident, "USER");
+			push_write_event_(tmp);
+			return ;
+		}
+	}
+	if (real_name.size())
+	{
+		argument[3] = real_name;
+	}
+	tmp = database_.command_user(ident, argument[0], argument[1], argument[2], argument[3]);
+	ret.insert(tmp);
+	push_multiple_write_events_(ret, ident);
+}
 
-// void	Parser::parser_ping_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send, const std::string& cmd)
-// {
-// 	valid_user_checker_(ident, cmd);
-// 	static_cast<void>(to_send);
-// 	std::string serv_addr;
-// 	Event		ret;
+void	Parser::parser_ping_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send, const std::string& cmd)
+{
+	Event		ret;
+	std::string msg, target;
 
-// 	line_ss >> serv_addr;
-// 	if (serv_addr.empty())
-// 	{
-// 		throw Sender::command_empty_argument_461(ident, "PING");
-// 	}
-// 	user&	cur_user = users_.search_user_by_ident(ident, 451); // NO SUCH USER
-// 	if (serv_addr.size() == 1 && serv_addr.at(0) == ':' && to_send.empty())
-// 	{
-// 		throw Sender::command_no_origin_specified_409(cur_user, "PING");
-// 	}
-// 	ret = Sender::pong(ident, serv_addr);
-// 	push_write_event_(ret);
-// }
+	msg = message_resize_(line_ss, to_send);
+	line_ss >> target;
+	if (msg.empty())
+	{
+		ret =  Sender::command_empty_argument_461(ident, cmd);
+		push_write_event_(ret);
+		return ;
+	}
+	else if (msg.find(' ') == std::string::npos)
+	{
+		target.clear();
+	}
+	ret = database_.command_pong(ident, target, msg);
+	push_write_event_(ret);
+}
 
 // void	Parser::parser_quit_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send, const std::string& cmd)
 // {
@@ -421,11 +425,12 @@ void	Parser::parser_nick_(const uintptr_t& ident, std::stringstream& line_ss, st
 
 void	Parser::push_write_event_(Event& ret)
 {
-	if (ret.second.size())
+	if (ret.second.empty())
 	{
-		parser_udata_.insert(ret);
-		(Receiver::get_Kevent_Handler()).set_write(ret.first);
+		return ;
 	}
+	parser_udata_.insert(ret);
+	(Receiver::get_Kevent_Handler()).set_write(ret.first);
 }
 
 void	Parser::push_multiple_write_events_(Udata& ret, const uintptr_t& ident)
@@ -439,18 +444,20 @@ void	Parser::push_multiple_write_events_(Udata& ret, const uintptr_t& ident)
 		{
 			return ;
 		}
-		Receiver::get_Kevent_Handler().set_write(ident);
+		parser_udata_.insert(*target);
+		Receiver::get_Kevent_Handler().set_write(target->first);
 	}
 	// 내가 없으면 나를 제외한 모두에게 보냄
 	for (Udata_iter iter = ret.begin(); iter != ret.end(); ++iter)
 	{
-		parser_udata_.insert(*iter);
 		if (target != ret.end() && iter->first == ident)
 		{
 			continue ;
 		}
+		parser_udata_.insert(*iter);
 		(Receiver::get_Kevent_Handler()).set_write(iter->first);
 	}
+
 }
 
 // 혹시 멀티플 write에서 빈 Udata를 해야되나?

@@ -33,5 +33,5 @@ class Receiver
 		~Receiver();
 
 		void 					start();
-		static KeventHandler	get_Kevent_Handler();
+		static KeventHandler&	get_Kevent_Handler();
 };

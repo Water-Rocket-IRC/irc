@@ -1,16 +1,14 @@
 #pragma once
 
 #include "Udata.hpp"
+#include "User.hpp"
 #include "color.hpp"
-
-// struct user;
-class User;
 
 class Sender
 { 
 	public:
 		static Event		unknown_command_message_421(const User& sender, const std::string command);
-		static Event		pong(uintptr_t socket, const std::string& serv_addr);
+		static Event		pong(const uintptr_t& socket, const std::string& target, const std::string& msg);
 		static Event		command_no_origin_specified_409(const User& sender, const std::string command);
 		static Event		command_not_registered_451(const User& sender, const std::string command);
 		static Event		command_not_registered_451(const uintptr_t& sock, const std::string command);

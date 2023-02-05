@@ -1,5 +1,4 @@
 #include "Sender.hpp"
-#include "User.hpp"
 
 // struct user;
 
@@ -26,12 +25,13 @@ const std::string	Sender::server_name_ = "webserv.local";
  @param sender.hostname_ 서버 주소
 */
 
-Event	Sender::pong(uintptr_t socket, const std::string& serv_addr) // 1st done
+Event	Sender::pong(const uintptr_t& socket, const std::string& target, const std::string& msg) // 1st done
 {
 	Event ret;
-
-	std::string pong_reply = ":" + serv_addr + " PONG " \
-		+ serv_addr + " :" + serv_addr + "\r\n";
+	
+	const std::string& cur_target = target.empty() ? target : Sender::server_name_; 
+	std::string pong_reply = ":" + Sender::server_name_ + " PONG " \
+		+ cur_target + " :" + msg + "\r\n";
 	ret = std::make_pair(socket, pong_reply);
 	return ret;
 }
@@ -82,7 +82,7 @@ Event	Sender::command_no_origin_specified_409(const User& sender, const std::str
 
 	std::string error_message = ":" + Sender::server_name_ + " 409 " \
 		+ sender.nickname_ + " " + command  + " :No origin specified\r\n";
-	
+	ret = std::make_pair(sender.client_sock_, error_message);
 	return ret;
 }
 /// @brief 421
@@ -132,7 +132,7 @@ Event	Sender::nick_error_message(const uintptr_t& sock, const std::string& new_n
 
 	std::string nick_msg = ":" + Sender::server_name_ + " 433 * " \
 	+ new_nick + " :Nickname is already in use.\r\n";
-	ret = std::make_pair(sock, new_nick);
+	ret = std::make_pair(sock, nick_msg);
 	return ret;
 }
 

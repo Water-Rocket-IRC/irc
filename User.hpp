@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+	// User(const std::string& nickname, const std::)
+
 struct User 
 {
 	std::string	nickname_;

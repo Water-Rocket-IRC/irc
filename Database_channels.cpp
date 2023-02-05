@@ -5,7 +5,7 @@ bool	Database::is_channel(std::string& chan_name)
 {
 	std::vector<Channel>::iterator it;
 
-	for (it = Channels_.begin(); it != Channels_.end(); ++it)
+	for (it = channel_list_.begin(); it != channel_list_.end(); ++it)
 	{
 		if (it->get_name() == chan_name)
 		{
@@ -17,8 +17,8 @@ bool	Database::is_channel(std::string& chan_name)
 
 bool	Database::is_user_in_channel(User& leaver)
 {
-	std::vector<Channel>::iterator it = Channels_.begin();
-	for (; it != Channels_.end(); ++it)
+	std::vector<Channel>::iterator it = channel_list_.begin();
+	for (; it != channel_list_.end(); ++it)
 	{
 		if (it->is_user(leaver))
 		{
@@ -36,7 +36,7 @@ void	Database::create_channel(User& joiner, std::string& chan_name, std::string 
 	tmp.add_user(joiner);
 	tmp.set_host();
 	tmp.set_access(chan_access);
-	Channels_.push_back(tmp);
+	channel_list_.push_back(tmp);
 }
  /*
  * operator 가 없을 때 (0 index가 비어있다면 삭제)
@@ -47,17 +47,17 @@ void	Database::delete_channel(std::string& chan_name)
 
 	tmp.set_channel_name(chan_name);
 
-	std::vector<Channel>::iterator it = std::find(Channels_.begin(), \
-	Channels_.end(), tmp);
-	std::size_t size = std::distance(this->Channels_.begin(), it);
-	this->Channels_.erase(this->Channels_.begin() + size);
+	std::vector<Channel>::iterator it = std::find(channel_list_.begin(), \
+	channel_list_.end(), tmp);
+	std::size_t size = std::distance(this->channel_list_.begin(), it);
+	this->channel_list_.erase(this->channel_list_.begin() + size);
 }
 
 /// @brief sender, command -> error_message에 보낼 정보
 Channel&	Database::select_channel(std::string& chan_name) // 403 ERROR Sender::no_channel_message
 {
-	std::vector<Channel>::iterator it = Channels_.begin();
-	for (; it != Channels_.end(); ++it)
+	std::vector<Channel>::iterator it = channel_list_.begin();
+	for (; it != channel_list_.end(); ++it)
 	{
 		if (it->get_name() == chan_name)
 		{
@@ -69,8 +69,8 @@ Channel&	Database::select_channel(std::string& chan_name) // 403 ERROR Sender::n
 
 Channel&	Database::select_channel(User& connector) // 476 ERROR Sender::join_invaild_channel_name_message
 {
-	std::vector<Channel>::iterator it = Channels_.begin();
-	for (; it != Channels_.end(); ++it)
+	std::vector<Channel>::iterator it = channel_list_.begin();
+	for (; it != channel_list_.end(); ++it)
 	{
 		if (it->is_user(connector))
 		{
