@@ -203,10 +203,10 @@ Udata	Database::command_nick(const uintptr_t& ident, std::string& new_nick)
 		tmp = Sender::nick_well_message(cur_user, cur_user, new_nick);
 		cur_user.nickname_ = new_nick;
 		//채널에 있지 않으니, 닉네임만 바꿈
-		// if (is_user_in_channel(cur_user)) // 채널에 있는 유저의 닉네임 변경
-		// {
-		// 	ret = nick_channel(cur_user, new_nick);
-		// }
+		if (is_user_in_channel(cur_user)) // 채널에 있는 유저의 닉네임 변경
+		{
+			ret = nick_channel(cur_user, new_nick);
+		}
 	}
 	ret.insert(tmp);
 	return ret;
