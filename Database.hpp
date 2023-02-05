@@ -13,7 +13,7 @@ class Database
 
 	public:
 	
-	// Database
+	// Channel
 		Database(Database &users);
 		Udata					channel_msg(User& sender, std::string chan_name, std::string& msg);
 		Udata					channel_notice(User& sender, std::string chan_name, std::string& msg);
@@ -36,7 +36,7 @@ class Database
 		Udata					who_channel(User& asker, std::string& chan_name);//(const uintptr_t& sock, std::string& chan_name);
 		std::vector<Channel>&	get_channels() { return	Channels_; };
 
-	//Database
+	//User
 		Event	command_nick(std::string& nick_name, const uintptr_t& ident);
 		Event	command_user(const std::string input[4], const uintptr_t& ident);
 		Event	command_quit(User& leaver, const std::string& leave_msg);
