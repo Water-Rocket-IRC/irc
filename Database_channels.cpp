@@ -1,4 +1,5 @@
 #include "Database.hpp"
+#include "Udata.hpp"
 
 bool	Database::is_channel(std::string& chan_name)
 {
@@ -303,15 +304,17 @@ Udata	Database::mode_channel(User& moder, std::string& chan_name, bool vaild)
 	return ret;
 }
 
-Udata	Database::nick_channel(User& nicker, std::string& new_nick)
+Udata	Database::nick_channel(User& nicker, std::string& send_msg)
 {
 	Udata		ret;
 	Event		tmp;
 	User		trash;
 
 	Channel& channel = select_channel(nicker); // 401 no such nick
-	channel.change_nick(nicker, new_nick);
-	ret = channel.send_all(nicker, trash, new_nick, NICK);
+
+	channel.change_nick(nicker, send_msg);
+	ret = channel.send_all(nicker, trash, send_msg, NICK);
+
 	return ret;
 }
 
