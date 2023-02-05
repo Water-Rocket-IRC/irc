@@ -107,13 +107,14 @@ bool	Database::is_user(const std::string& nickname)
 	}
 	catch(const std::exception&)
 	{
-		return (false);
+		return false;
 	}
-	return (true);
+	return true;
 }
 
-/// @brief 
-// ident로 찾고, nick이 있는 지 확인 
+/* @brief
+ *		ident로 찾고, nick이 있는 지 확인
+ */
 bool	Database::does_has_nickname(const uintptr_t& ident)
 {
 	try
@@ -129,8 +130,9 @@ bool	Database::does_has_nickname(const uintptr_t& ident)
 	return (true);
 }
 
-// /// @brief 
-// ident로 찾고, username이 있는 지 확인 
+/* @brief
+ *		ident로 찾고, username이 있는 지 확인
+ */
 bool	Database::does_has_username(const uintptr_t& ident)
 {
 	try
@@ -175,17 +177,43 @@ Udata	Database::command_nick(const uintptr_t& ident, std::string& new_nick)
 	// {
 			// 432 eeror
 	// }
-	if (is_user(new_nick)) // 닉네임 중복된 상황 433 에러
+	if (is_user(new_nick))// 닉네임 중복된 상황 433 에러
 	{
-		tmp = Sender::nick_error_message(ident, new_nick);
-		std::cout << tmp.second << std::endl;
+		// tmp = Sender::nick_error_message(you_usr, new_nick);
+		std::cout << "duplicate!" << std::endl;
+
+		User&		you_usr = select_user(new_nick); // nickname은 무조건 있음
+
+		if (you_usr.username_.empty())
+		{
+			if (!is_user(ident))
+			{
+				tmp = Sender::nick_error_message2(you_usr, new_nick);
+				user_list_.erase(remove(user_list_.begin(), user_list_.end(), you_usr), user_list_.end());
+			}
+			else
+			{
+				User&		cur_usr = select_user(ident);
+				if (you_usr == cur_usr)
+					cur_usr.nickname_ = new_nick;
+				else if (cur_usr.nickname_.empty() || cur_usr.username_.empty())
+				{
+					tmp = Sender::nick_error_message2(you_usr, new_nick);
+					user_list_.erase(remove(user_list_.begin(), user_list_.end(), you_usr), user_list_.end());
+				}
+			}
+		}
+		else if (ident != you_usr.client_sock_)		// you_usr.nickname_.size() && you_usr.username_.size())
+		{
+			tmp = Sender::nick_error_message(you_usr, new_nick);
+		}
 	}
 	else if (!does_has_nickname(ident) && does_has_username(ident))
 	{
 		User&	cur_usr = select_user(ident);
 
 		cur_usr.nickname_ = new_nick;
-		tmp = Sender::welcome_message_connect(cur_usr);;
+		tmp = Sender::welcome_message_connect(cur_usr);
 	}
 	else if (!is_user(ident))
 	{
@@ -195,7 +223,7 @@ Udata	Database::command_nick(const uintptr_t& ident, std::string& new_nick)
 		tmp_usr.nickname_ = new_nick;
 		user_list_.push_back(tmp_usr);
 	}
-	else // 기존 유저 닉네임 변경
+	else// 기존 유저 닉네임 변경
 	{
 		User& cur_user = select_user(ident);
 		tmp = Sender::nick_well_message(cur_user, cur_user, new_nick);
@@ -221,7 +249,7 @@ Event	Database::command_user(const uintptr_t& ident
 	{
 		User&		cur_usr = select_user(ident);
 
-		cur_usr.input_user(username, mode, unused, realname)
+		cur_usr.input_user(username, mode, unused, realname);
 		ret = Sender::welcome_message_connect(cur_usr);;
 	}
 	else if (!is_user(ident))
@@ -229,7 +257,7 @@ Event	Database::command_user(const uintptr_t& ident
 		User		tmp_usr;
 
 		tmp_usr.client_sock_ = ident;
-		tmp_user.input_user(username, mode, unused, realname);
+		tmp_usr.input_user(username, mode, unused, realname);
 		user_list_.push_back(tmp_usr);
 	}
 	return ret;
