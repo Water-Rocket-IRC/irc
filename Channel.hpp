@@ -5,7 +5,7 @@
 #include <vector>
 #include <algorithm>
 #include <sstream>
-#include "ChatUser.hpp"
+#include "User.hpp"
 
 enum e_send_switch { JOIN, PART, PRIV, KICK, QUIT, NOTICE, TOPIC, WALL, NICK, MODE, WHO};
 /*
@@ -14,11 +14,11 @@ enum e_send_switch { JOIN, PART, PRIV, KICK, QUIT, NOTICE, TOPIC, WALL, NICK, MO
  * PRIV : 채팅방에서 그냥 작성하는 메세지 (나한테 보여지는 건 client가 해주는 것)
  */
 
-class ChatRoom
+class Channel
 {
 	private:
-		ChatUser				host_;				// operator
-		std::vector<ChatUser>	connectors_;		// connectors.at(0) => operator
+		User					host_;				// operator
+		std::vector<User>		connectors_;		// connectors.at(0) => operator
 		std::string				name_;
 		std::string				topic_;
 		std::string				access_;
@@ -29,23 +29,23 @@ class ChatRoom
 	public:
 		std::string				get_info(void);
 		std::string&			get_name(void);
-		ChatUser&				get_host(void);
+		User&				get_host(void);
 		void					set_host(void);
 		std::string&			get_access(void);
 		void					set_access(const std::string& access);
 		void					set_topic(std::string& topic);
-		bool 					is_user(ChatUser& usr);
-		void					change_nick(ChatUser& usr, std::string new_nick);
-		void 					add_user(ChatUser& joiner);
+		bool 					is_user(User& usr);
+		void					change_nick(User& usr, std::string new_nick);
+		void 					add_user(User& joiner);
 		void 					set_channel_name(std::string& chan_name);
-		void					delete_user(ChatUser& usr);
+		void					delete_user(User& usr);
 		std::string				get_user_list_str(void);
 
-		Udata					send_all(ChatUser& sender, ChatUser& target, std::string msg, int remocon);
+		Udata					send_all(User& sender, User& target, std::string msg, int remocon);
 
-		std::vector<ChatUser>&	get_users(void);
-		std::vector<ChatUser>	sort_users(void);
+		std::vector<User>&	get_users(void);
+		std::vector<User>	sort_users(void);
 		void					seterror();
 		int						geterror();
-		bool operator==(const ChatRoom& t) const;
+		bool operator==(const Channel& t) const;
 };

@@ -1,9 +1,9 @@
-#include "ChatRoom.hpp"
+#include "Channel.hpp"
 
 
-// void	DebugshowUsers(std::vector<ChatUser>& target) {
+// void	DebugshowUsers(std::vector<User>& target) {
 // 	std::cout << YELLOW << "(begin) " << RESET << " ➜ ";
-// 	for (std::vector<ChatUser>::iterator it = target.begin(); it != target.end(); ++it) {
+// 	for (std::vector<User>::iterator it = target.begin(); it != target.end(); ++it) {
 // 		std::cout << (*it).nickname_ << " ➜ ";
 // 	}
 // 	std::cout << YELLOW << "(end)" << RESET << std::endl;
@@ -17,12 +17,12 @@
 // 	std::cout << YELLOW << "(end)" << RESET << std::endl;
 // }
 
-std::string&	ChatRoom::get_access(void) { return access_; }
-void			ChatRoom::set_access(const std::string& access) { access_ = access; }
+std::string&	Channel::get_access(void) { return access_; }
+void			Channel::set_access(const std::string& access) { access_ = access; }
 
-void			ChatRoom::change_nick(ChatUser& usr, std::string new_nick)
+void			Channel::change_nick(User& usr, std::string new_nick)
 {
-	std::vector<ChatUser>::iterator it;
+	std::vector<User>::iterator it;
 	for (it = connectors_.begin(); it != connectors_.end(); it++)
 	{
 		if (it->nickname_ == usr.nickname_)
@@ -33,17 +33,17 @@ void			ChatRoom::change_nick(ChatUser& usr, std::string new_nick)
 	}
 }
 
-std::vector<ChatUser>	ChatRoom::sort_users(void)
+std::vector<User>	Channel::sort_users(void)
 {
-	std::vector<ChatUser>	ret;
+	std::vector<User>	ret;
 
 	ret.push_back(connectors_.at(0));
 	if (connectors_.size() == 1)
 		return ret;
-	for (std::vector<ChatUser>::iterator it = connectors_.begin()
+	for (std::vector<User>::iterator it = connectors_.begin()
 		 ; it != connectors_.end(); ++it)
 	{	
-		std::vector<ChatUser>::iterator ret_it = ret.begin();
+		std::vector<User>::iterator ret_it = ret.begin();
 		for (; ret_it != ret.end(); ++ret_it)
 		{
 			if (*it > *ret_it)
@@ -61,11 +61,11 @@ std::vector<ChatUser>	ChatRoom::sort_users(void)
 	return ret;
 }
 
-std::string		ChatRoom::get_user_list_str(void)
+std::string		Channel::get_user_list_str(void)
 {
 	std::string					ret;
-	std::vector<ChatUser> sort = sort_users();
-	for (std::vector<ChatUser>::iterator it = sort.begin(); it != sort.end(); ++it)
+	std::vector<User> sort = sort_users();
+	for (std::vector<User>::iterator it = sort.begin(); it != sort.end(); ++it)
 	{
 		ret += *it == get_host() ? "@" + it->nickname_ : it->nickname_;
 		ret += " ";
@@ -77,10 +77,10 @@ std::string		ChatRoom::get_user_list_str(void)
 ///@ brief 기본형 : 나 빼고 다 보냄, flag 1 -> PART
 */
 //TODO : Sender가 event를 잘 리턴하는지 파악해야 함
-Udata ChatRoom::send_all(ChatUser& sender, ChatUser& target, std::string msg, int remocon)
+Udata Channel::send_all(User& sender, User& target, std::string msg, int remocon)
 {
 	Udata			ret;
-	std::vector<ChatUser>::iterator it;
+	std::vector<User>::iterator it;
 
 	if (is_user(sender) == false)
 	{
@@ -142,15 +142,15 @@ Udata ChatRoom::send_all(ChatUser& sender, ChatUser& target, std::string msg, in
 	return ret;
 }
 
-std::string&	ChatRoom::get_name(void)
+std::string&	Channel::get_name(void)
 {
 	return this->name_;
 }
 
 /// @brief 있으면1, 없으면 0
-bool ChatRoom::is_user(ChatUser& usr)
+bool Channel::is_user(User& usr)
 {
-	std::vector<ChatUser>::iterator it;
+	std::vector<User>::iterator it;
 
 	for (it = connectors_.begin(); it != connectors_.end(); it++)
 	{
@@ -160,45 +160,45 @@ bool ChatRoom::is_user(ChatUser& usr)
 	return 0;
 }
 
-void ChatRoom::add_user(ChatUser& joiner)
+void Channel::add_user(User& joiner)
 {
 	connectors_.push_back(joiner);
 }
-void ChatRoom::set_host()
+void Channel::set_host()
 {
 	this->host_ = connectors_[0];
 }
-void ChatRoom::set_channel_name(std::string& chan_name)
+void Channel::set_channel_name(std::string& chan_name)
 {
 	this->name_ = chan_name;
 }
 
-void ChatRoom::set_topic(std::string& topic)
+void Channel::set_topic(std::string& topic)
 {
 	this->topic_ = topic;
 }
 
-std::vector<ChatUser>& ChatRoom::get_users()
+std::vector<User>& Channel::get_users()
 {
 	return this->connectors_;
 }
-void	ChatRoom::delete_user(ChatUser& usr)
+void	Channel::delete_user(User& usr)
 {
-	std::vector<ChatUser>::iterator it = std::find(this->connectors_.begin(), \
+	std::vector<User>::iterator it = std::find(this->connectors_.begin(), \
 	this->connectors_.end(), usr);
 	std::size_t size = std::distance(this->connectors_.begin(), it);
 	this->connectors_.erase(this->connectors_.begin() + size);
 }
-bool ChatRoom::operator==(const ChatRoom& t) const
+bool Channel::operator==(const Channel& t) const
 {
 	return (this->name_ == t.name_);
 }
-ChatUser& ChatRoom::get_host()
+User& Channel::get_host()
 {
 	return this->host_;
 }
 
-std::string ChatRoom::get_info()
+std::string Channel::get_info()
 {
 	std::string ret;
 	std::stringstream index_ss;

@@ -1,8 +1,8 @@
-#include "Channels.hpp"
+#include "Database.hpp"
 
-bool	Channels::is_channel(std::string& chan_name)
+bool	Database::is_channel(std::string& chan_name)
 {
-	std::vector<ChatRoom>::iterator it;
+	std::vector<Channel>::iterator it;
 
 	for (it = Channels_.begin(); it != Channels_.end(); ++it)
 	{
@@ -14,9 +14,9 @@ bool	Channels::is_channel(std::string& chan_name)
 	return false;
 }
 
-bool	Channels::is_user_in_channel(ChatUser& leaver)
+bool	Database::is_user_in_channel(User& leaver)
 {
-	std::vector<ChatRoom>::iterator it = Channels_.begin();
+	std::vector<Channel>::iterator it = Channels_.begin();
 	for (; it != Channels_.end(); ++it)
 	{
 		if (it->is_user(leaver))
@@ -27,9 +27,9 @@ bool	Channels::is_user_in_channel(ChatUser& leaver)
 	return false;	
 }
 
-void	Channels::create_channel(ChatUser& joiner, std::string& chan_name, std::string chan_access)
+void	Database::create_channel(User& joiner, std::string& chan_name, std::string chan_access)
 {
-	ChatRoom	tmp;
+	Channel	tmp;
 
 	tmp.set_channel_name(chan_name);
 	tmp.add_user(joiner);
@@ -40,22 +40,22 @@ void	Channels::create_channel(ChatUser& joiner, std::string& chan_name, std::str
  /*
  * operator 가 없을 때 (0 index가 비어있다면 삭제)
  */
-void	Channels::delete_channel(std::string& chan_name)
+void	Database::delete_channel(std::string& chan_name)
 {
-	ChatRoom tmp;
+	Channel tmp;
 
 	tmp.set_channel_name(chan_name);
 
-	std::vector<ChatRoom>::iterator it = std::find(Channels_.begin(), \
+	std::vector<Channel>::iterator it = std::find(Channels_.begin(), \
 	Channels_.end(), tmp);
 	std::size_t size = std::distance(this->Channels_.begin(), it);
 	this->Channels_.erase(this->Channels_.begin() + size);
 }
 
 /// @brief sender, command -> error_message에 보낼 정보
-ChatRoom&	Channels::select_channel(std::string& chan_name, int error_code, ChatUser& sender, std::string& command) // 403 ERROR Sender::no_channel_message
+Channel&	Database::select_channel(std::string& chan_name, int error_code, User& sender, std::string& command) // 403 ERROR Sender::no_channel_message
 {
-	std::vector<ChatRoom>::iterator it = Channels_.begin();
+	std::vector<Channel>::iterator it = Channels_.begin();
 	for (; it != Channels_.end(); ++it)
 	{
 		if (it->get_name() == chan_name)
@@ -67,9 +67,9 @@ ChatRoom&	Channels::select_channel(std::string& chan_name, int error_code, ChatU
 	return *it;
 }
 
-ChatRoom&	Channels::select_channel(ChatUser& connector, int error_code, std::string& command) // 476 ERROR Sender::join_invaild_channel_name_message
+Channel&	Database::select_channel(User& connector, int error_code, std::string& command) // 476 ERROR Sender::join_invaild_channel_name_message
 {
-	std::vector<ChatRoom>::iterator it = Channels_.begin();
+	std::vector<Channel>::iterator it = Channels_.begin();
 	for (; it != Channels_.end(); ++it)
 	{
 		if (it->is_user(connector))
@@ -82,13 +82,13 @@ ChatRoom&	Channels::select_channel(ChatUser& connector, int error_code, std::str
 }
 
 
-Udata	Channels::join_channel(ChatUser& joiner, std::string& chan_name)
+Udata	Database::join_channel(User& joiner, std::string& chan_name)
 {
 	Udata				ret;
 	Event				tmp;
 	std::string			command("JOIN");
 
-	ChatRoom& chan = select_channel(chan_name, 476, joiner, command);
+	Channel& chan = select_channel(chan_name, 476, joiner, command);
 	if (chan.is_user(joiner) == false)
 	{
 		tmp = Sender::no_user_message(joiner, chan_name);
@@ -108,20 +108,20 @@ Udata	Channels::join_channel(ChatUser& joiner, std::string& chan_name)
 	return ret;
 }
 
-Udata	Channels::leave_channel(ChatUser&leaver, std::string& chan_name, std::string& msg)
+Udata	Database::leave_channel(User&leaver, std::string& chan_name, std::string& msg)
 {
 	Event				tmp;
 	Udata				res;
 	std::string			command("PART");
 
-	ChatRoom& chan = select_channel(chan_name, 403, leaver, command); // 403 ERROR Sender::no_channel_message
+	Channel& chan = select_channel(chan_name, 403, leaver, command); // 403 ERROR Sender::no_channel_message
 	//유저가 존재하지 않을 경우(로비에서 part하면 예외처리)
 	if (chan.is_user(leaver) == 0)
 	{
 		return res;
 	}
 	//Msg전송 : PART 내용에 따라 전송 -> 아마 채널의 다른 유저들에게 떠났다고 알려줘야
-	std::vector<ChatUser> users = chan.get_users();
+	std::vector<User> users = chan.get_users();
 	int user_size = users.size();
 	//PART하면, 그 내역은 모두에게 보내진다. 나간 사람 포함한다.
 	res = chan.send_all(leaver, leaver, msg, PART);
@@ -142,36 +142,36 @@ Udata	Channels::leave_channel(ChatUser&leaver, std::string& chan_name, std::stri
 }
 
 /// @brief 채널 전체 유저에게 메시지 전달. 내외부 모두 사용됨
-Udata	Channels::channel_msg(ChatUser& sender, std::string chan_name, std::string& msg)
+Udata	Database::channel_msg(User& sender, std::string chan_name, std::string& msg)
 {
 	Udata		ret;
 	Event		tmp;
 	std::string	command("PRIVMSG");
 
-	ChatRoom&	channel = select_channel(chan_name, 403, sender, command); // 403 ERROR Sender::no_channel_message
+	Channel&	channel = select_channel(chan_name, 403, sender, command); // 403 ERROR Sender::no_channel_message
 	ret = channel.send_all(sender, sender, msg, PRIV);
 	return ret;
 }
 
-Udata	Channels::channel_notice(ChatUser& sender, std::string chan_name, std::string& msg)
+Udata	Database::channel_notice(User& sender, std::string chan_name, std::string& msg)
 {
 	Udata			ret;
 	Event			tmp;
 	std::string		command("NOTICE");
 
-	ChatRoom&	channel = select_channel(chan_name, 403, sender, command); // 403 ERROR Sender::no_channel_message
+	Channel&	channel = select_channel(chan_name, 403, sender, command); // 403 ERROR Sender::no_channel_message
 	ret = channel.send_all(sender, sender, msg, NOTICE);
 	return ret;
 }
 
-Udata	Channels::channel_wall(ChatUser& sender, std::string chan_name, std::string& msg)
+Udata	Database::channel_wall(User& sender, std::string chan_name, std::string& msg)
 {
 	Udata			ret;
 	Event			tmp;
 	std::string		command("WALL");
 
-	ChatRoom&	channel = select_channel(chan_name, 403, sender, command); // 403 ERROR Sender::no_channel_message
-	ChatUser	host = channel.get_host();
+	Channel&	channel = select_channel(chan_name, 403, sender, command); // 403 ERROR Sender::no_channel_message
+	User	host = channel.get_host();
 
 	if (host == sender)
 	{
@@ -183,14 +183,14 @@ Udata	Channels::channel_wall(ChatUser& sender, std::string chan_name, std::strin
 	return ret;
 }
 
-Udata	Channels::kick_channel(ChatUser& host, ChatUser& target, std::string& chan_name, std::string& msg)
+Udata	Database::kick_channel(User& host, User& target, std::string& chan_name, std::string& msg)
 {
 	Udata			ret;
 	Event			tmp;
 	std::string		command("PRIVMSG");
 
 
-	ChatRoom&	channel = select_channel(chan_name, 403, host, command); // 403 ERROR Sender::no_channel_message
+	Channel&	channel = select_channel(chan_name, 403, host, command); // 403 ERROR Sender::no_channel_message
 	if (channel.get_host() == host)
 	{
 		if (channel.is_user(target) == true)
@@ -213,13 +213,13 @@ Udata	Channels::kick_channel(ChatUser& host, ChatUser& target, std::string& chan
 	return ret;
 }
 
-Udata	Channels::who_channel(ChatUser& asker, std::string& chan_name)
+Udata	Database::who_channel(User& asker, std::string& chan_name)
 {
 	Udata	ret;
 	Event	tmp;
 	std::string command("WHO");
 
-	ChatRoom& chan = select_channel(chan_name, 315, asker, command); // 315 -> end of list만 보낸다.
+	Channel& chan = select_channel(chan_name, 315, asker, command); // 315 -> end of list만 보낸다.
 
 	tmp = Sender::who_joiner_352_message(asker, chan_name);
 	tmp.second += Sender::who_315_message(asker, chan_name);
@@ -228,20 +228,20 @@ Udata	Channels::who_channel(ChatUser& asker, std::string& chan_name)
 	return ret;
 }
 
-Udata	Channels::quit_channel(ChatUser& leaver, std::string msg)
+Udata	Database::quit_channel(User& leaver, std::string msg)
 {
 	Udata			ret;
 	Event			tmp;
 	std::string		command("QUIT");
 
-	ChatRoom& channel = select_channel(leaver, 401, command); // 401 no_such_nick
+	Channel& channel = select_channel(leaver, 401, command); // 401 no_such_nick
 	ret = channel.send_all(leaver, leaver, msg, QUIT);
 	channel.delete_user(leaver);
 	
 	return ret;
 }
 
-Udata	Channels::mode_channel(ChatUser& moder, const std::string& chan_name, const bool vaild)
+Udata	Database::mode_channel(User& moder, const std::string& chan_name, const bool vaild)
 {
 	Udata	ret;
 	Event	tmp;
@@ -261,27 +261,27 @@ Udata	Channels::mode_channel(ChatUser& moder, const std::string& chan_name, cons
 	return ret;
 }
 
-Udata	Channels::nick_channel(ChatUser& nicker, std::string& send_msg)
+Udata	Database::nick_channel(User& nicker, std::string& send_msg)
 {
 	Udata		ret;
-	ChatUser	trash;
+	User	trash;
 	std::string command("NICK");
 	
-	ChatRoom& channel = select_channel(nicker, 401, command); // 401 no such nick
+	Channel& channel = select_channel(nicker, 401, command); // 401 no such nick
 
 	channel.change_nick(nicker, send_msg);
 	ret = channel.send_all(nicker, trash, send_msg, NICK);
 	return ret;
 }
 
-Udata	Channels::set_topic(ChatUser& sender, std::string& chan_name, std::string& topic)
+Udata	Database::set_topic(User& sender, std::string& chan_name, std::string& topic)
 {
 	Udata			ret;
 	Event			tmp;
 	std::string		command("TOPIC");
 
 
-	ChatRoom& channel = select_channel(chan_name, 403, sender, command); // 403 ERROR Sender::no_channel_message
+	Channel& channel = select_channel(chan_name, 403, sender, command); // 403 ERROR Sender::no_channel_message
 	if (channel.get_host() == sender)
 	{
 		std::string topic_msg = "Topic was changed to " + topic;

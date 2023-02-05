@@ -1,5 +1,5 @@
 #include "Sender.hpp"
-#include "ChatUser.hpp"
+#include "User.hpp"
 
 // struct user;
 
@@ -36,7 +36,7 @@ Event	Sender::pong(uintptr_t socket, const std::string& serv_addr) // 1st done
 	return ret;
 }
 /// @brief 461
-Event	Sender::command_empty_argument_461(const ChatUser& sender, const std::string command)
+Event	Sender::command_empty_argument_461(const User& sender, const std::string command)
 {
 	Event ret;
 
@@ -56,7 +56,7 @@ Event	Sender::command_empty_argument_461(const uintptr_t& sock, const std::strin
 	return ret;
 }
 /// @brief 451
-Event	Sender::command_not_registered_451(const ChatUser& sender, const std::string command)
+Event	Sender::command_not_registered_451(const User& sender, const std::string command)
 {
 	Event ret;
 
@@ -76,7 +76,7 @@ Event	Sender::command_not_registered_451(const uintptr_t& sock, const std::strin
 	return ret;
 }
 /// @brief 409
-Event	Sender::command_no_origin_specified_409(const ChatUser& sender, const std::string command)
+Event	Sender::command_no_origin_specified_409(const User& sender, const std::string command)
 {
 	Event ret;
 
@@ -86,7 +86,7 @@ Event	Sender::command_no_origin_specified_409(const ChatUser& sender, const std:
 	return ret;
 }
 /// @brief 421
-Event	Sender::unknown_command_message_421(const ChatUser& sender, const std::string command)
+Event	Sender::unknown_command_message_421(const User& sender, const std::string command)
 {
 	Event ret;
 
@@ -104,7 +104,7 @@ Event	Sender::unknown_command_message_421(const ChatUser& sender, const std::str
 //  @param host 호스트네임
 //  @param new_nick 새로운 닉네임
 // */
-Event	Sender::nick_well_message(const ChatUser& sender, const ChatUser& receiver, const std::string& new_nick) // 1st done
+Event	Sender::nick_well_message(const User& sender, const User& receiver, const std::string& new_nick) // 1st done
 {
 	Event	ret;
 
@@ -115,7 +115,7 @@ Event	Sender::nick_well_message(const ChatUser& sender, const ChatUser& receiver
 }
 
 /// @brief 433
-Event	Sender::nick_error_message(const ChatUser& sender, const std::string& new_nick) // 1st done
+Event	Sender::nick_error_message(const User& sender, const std::string& new_nick) // 1st done
 {
 	Event	ret;
 
@@ -137,7 +137,7 @@ Event	Sender::nick_error_message(const std::string& new_nick, uintptr_t& sock)
 }
 
 /// @brief 432
-Event	Sender::nick_wrong_message(const ChatUser& sender, const std::string& new_nick)
+Event	Sender::nick_wrong_message(const User& sender, const std::string& new_nick)
 {
 	Event	ret;
 
@@ -150,7 +150,7 @@ Event	Sender::nick_wrong_message(const ChatUser& sender, const std::string& new_
 
 // // :irc.local 001 root :Welcome to the Localnet IRC Network root!root@127.0.0.1
 // // Event Sender::welcome_message_connect(int usr_sock, const std::string& server, const std::string& nick, const std::string& host)
-Event	Sender::welcome_message_connect(const ChatUser& sender) // 1st done
+Event	Sender::welcome_message_connect(const User& sender) // 1st done
 {
 	Event ret; 
 
@@ -174,7 +174,7 @@ Event	Sender::welcome_message_connect(const ChatUser& sender) // 1st done
 //  @param nick 현재 닉네임
 //  @param leave_message quit 할 때 사용자가 입력할 수도 있는 메세지
 // */
-Event	Sender::quit_channel_message(const ChatUser& sender, const ChatUser& receiver, std::string leave_message) // 2st done
+Event	Sender::quit_channel_message(const User& sender, const User& receiver, std::string leave_message) // 2st done
 {
 	Event	ret;
 
@@ -188,7 +188,7 @@ Event	Sender::quit_channel_message(const ChatUser& sender, const ChatUser& recei
 	return ret;
 }
 // // @brief quit을 입력한 유저는 채팅방 속 다른 유저들과 다른 메세지를 호출함
-Event	Sender::quit_lobby_message(const ChatUser& sender, std::string leave_message) // 2st done
+Event	Sender::quit_lobby_message(const User& sender, std::string leave_message) // 2st done
 {
 	Event	ret;
 
@@ -228,7 +228,7 @@ Event	Sender::quit_lobby_message(const ChatUser& sender, std::string leave_messa
 //  @param nick 현재 닉네임
 //  @param const user 유저네임
 // */
-Event	Sender::join_message(const ChatUser& sender, const ChatUser& receiver, const std::string& channel) // 2st->done
+Event	Sender::join_message(const User& sender, const User& receiver, const std::string& channel) // 2st->done
 {
 	Event	ret;
 
@@ -240,7 +240,7 @@ Event	Sender::join_message(const ChatUser& sender, const ChatUser& receiver, con
 /******** TODO: join_op_message // join_normal_message 2개로 오버로딩 하여 오퍼레이터와 일반 유저를 각각 처리하게 만들어야 됨.... ********/
 
 /// @brief 476
-Event	Sender::join_invaild_channel_name_message(const ChatUser& sender, const std::string invaild_channel)
+Event	Sender::join_invaild_channel_name_message(const User& sender, const std::string invaild_channel)
 {
 	Event ret;
 
@@ -260,7 +260,7 @@ Event	Sender::join_invaild_channel_name_message(const ChatUser& sender, const st
     	ㄴ '@' : secret channel
 @example ":irc.local 353 one = #123 :one two"
 */
-std::string	Sender::join_353_message(const ChatUser& sender, const std::string& chan_name, const std::string& chan_access, const std::string& chan_user_list)
+std::string	Sender::join_353_message(const User& sender, const std::string& chan_name, const std::string& chan_access, const std::string& chan_user_list)
 {
 	std::string  ret = ":" + Sender::server_name_ + " 353 "+ sender.nickname_
 				+ " " + chan_access + " " + chan_name + " :" + chan_user_list + "\r\n";
@@ -278,7 +278,7 @@ std::string	Sender::join_353_message(const ChatUser& sender, const std::string& 
     	ㄴ '@' : secret channel
 @example ":irc.local 366 two #123 :End of /NAMES list."
 */
-std::string	Sender::join_366_message(const ChatUser& sender, const std::string& chan_name)
+std::string	Sender::join_366_message(const User& sender, const std::string& chan_name)
 {
 	std::string  ret = ":" + Sender::server_name_ + " 366 "+ sender.nickname_
 				+ " " + chan_name + " :End of /NAMES list.\r\n";
@@ -312,7 +312,7 @@ std::string	Sender::join_366_message(const ChatUser& sender, const std::string& 
 // 127.000.000.001.06667-127.000.000.001.45062: :irc.local 368 root #test :End of channel ban list
 
 /// @brief 324
-Event	Sender::mode_324_message(const ChatUser& sender, const std::string channel)
+Event	Sender::mode_324_message(const User& sender, const std::string channel)
 {
 	Event	ret;
 
@@ -322,14 +322,14 @@ Event	Sender::mode_324_message(const ChatUser& sender, const std::string channel
 	return ret;
 }
 /// @brief 329
-std::string	Sender::mode_329_message(const ChatUser& sender, const std::string channel, const std::string time_stamp)
+std::string	Sender::mode_329_message(const User& sender, const std::string channel, const std::string time_stamp)
 {
 	std::string ret = ":" + Sender::server_name_ + " 329 " \
 			+ sender.nickname_ + " " + channel + " :" + time_stamp + "\r\n";
 	return ret;
 }
 /// @brief 472
-Event	Sender::mode_no_option_error_message(const ChatUser& sender, const std::string channel)
+Event	Sender::mode_no_option_error_message(const User& sender, const std::string channel)
 {
 	Event ret;
 
@@ -339,7 +339,7 @@ Event	Sender::mode_no_option_error_message(const ChatUser& sender, const std::st
 	return ret;
 }
 /// @brief 482
-Event	Sender::mode_not_operator_error_message(const ChatUser& sender, const std::string wrong_option)
+Event	Sender::mode_not_operator_error_message(const User& sender, const std::string wrong_option)
 {
 	Event ret;
 
@@ -351,7 +351,7 @@ Event	Sender::mode_not_operator_error_message(const ChatUser& sender, const std:
 /* 
  @brief 352 join 할때 joiner(조인 하는 자신)에게도 메세지가 보내짐.
 */
-Event	Sender::who_joiner_352_message(const ChatUser& sender, const std::string channel) // parameter로 user user
+Event	Sender::who_joiner_352_message(const User& sender, const std::string channel) // parameter로 user user
 {
 	Event ret;
 
@@ -365,7 +365,7 @@ Event	Sender::who_joiner_352_message(const ChatUser& sender, const std::string c
 /*
  @brief 352 who_joiner_352_message 함수 호출 직후에 호출되는 함수
 */ 
-std::string	Sender::who_352_target_message(const ChatUser& sender, const std::string channel, const std::string target)
+std::string	Sender::who_352_target_message(const User& sender, const std::string channel, const std::string target)
 {
 	std::string ret = ":" + Sender::server_name_ + " 352 " + sender.nickname_ \
 			+ " " + channel + " " + sender.username_ + " " + sender.mode_ + " " \
@@ -376,7 +376,7 @@ std::string	Sender::who_352_target_message(const ChatUser& sender, const std::st
 /*
  @brief 315 who_352_target_message 함수 호출 직후에 호출되는 함수
 */
-std::string	Sender::who_315_message(const ChatUser& sender, const std::string channel)
+std::string	Sender::who_315_message(const User& sender, const std::string channel)
 {
 	std::string ret = ":" + Sender::server_name_ + " 315 " + sender.nickname_ \
 		+ " " + channel + " :End of /WHO list\r\n";
@@ -393,7 +393,7 @@ std::string	Sender::who_315_message(const ChatUser& sender, const std::string ch
 
 // 127.000.000.001.06667-127.000.000.001.39548: :mypark!root@127.0.0.1 PART :#test
 
-Event	Sender::part_message(const ChatUser& sender, const ChatUser& receiver, const std::string& channel, const std::string& msg) // 2st done
+Event	Sender::part_message(const User& sender, const User& receiver, const std::string& channel, const std::string& msg) // 2st done
 {
 	Event	ret;
 
@@ -413,7 +413,7 @@ Event	Sender::part_message(const ChatUser& sender, const ChatUser& receiver, con
 
 // 127.000.000.001.06667-127.000.000.001.39546: :junoh!root@127.0.0.1 KICK #test mypark :
 
-Event	Sender::kick_message(const ChatUser& sender, const ChatUser& receiver, const std::string& target, const std::string& channel, const std::string& msg) // 1st done
+Event	Sender::kick_message(const User& sender, const User& receiver, const std::string& target, const std::string& channel, const std::string& msg) // 1st done
 {
 	Event	ret;
 
@@ -427,7 +427,7 @@ Event	Sender::kick_message(const ChatUser& sender, const ChatUser& receiver, con
 
 //127.000.000.001.06667-127.000.000.001.39552: :irc.local 482 mypark #test :You must be a channel operator
 /// @brief 482
-Event	Sender::kick_error_not_op_message(const ChatUser& sender, const std::string& host, const std::string& channel) // 1st done
+Event	Sender::kick_error_not_op_message(const User& sender, const std::string& host, const std::string& channel) // 1st done
 {
 	Event	ret;
 
@@ -439,7 +439,7 @@ Event	Sender::kick_error_not_op_message(const ChatUser& sender, const std::strin
 
 //127.000.000.001.06667-127.000.000.001.39552: :irc.local 441 mypark junoh #ttt :They are not on that channel
 /// @brief 441
-Event	Sender::kick_error_no_user_message(const ChatUser& sender, const std::string& host, const std::string& subject, const std::string& channel)
+Event	Sender::kick_error_no_user_message(const User& sender, const std::string& host, const std::string& subject, const std::string& channel)
 {
 	Event	ret;
 
@@ -450,7 +450,7 @@ Event	Sender::kick_error_no_user_message(const ChatUser& sender, const std::stri
 }
 
 /****************************       <Privmsg>       ****************************/
-Event	Sender::privmsg_p2p_message(const ChatUser& sender, const ChatUser& target, const std::string& msg) //2st done
+Event	Sender::privmsg_p2p_message(const User& sender, const User& target, const std::string& msg) //2st done
 {
 	Event		ret;
 
@@ -460,7 +460,7 @@ Event	Sender::privmsg_p2p_message(const ChatUser& sender, const ChatUser& target
 	return (ret);
 }
 
-Event	Sender::privmsg_channel_message(const ChatUser& sender, const ChatUser& receiver, const std::string& msg, const std::string& channel) // 2st done
+Event	Sender::privmsg_channel_message(const User& sender, const User& receiver, const std::string& msg, const std::string& channel) // 2st done
 {
 	Event		ret;
 
@@ -470,7 +470,7 @@ Event	Sender::privmsg_channel_message(const ChatUser& sender, const ChatUser& re
 	return (ret);
 }
 /// @brief 401
-Event	Sender::privmsg_no_user_error_message(const ChatUser& sender, const std::string& target)
+Event	Sender::privmsg_no_user_error_message(const User& sender, const std::string& target)
 {
 	Event		ret;
 
@@ -480,7 +480,7 @@ Event	Sender::privmsg_no_user_error_message(const ChatUser& sender, const std::s
 	return (ret);
 }
 /// @brief 404
-Event	Sender::privmsg_external_error_message(const ChatUser& sender, const std::string channel)
+Event	Sender::privmsg_external_error_message(const User& sender, const std::string channel)
 {
 	Event		ret;
 
@@ -491,7 +491,7 @@ Event	Sender::privmsg_external_error_message(const ChatUser& sender, const std::
 }
 
 /****************************       <NOTICE && WALL>       ****************************/
-Event	Sender::notice_p2p_message(const ChatUser& sender, const ChatUser& target, const std::string& msg) //2st done
+Event	Sender::notice_p2p_message(const User& sender, const User& target, const std::string& msg) //2st done
 {
 	Event		ret;
 
@@ -501,7 +501,7 @@ Event	Sender::notice_p2p_message(const ChatUser& sender, const ChatUser& target,
 	return (ret);
 }
 
-Event	Sender::notice_channel_message(const ChatUser& sender, const ChatUser& receiver, const std::string& msg, const std::string& channel) // 2st done
+Event	Sender::notice_channel_message(const User& sender, const User& receiver, const std::string& msg, const std::string& channel) // 2st done
 {
 	Event		ret;
 
@@ -511,7 +511,7 @@ Event	Sender::notice_channel_message(const ChatUser& sender, const ChatUser& rec
 	return (ret);
 }
 
-Event 	Sender::notice_no_nick_message(const ChatUser& sender, const ChatUser& receiver)
+Event 	Sender::notice_no_nick_message(const User& sender, const User& receiver)
 {
 	Event		ret;
 
@@ -521,7 +521,7 @@ Event 	Sender::notice_no_nick_message(const ChatUser& sender, const ChatUser& re
 	return (ret);
 }
 
-Event	Sender::wall_message(const ChatUser& sender, const ChatUser& receiver, const std::string& channel, const std::string& msg)
+Event	Sender::wall_message(const User& sender, const User& receiver, const std::string& channel, const std::string& msg)
 {
 	Event		ret;
 
@@ -531,7 +531,7 @@ Event	Sender::wall_message(const ChatUser& sender, const ChatUser& receiver, con
 	return (ret);
 }
 /****************************       <TOPIC>       ****************************/
-Event	Sender::topic_message(const ChatUser& sender, const ChatUser& receiver, const std::string& channel, const std::string& topic) //2st done
+Event	Sender::topic_message(const User& sender, const User& receiver, const std::string& channel, const std::string& topic) //2st done
 {
 	Event		ret;
 
@@ -541,7 +541,7 @@ Event	Sender::topic_message(const ChatUser& sender, const ChatUser& receiver, co
 	return (ret);
 }
 /// @brief 482
-Event	Sender::topic_error_message(const ChatUser& sender, const std::string& channel) // 2st done
+Event	Sender::topic_error_message(const User& sender, const std::string& channel) // 2st done
 {
 	Event		ret;
 
@@ -554,7 +554,7 @@ Event	Sender::topic_error_message(const ChatUser& sender, const std::string& cha
 /****************************       <NO ** message>       ****************************/
 //127.000.000.001.06667-127.000.000.001.59898: :irc.local 403 two #111 :No such channel
 /// @brief 403
-Event	Sender::no_channel_message(const ChatUser& sender, const std::string& channel)
+Event	Sender::no_channel_message(const User& sender, const std::string& channel)
 {
 	Event		ret;
 	std::string no_msg;
@@ -575,7 +575,7 @@ Event	Sender::no_channel_message(const ChatUser& sender, const std::string& chan
 
 //127.000.000.001.06667-127.000.000.001.59898: :irc.local 401 junoh dd :No such nick
 /// @brief 401
-Event	Sender::no_user_message(const ChatUser& sender, const std::string& target)
+Event	Sender::no_user_message(const User& sender, const std::string& target)
 {
 	Event		ret;
 

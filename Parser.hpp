@@ -5,8 +5,8 @@
 
 #include "Udata.hpp"
 #include <sstream>
-// #include "Users.hpp"
-// #include "Channels.hpp"
+// #include "Database.hpp"
+// #include "Database.hpp"
 
 class Receiver;
 
@@ -16,8 +16,8 @@ class Parser
 {
 	private:
 		Udata				&parser_udata_;
-		// Users				users_;
-		// Channels			channels_;
+		// Database				users_;
+		// Database			channels_;
 		const std::string&	password_;
 
 		static const std::string	commands[N_COMMAND];

@@ -10,8 +10,8 @@
 #include "KeventHandler.hpp"
 #include "Parser.hpp"
 
-// class Users;
-// class Channels;
+// class Database;
+// class Database;
 // class Udata;
 class Parser;
 

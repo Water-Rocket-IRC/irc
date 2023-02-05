@@ -1,7 +1,7 @@
 #include "Parser.hpp"
 #include "Receiver.hpp"
 #include "Sender.hpp"
-#include "ChatUser.hpp"
+#include "User.hpp"
 #include <netdb.h>
 #include <sys/_types/_size_t.h>
 #include <sys/_types/_uintptr_t.h>
@@ -245,7 +245,7 @@ void	Parser::command_parser(const uintptr_t& ident, std::string& command)
 			
 // 			try
 // 			{
-// 				Channels&	ret_chan = Channels::select_channel(user); // TODO: user is not in channel
+// 				Database&	ret_chan = Database::select_channel(user); // TODO: user is not in channel
 // 				// if success
 // 				std::vector<Udata>	udata_events = channels_.channel_msg(sender, target, msg);
 // 				push_multiple_write_events_(udata_events);
@@ -287,7 +287,7 @@ void	Parser::command_parser(const uintptr_t& ident, std::string& command)
 			
 // 			try
 // 			{
-// 				Channels&	ret_chan = Channels::select_channel(sender); // TODO: user is not in channel
+// 				Database&	ret_chan = Database::select_channel(sender); // TODO: user is not in channel
 // 				// if success
 // 				std::vector<Udata>	udata_events = channels_.channel_notice(sender, target, msg);
 // 				push_multiple_write_events_(udata_events);

@@ -69,7 +69,7 @@ int main(int argc, char **argv)
 // 	std::vector<Udata> events;
 // 	std::vector<Udata> join1, join2, join3, join4, kick1, quit1, priv1, notice1, wall1;
 
-// 	Channels	channels;
+// 	Database	channels;
 // 	user		user1, user2, user3, user4;
 // 	std::string chan1, chan2;
 
