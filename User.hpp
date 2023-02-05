@@ -2,9 +2,8 @@
 
 #include <iostream>
 
-	// User(const std::string& nickname, const std::)
 
-struct User 
+struct User
 {
 	std::string	nickname_;
 	std::string username_;
@@ -16,6 +15,8 @@ struct User
 
 
 	User(void);
+	void	input_user(const std::string& username, const std::string& mode
+						, const std::string& unused, const std::string& realname);
 	bool	operator==(const User& obj) const { return this->client_sock_ == obj.client_sock_; };
 	bool	operator!=(const User& obj) const { return this->client_sock_ != obj.client_sock_; };
 	bool	operator>(const User& obj) const { return this->client_sock_ > obj.client_sock_; };

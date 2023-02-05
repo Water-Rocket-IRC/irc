@@ -170,15 +170,13 @@ Udata	Database::command_nick(const uintptr_t& ident, std::string& new_nick)
 	Udata		ret;
 	Event		tmp;
 
+	tmp.first = ident;
 	// if (is_valid_nick(new_nick)) // TODO: hchang 특수문자로 시작하는 닉네임 등 유효성 체크하는 함수 만들 것
 	// {
 			// 432 eeror
 	// }
-
-	tmp.first = ident;
 	if (is_user(new_nick)) // 닉네임 중복된 상황 433 에러
 	{
-		std::cout << "duplicate" << std::endl;
 		tmp = Sender::nick_error_message(ident, new_nick);
 		std::cout << tmp.second << std::endl;
 	}
@@ -222,20 +220,16 @@ Event	Database::command_user(const uintptr_t& ident
 	if (does_has_nickname(ident) && !does_has_username(ident))
 	{
 		User&		cur_usr = select_user(ident);
-		cur_usr.username_ = username;
-		cur_usr.mode_ = mode;
-		cur_usr.unused_ = unused;
-		cur_usr.realname_ = realname;
+
+		cur_usr.input_user(username, mode, unused, realname)
 		ret = Sender::welcome_message_connect(cur_usr);;
 	}
 	else if (!is_user(ident))
 	{
 		User		tmp_usr;
-		tmp_usr.username_ = username;
-		tmp_usr.mode_ = mode;
-		tmp_usr.unused_ = unused;
-		tmp_usr.realname_ = realname;
+
 		tmp_usr.client_sock_ = ident;
+		tmp_user.input_user(username, mode, unused, realname);
 		user_list_.push_back(tmp_usr);
 	}
 	return ret;
