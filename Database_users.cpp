@@ -1,6 +1,7 @@
 #include "Database.hpp"
 #include "Udata.hpp"
 #include <locale>
+#include "debug.hpp"
 
 Event	Database::valid_user_checker_(const uintptr_t& ident, const std::string& command_type)
 {
@@ -43,7 +44,7 @@ User&	Database::select_user(const uintptr_t& ident)
 	return (*it);
 }
 
-/// @brief 
+/// @brief
 // nick 이용해 user가 누군 지 알아낸다. <- 중복검사 활용
 User&	Database::select_user(const std::string& nickname)
 {
@@ -51,7 +52,7 @@ User&	Database::select_user(const std::string& nickname)
 
 	for (it = user_list_.begin(); it != user_list_.end(); it++)
 	{
-		if (it->nickname_ == nickname) // 닉네임 바꿔야할 유저를 찾을 상태 !!! 
+		if (it->nickname_ == nickname) // 닉네임 바꿔야할 유저를 찾을 상태 !!!
 		{
 			return (*it);
 		}
@@ -180,35 +181,33 @@ Udata	Database::command_nick(const uintptr_t& ident, std::string& new_nick)
 	if (is_user(new_nick))// 닉네임 중복된 상황 433 에러
 	{
 		// tmp = Sender::nick_error_message(you_usr, new_nick);
-		std::cout << "duplicate!" << std::endl;
 
-		User&		you_usr = select_user(new_nick); // nickname은 무조건 있음
+		User&		you_usr = select_user(new_nick);
 
-		if (you_usr.username_.empty())
+		if (ident == you_usr.client_sock_)
+			return ret;
+		if (you_usr.username_.size())
 		{
-			if (!is_user(ident))
+			if (is_user(ident))
 			{
-				tmp = Sender::nick_error_message2(you_usr, new_nick);
-				user_list_.erase(remove(user_list_.begin(), user_list_.end(), you_usr), user_list_.end());
+				User&	cur_usr = select_user(ident);
+				if (cur_usr.nickname_.empty())
+					tmp = Sender::nick_error_message(ident, new_nick);
+				else
+					tmp = Sender::nick_error_message(cur_usr, new_nick);
 			}
 			else
 			{
-				User&		cur_usr = select_user(ident);
-				if (you_usr == cur_usr)
-					cur_usr.nickname_ = new_nick;
-				else if (cur_usr.nickname_.empty() || cur_usr.username_.empty())
-				{
-					tmp = Sender::nick_error_message2(you_usr, new_nick);
-					user_list_.erase(remove(user_list_.begin(), user_list_.end(), you_usr), user_list_.end());
-				}
+				tmp = Sender::nick_error_message(ident, new_nick);
 			}
+			ret.insert(tmp);
+			return ret;
 		}
-		else if (ident != you_usr.client_sock_)		// you_usr.nickname_.size() && you_usr.username_.size())
-		{
-			tmp = Sender::nick_error_message(you_usr, new_nick);
-		}
+		tmp = Sender::nick_error_message2(you_usr, new_nick);
+		ret.insert(tmp);
+		user_list_.erase(remove(user_list_.begin(), user_list_.end(), you_usr), user_list_.end()); // 순서 중요
 	}
-	else if (!does_has_nickname(ident) && does_has_username(ident))
+	if (!does_has_nickname(ident) && does_has_username(ident))
 	{
 		User&	cur_usr = select_user(ident);
 
@@ -226,7 +225,8 @@ Udata	Database::command_nick(const uintptr_t& ident, std::string& new_nick)
 	else// 기존 유저 닉네임 변경
 	{
 		User& cur_user = select_user(ident);
-		tmp = Sender::nick_well_message(cur_user, cur_user, new_nick);
+		if (! (does_has_nickname(ident) && !does_has_username(ident)) )
+			tmp = Sender::nick_well_message(cur_user, cur_user, new_nick);
 		cur_user.nickname_ = new_nick;
 		//채널에 있지 않으니, 닉네임만 바꿈
 		if (is_user_in_channel(cur_user)) // 채널에 있는 유저의 닉네임 변경
@@ -235,6 +235,7 @@ Udata	Database::command_nick(const uintptr_t& ident, std::string& new_nick)
 		}
 	}
 	ret.insert(tmp);
+	debug::showUsers(user_list_);
 	return ret;
 }
 
