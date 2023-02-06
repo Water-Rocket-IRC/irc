@@ -274,7 +274,7 @@ Event	Sender::join_message(const User& sender, const User& receiver, const std::
 
 	// std::cout << "Sender's nickname -> "<< sender.nickname_ << " " << std::endl;
 	// std::string  join_message = ":" + sender.nickname_ + "!" + sender.realname_ + "@" + sender.unused_ + " JOIN " + channel + "";
-	std::string  join_message = ":" + sender.nickname_ + "!" + sender.realname_ + "@" + sender.unused_ + " JOIN " + channel + "\n";
+	std::string  join_message = ":" + sender.nickname_ + "!" + sender.realname_ + "@127.0.0.1 JOIN :" + channel + "\r\n";
 	// std::cout << join_message << std::endl;
 	ret = make_pair(receiver.client_sock_, join_message);
 	return ret;
@@ -305,7 +305,7 @@ Event	Sender::join_invaild_channel_name_message(const User& sender, const std::s
 std::string	Sender::join_353_message(const User& sender, const std::string& chan_name, const std::string& chan_access, const std::string& chan_user_list)
 {
 	std::string  ret = ":" + Sender::server_name_ + " 353 "+ sender.nickname_
-				+ " " + chan_access + " " + chan_name + " :" + chan_user_list + "\n";
+				+ " " + chan_access + " " + chan_name + " :" + chan_user_list + "\r\n";
 	return ret;
 }
 
