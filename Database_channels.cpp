@@ -1,5 +1,7 @@
+#include "Channel.hpp"
 #include "Database.hpp"
 #include "Udata.hpp"
+#include "debug.hpp"
 
 bool	Database::is_channel(std::string& chan_name)
 {
@@ -81,33 +83,34 @@ Channel&	Database::select_channel(User& connector) // 476 ERROR Sender::join_inv
 }
 
 
-Udata	Database::join_channel(User& joiner, std::string& chan_name)
+Udata	Database::join_channel(User& joiner, const std::string& chan_name_)
 {
-	Udata				ret;
-	Event				tmp;
+	Udata		ret;
+	Event		tmp;
+	std::string	chan_name(chan_name_);
 
 	if (is_channel(chan_name) == false)
 	{
-		tmp = Sender::no_channel_message(joiner, chan_name);
+		create_channel(joiner, chan_name, "="); // "="는 public으로 만드는 것
+		tmp = Sender::join_message(joiner, joiner, chan_name);
 		ret.insert(tmp);
-		return ret;
-	}
-	Channel& chan = select_channel(chan_name);
-	if (chan.is_user(joiner) == false)
-	{
-		tmp = Sender::no_user_message(joiner, chan_name);
-		ret.insert(tmp);
+		Channel& chan = select_channel(chan_name);
+		Udata_iter it = ret.find(joiner.client_sock_);
+		it->second += Sender::join_353_message(joiner, chan.get_name(), chan.get_access(), "@" + joiner.nickname_);
+		it->second += Sender::join_366_message(joiner, chan.get_name());
 	}
 	else
 	{
+		Channel& chan = select_channel(chan_name);
 		chan.add_user(joiner);
+		const std::string& chan_user_list(chan.get_user_list_str());
 		ret = chan.send_all(joiner, joiner, "Join \"" + chan_name + "\" channel, " + joiner.nickname_, JOIN);
-		const std::string& chan_user_list = chan.get_user_list_str();
-
 		Udata_iter it = ret.find(joiner.client_sock_);
 		it->second += Sender::join_353_message(joiner, chan.get_name(), chan.get_access(), chan_user_list);
 		it->second += Sender::join_366_message(joiner, chan.get_name());
 	}
+	// chan.add_user(joiner);
+	debug::showChannels(channel_list_);
 	return ret;
 }
 

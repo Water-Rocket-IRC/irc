@@ -157,6 +157,17 @@ Event	Sender::nick_wrong_message(const User& sender, const std::string& new_nick
 	ret = std::make_pair(sender.client_sock_, nick_msg);
 	return ret;
 }
+
+/// @brief 432
+Event	Sender::nick_wrong_message(const uintptr_t& sock, const std::string& new_nick)
+{
+	Event	ret;
+
+	std::string nick_msg = ":" + Sender::server_name_ + " 432 " + " * " \
+					+ " " + new_nick + "Erroneous Nickname.\r\n";
+	ret = std::make_pair(sock, nick_msg);
+	return ret;
+}
 // /****************************       <Connect server || channel>       ****************************/
 
 // // :irc.local 001 root :Welcome to the Localnet IRC Network root!root@127.0.0.1
@@ -243,8 +254,9 @@ Event	Sender::join_message(const User& sender, const User& receiver, const std::
 {
 	Event	ret;
 
-	std::string  join_message = ":" + sender.nickname_ + "!" \
-				+ sender.realname_ + "@" + sender.unused_ + " JOIN " + channel + "\r\n";
+	std::cout << "Sender's nickname -> "<< sender.nickname_ << " " << std::endl;
+	std::string  join_message = ":" + sender.nickname_ + "!" + sender.realname_ + "@" + sender.unused_ + " JOIN " + channel + "\r\n";
+	std::cout << join_message << std::endl;
 	ret = make_pair(receiver.client_sock_, join_message);
 	return ret;
 }

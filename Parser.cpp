@@ -5,10 +5,10 @@
 
 #include <sys/_types/_size_t.h>
 
-const std::string Parser::commands[N_COMMAND] = {"NICK", "USER", "PING"};//, "QUIT", "PRIVMSG", "NOTICE", "WALL", "JOIN", "MODE", "WHO", "PART", "TOPIC", "KICK"};
+const std::string Parser::commands[N_COMMAND] = {"NICK", "USER", "PING", "JOIN"};//, "QUIT", "PRIVMSG", "NOTICE", "WALL", "JOIN", "MODE", "WHO", "PART", "TOPIC", "KICK"};
 void (Parser::*Parser::func_ptr[N_COMMAND])(const uintptr_t&, std::stringstream&, std::string&, const std::string&) = \
-								{&Parser::parser_nick_, &Parser::parser_user_, &Parser::parser_ping_};//, &Parser::parser_quit_, &Parser::parser_privmsg_, &Parser::parser_notice_, \
-								 &Parser::parser_wall_, &Parser::parser_join_, &Parser::parser_mode_, &Parser::parser_who_,  &Parser::parser_part_, &Parser::parser_topic_, &Parser::parser_kick_};
+								{&Parser::parser_nick_, &Parser::parser_user_, &Parser::parser_ping_, &Parser::parser_join_};//, &Parser::parser_quit_, &Parser::parser_privmsg_, &Parser::parser_notice_, \
+								 &Parser::parser_wall_, &Parser::parser_mode_, &Parser::parser_who_,  &Parser::parser_part_, &Parser::parser_topic_, &Parser::parser_kick_};
 
 const std::string Parser::command_toupper(const char* command)
 {
@@ -291,7 +291,7 @@ void	Parser::parser_ping_(const uintptr_t& ident, std::stringstream& line_ss, st
 // 			msg = set_message_(line, pos + 1, (line.length() - (pos + 2)));
 // 			(msg.size() > 510) ? msg.resize(510) : msg.resize(msg.size());
 
-// 			std::vector<Udata>	udata_events = channels_.channel_notice(sender, chan_name, msg);
+// 			std::vector<Udata>	udata_events = channels_.channel_noticse(sender, chan_name, msg);
 // 			push_multiple_write_events_(udata_events);
 // 		}
 // 		catch (std::exception &e)
@@ -301,25 +301,16 @@ void	Parser::parser_ping_(const uintptr_t& ident, std::stringstream& line_ss, st
 // 	}
 // }
 
-// void	Parser::parser_join_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send, const std::string& cmd)
-// {
-// 	static_cast<void>(to_send);
-// 	valid_user_checker_(ident, cmd);
-// 	std::string	chan_name;
-// 	Udata		ret;
+void	Parser::parser_join_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send, const std::string& cmd)
+{
+	static_cast<void>(to_send);
+	std::string	chan_name;
+	Udata		ret;
 
-// 	line_ss >> chan_name;
-// 	if (chan_name.empty())
-// 	{
-// 		user&	tmp_user = users_.search_user_by_ident(ident, 461);	// <- '*' 461로 넣어야?
-// 		throw Sender::command_empty_argument_461(tmp_user, "MODE");
-// 	}
-// 	user&	cur_user = users_.search_user_by_ident(ident, 451); // JOIN 시 해당 닉네임의 유저가 없음
-// 	if (chan_name.at(0) != '#')
-// 		throw Sender::join_invaild_channel_name_message(user, chan_name)
-// 	ret = channels_.join_channel(cur_user, chan_name);
-// 	push_multiple_write_events_(ret, ident);
-// }
+	line_ss >> chan_name;
+	ret = database_.command_join(ident, chan_name);
+	push_multiple_write_events_(ret, ident);
+}
 
 // void	Parser::parser_mode_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send, const std::string& cmd)
 // {

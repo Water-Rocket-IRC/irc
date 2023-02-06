@@ -1,6 +1,8 @@
 #include "Database.hpp"
 #include "Udata.hpp"
 #include <locale>
+#include <cctype>
+#include <sys/_select.h>
 #include "debug.hpp"
 
 Event	Database::valid_user_checker_(const uintptr_t& ident, const std::string& command_type)
@@ -167,6 +169,18 @@ void	Database::delete_user(User& leaver)
 	}
 }
 
+bool	Database::is_valid_nick(std::string& new_nick)
+{
+	for (int i = 0; i < new_nick.size(); i++)
+	{
+		if (!isalpha(new_nick[i]) && new_nick[i] != '_')
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
 /***************************************************************************************************/
 Udata	Database::command_nick(const uintptr_t& ident, std::string& new_nick)
 {
@@ -174,27 +188,37 @@ Udata	Database::command_nick(const uintptr_t& ident, std::string& new_nick)
 	Event		tmp;
 
 	tmp.first = ident;
-	// if (is_valid_nick(new_nick)) // TODO: hchang 특수문자로 시작하는 닉네임 등 유효성 체크하는 함수 만들 것
-	// {
-			// 432 eeror
-	// }
+	if (!is_valid_nick(new_nick)) // TODO: hchang 특수문자로 시작하는 닉네임 등 유효성 체크하는 함수 만들 것
+	{
+		if (!is_user(ident))
+		{
+			tmp = Sender::nick_wrong_message(ident, new_nick);
+			ret.insert(tmp);
+			return ret;
+		}
+		else
+		{
+			User&		you_usr = select_user(new_nick);
+			tmp = Sender::nick_wrong_message(you_usr, new_nick);
+			ret.insert(tmp);
+			return ret;
+		}
+	}
 	if (is_user(new_nick))// 닉네임 중복된 상황 433 에러
 	{
-		// tmp = Sender::nick_error_message(you_usr, new_nick);
-
 		User&		you_usr = select_user(new_nick);
-
+		// tmp = Sender::nick_error_message(you_usr, new_nick);
 		if (ident == you_usr.client_sock_)
 			return ret;
 		if (you_usr.username_.size())
 		{
-			if (is_user(ident))
+			if (is_user(ident)) // 질문 : 198번줄과 중복 검사 ?
 			{
 				User&	cur_usr = select_user(ident);
 				if (cur_usr.nickname_.empty())
-					tmp = Sender::nick_error_message(ident, new_nick);
+					tmp = Sender::nick_error_message(ident, new_nick); // 433
 				else
-					tmp = Sender::nick_error_message(cur_usr, new_nick);
+					tmp = Sender::nick_error_message(cur_usr, new_nick); // 432
 			}
 			else
 			{
@@ -246,6 +270,16 @@ Event	Database::command_user(const uintptr_t& ident
 	Event	ret;
 
 	ret.first = ident;
+
+	std::cout << "=========[command_user]========\n";
+	std::cout << "username : " << username << std::endl;
+	std::cout << "mode : " << mode << std::endl;
+	std::cout << "unuserd  : " << unused << std::endl;
+	std::cout << "realname : " << realname << std::endl;
+	std::cout << "=========[/command_user]========\n";
+
+
+
 	if (does_has_nickname(ident) && !does_has_username(ident))
 	{
 		User&		cur_usr = select_user(ident);
@@ -279,6 +313,44 @@ Event	Database::command_pong(const uintptr_t& ident, const std::string& target, 
 		return ret;
 	}
 	ret = Sender::pong(ident, target, msg);
+	return ret;
+}
+
+Udata	Database::command_join(const uintptr_t& ident, const std::string& chan_name)
+{
+	Udata	ret;
+	Event	tmp;
+
+	tmp = valid_user_checker_(ident, "JOIN");
+	if (tmp.second.size())
+	{
+		ret.insert(tmp);
+		return ret;
+	}
+	else if (is_user(ident))
+	{
+		User&	cur_usr = select_user(ident);
+		if (chan_name.empty())
+		{
+			if (!is_user(ident))
+			{
+				tmp = Sender::command_empty_argument_461(ident, "JOIN");
+			}
+			else
+			{
+				tmp =  Sender::command_empty_argument_461(cur_usr, "JOIN");
+			}
+		}
+		// else if (chan_name[0] == '#')
+		// {
+		// 	tmp = Sender::join_invaild_channel_name_message(cur_usr, chan_name);
+		// }
+		else
+		{
+			ret = join_channel(cur_usr, chan_name);
+		}
+	}
+	ret.insert(tmp);
 	return ret;
 }
 

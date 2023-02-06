@@ -28,7 +28,9 @@ class Database
 		Udata					set_topic(User& sender, std::string& chan_name, std::string& topic);
 		Udata					kick_channel(User& host, User& target, std::string& chan_name, std::string& msg);
 		Udata					quit_channel(User& target, std::string msg);
-		Udata				 	join_channel(User& joiner, std::string& chan_name);
+		Udata				 	join_channel(User& joiner, const std::string& chan_name_);
+		Udata					command_join(const uintptr_t& ident, const std::string& chan_name);
+
 		Udata					leave_channel(User&leaver, std::string& chan_name, std::string& msg);
 		Udata					nick_channel(User& who, std::string& new_nick);
 		Udata					mode_channel(User& moder, std::string& chan_name, bool vaild);
@@ -43,6 +45,7 @@ class Database
 		Event	command_quit(User& leaver, const std::string& leave_msg);
 		Event	command_privmsg(std::string &target_name, std::string &line, const uintptr_t& ident);
 		Event	command_mode(std::string &target_name, int flag);
+		Udata	command_join();
 
 		bool	is_user(const uintptr_t& ident);
 		bool	is_user(const std::string& nickname);
@@ -54,6 +57,7 @@ class Database
 
 		bool	does_has_nickname(const uintptr_t& ident);
 		bool	does_has_username(const uintptr_t& ident);
+		bool	is_valid_nick(std::string& new_nick);
 
 		void	print_all_user(); //debug
 
