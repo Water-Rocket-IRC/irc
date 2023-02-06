@@ -1,6 +1,7 @@
 #include "Channel.hpp"
 #include "Database.hpp"
 #include "Udata.hpp"
+#include "color.hpp"
 #include "debug.hpp"
 
 bool	Database::is_channel(std::string& chan_name)
@@ -98,6 +99,8 @@ Udata	Database::join_channel(User& joiner, const std::string& chan_name_)
 		Udata_iter it = ret.find(joiner.client_sock_);
 		it->second += Sender::join_353_message(joiner, chan.get_name(), chan.get_access(), "@" + joiner.nickname_);
 		it->second += Sender::join_366_message(joiner, chan.get_name());
+		std::cout << BOLDMAGENTA << "(Channel)" << RESET << std::endl;
+		debug::showUsers(chan.get_users());
 	}
 	else
 	{
@@ -108,13 +111,14 @@ Udata	Database::join_channel(User& joiner, const std::string& chan_name_)
 		Udata_iter it = ret.find(joiner.client_sock_);
 		it->second += Sender::join_353_message(joiner, chan.get_name(), chan.get_access(), chan_user_list);
 		it->second += Sender::join_366_message(joiner, chan.get_name());
+		std::cout << BOLDMAGENTA << "(Channel)" << RESET << std::endl;
+		debug::showUsers(chan.get_users());
 	}
-	// chan.add_user(joiner);
 	debug::showChannels(channel_list_);
 	return ret;
 }
 
-Udata	Database::leave_channel(User&leaver, std::string& chan_name, const std::string& msg_)
+Udata	Database::quit_channel(User&leaver, std::string& chan_name, const std::string& msg_)
 {
 	Event				tmp;
 	Udata				ret;
@@ -134,8 +138,8 @@ Udata	Database::leave_channel(User&leaver, std::string& chan_name, const std::st
 		return ret;
 	}
 	//Msg전송 : PART 내용에 따라 전송 -> 아마 채널의 다른 유저들에게 떠났다고 알려줘야
-	std::vector<User> users = chan.get_users();
-	int user_size = users.size();
+	std::vector<User>& users = chan.get_users();
+	const int user_size = users.size();
 	//PART하면, 그 내역은 모두에게 보내진다. 나간 사람 포함한다.
 	ret = chan.send_all(leaver, leaver, msg, QUIT);
 	chan.delete_user(leaver);
@@ -154,8 +158,44 @@ Udata	Database::leave_channel(User&leaver, std::string& chan_name, const std::st
 	return ret;
 }
 
+Udata	Database::part_channel(User&leaver, std::string& chan_name, const std::string& msg_)
+{
+	Event				tmp;
+	Udata				ret;
+	std::string			msg(msg_);
+
+	if (is_channel(chan_name) == false)
+	{
+		tmp = Sender::no_channel_message(leaver, chan_name);
+		ret.insert(tmp);
+		return ret;
+	}
+	Channel& chan = select_channel(chan_name); // 403 ERROR Sender::no_channel_message
+	if (chan.is_user(leaver) == 0)
+	{
+		tmp = Sender::no_user_message(leaver, leaver.nickname_);
+		return ret;
+	}
+	std::vector<User> users = chan.get_users();
+	int user_size = users.size();
+	ret = chan.send_all(leaver, leaver, msg, PART);
+	chan.delete_user(leaver);
+	if (user_size == 1)
+	{
+		delete_channel(chan_name);
+	}
+	else
+	{
+		if (leaver == chan.get_host())
+		{
+			chan.set_host();
+		}
+	}
+	return ret;
+}
+
 /// @brief 채널 전체 유저에게 메시지 전달. 내외부 모두 사용됨
-Udata	Database::channel_msg(User& sender, std::string chan_name, std::string& msg)
+Udata	Database::channel_msg(User& sender, std::string chan_name, const std::string& msg)
 {
 	Udata		ret;
 	Event		tmp;
@@ -167,6 +207,12 @@ Udata	Database::channel_msg(User& sender, std::string chan_name, std::string& ms
 		return ret;
 	}
 	Channel&	channel = select_channel(chan_name); // 403 ERROR Sender::no_channel_message
+	if (channel.is_user(sender) == false)
+	{
+		tmp = Sender::no_user_message(sender, sender.nickname_);
+		ret.insert(tmp);
+		return ret;
+	}
 	ret = channel.send_all(sender, sender, msg, PRIV);
 	return ret;
 }
@@ -237,10 +283,9 @@ Udata	Database::kick_channel(User& host, User& target, std::string& chan_name, s
 	}
 	else
 	{
-		tmp = Sender::kick_error_not_op_message(host, channel.get_host().nickname_, chan_name);
+		tmp = Sender::kick_error_not_op_message(host, host.nickname_, chan_name);
 		ret.insert(tmp);
 	}
-	
 	return ret;
 }
 
@@ -260,24 +305,6 @@ Udata	Database::who_channel(User& asker, std::string& chan_name)
 	tmp.second += Sender::who_315_message(asker, chan_name);
 
 	ret.insert(tmp);
-	return ret;
-}
-
-Udata	Database::quit_channel(User& leaver, std::string msg)
-{
-	Udata			ret;
-	Event			tmp;
-
-	if (is_user_in_channel(leaver) == false)
-	{
-		tmp = Sender::no_user_message(leaver, leaver.nickname_);
-		ret.insert(tmp);
-		return ret;
-	}
-	Channel& channel = select_channel(leaver); // 401 no_such_nick
-	ret = channel.send_all(leaver, leaver, msg, QUIT);
-	channel.delete_user(leaver);
-	
 	return ret;
 }
 

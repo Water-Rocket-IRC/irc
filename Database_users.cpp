@@ -2,6 +2,7 @@
 #include "Udata.hpp"
 #include <locale>
 #include <cctype>
+#include <new>
 #include <sys/_select.h>
 #include "debug.hpp"
 
@@ -171,7 +172,9 @@ void	Database::delete_user(User& leaver)
 
 bool	Database::is_valid_nick(std::string& new_nick)
 {
-	for (int i = 0; i < new_nick.size(); i++)
+	if (!isalnum(new_nick[0]) && new_nick[0] != '_')
+		return false;
+	for (int i = 1; i < new_nick.size(); i++)
 	{
 		if (!isalpha(new_nick[i]) && new_nick[i] != '_')
 		{
@@ -187,22 +190,19 @@ Udata	Database::command_nick(const uintptr_t& ident, std::string& new_nick)
 	Udata		ret;
 	Event		tmp;
 
-	tmp.first = ident;
 	if (!is_valid_nick(new_nick)) // TODO: hchang 특수문자로 시작하는 닉네임 등 유효성 체크하는 함수 만들 것
 	{
 		if (!is_user(ident))
 		{
 			tmp = Sender::nick_wrong_message(ident, new_nick);
-			ret.insert(tmp);
-			return ret;
 		}
 		else
 		{
 			User&		you_usr = select_user(new_nick);
 			tmp = Sender::nick_wrong_message(you_usr, new_nick);
-			ret.insert(tmp);
-			return ret;
 		}
+		ret.insert(tmp);
+		return ret;
 	}
 	if (is_user(new_nick))// 닉네임 중복된 상황 433 에러
 	{
@@ -237,6 +237,7 @@ Udata	Database::command_nick(const uintptr_t& ident, std::string& new_nick)
 
 		cur_usr.nickname_ = new_nick;
 		tmp = Sender::welcome_message_connect(cur_usr);
+		ret.insert(tmp);
 	}
 	else if (!is_user(ident))
 	{
@@ -250,7 +251,11 @@ Udata	Database::command_nick(const uintptr_t& ident, std::string& new_nick)
 	{
 		User& cur_user = select_user(ident);
 		if (! (does_has_nickname(ident) && !does_has_username(ident)) )
+		{
 			tmp = Sender::nick_well_message(cur_user, cur_user, new_nick);
+			ret.insert(tmp);
+		}
+
 		cur_user.nickname_ = new_nick;
 		//채널에 있지 않으니, 닉네임만 바꿈
 		if (is_user_in_channel(cur_user)) // 채널에 있는 유저의 닉네임 변경
@@ -258,7 +263,6 @@ Udata	Database::command_nick(const uintptr_t& ident, std::string& new_nick)
 			ret = nick_channel(cur_user, new_nick);
 		}
 	}
-	ret.insert(tmp);
 	debug::showUsers(user_list_);
 	return ret;
 }
@@ -268,8 +272,6 @@ Event	Database::command_user(const uintptr_t& ident
 								, const std::string& unused, const std::string& realname)
 {
 	Event	ret;
-
-	ret.first = ident;
 
 	std::cout << "=========[command_user]========\n";
 	std::cout << "username : " << username << std::endl;
@@ -285,7 +287,7 @@ Event	Database::command_user(const uintptr_t& ident
 		User&		cur_usr = select_user(ident);
 
 		cur_usr.input_user(username, mode, unused, realname);
-		ret = Sender::welcome_message_connect(cur_usr);;
+		ret = Sender::welcome_message_connect(cur_usr);
 	}
 	else if (!is_user(ident))
 	{
@@ -302,7 +304,6 @@ Event	Database::command_pong(const uintptr_t& ident, const std::string& target, 
 {
 	Event	ret;
 
-	ret.first = ident;
 	ret = valid_user_checker_(ident, "PING");
 	if (ret.second.size())
 		return ret;
@@ -335,22 +336,24 @@ Udata	Database::command_join(const uintptr_t& ident, const std::string& chan_nam
 			if (!is_user(ident))
 			{
 				tmp = Sender::command_empty_argument_461(ident, "JOIN");
+				ret.insert(tmp);
 			}
 			else
 			{
 				tmp =  Sender::command_empty_argument_461(cur_usr, "JOIN");
+				ret.insert(tmp);
 			}
 		}
-		// else if (chan_name[0] == '#')
-		// {
-		// 	tmp = Sender::join_invaild_channel_name_message(cur_usr, chan_name);
-		// }
+		else if (chan_name.at(0) != '#')
+		{
+			tmp = Sender::join_invaild_channel_name_message(cur_usr, chan_name);
+			ret.insert(tmp);
+		}
 		else
 		{
 			ret = join_channel(cur_usr, chan_name);
 		}
 	}
-	ret.insert(tmp);
 	return ret;
 }
 
@@ -373,14 +376,14 @@ Udata	Database::command_quit(const uintptr_t& ident, const std::string& msg)
 		{
 			// msg가 있으면 확인하고 분기점
 			Channel&	cur_chan = select_channel(cur_usr);
-			ret = leave_channel(cur_usr, cur_chan.get_name(), msg);
-			return ret;
+			ret = quit_channel(cur_usr, cur_chan.get_name(), msg);
 		}
 		else // 채널에 없으면 (= 로비)
 		{
 			tmp = Sender::quit_leaver_message(cur_usr, msg);
 			ret.insert(tmp);
 		}
+		user_list_.erase(remove(user_list_.begin(), user_list_.end(), cur_usr), user_list_.end());
 	}
 	return ret;
 }
@@ -389,33 +392,81 @@ Udata	Database::command_quit(const uintptr_t& ident, const std::string& msg)
 
 /// @brief 
 //	이 command에는 privmsg가 정상작동 될 때만 존재
-Event	Database::command_privmsg(std::string &target_name, std::string &line, const uintptr_t& ident)
+Udata	Database::command_privmsg(const uintptr_t& ident, const std::string &target_name, const std::string &msg)
 {
-	Event		ret;
+	Event		tmp;
+	Udata		ret;
 	// User&	sender_user = search_user_by_ident(ident, 0);
 	// User&	target_user = search_user_by_nick(target_name, 0);
 
+	tmp = valid_user_checker_(ident, "PRIVMSG");
+	if (tmp.second.size())
+	{
+		ret.insert(tmp);
+		return ret;
+	}
 		
 	// static Event	privmsg_p2p_message(const User& sender, const User& target, const std::string& msg);
 	// ret = Sender::privmsg_p2p_message(sender_user, target_user, line);
+	if (is_user(ident))
+	{
+		User&	cur_usr = select_user(ident); // USER is unregistered
+
+		if (target_name.at(0) == '#')
+		{
+			ret = channel_msg(cur_usr, target_name, msg);
+		}
+		else
+		{
+			if (is_user(target_name))
+			{
+				User&	tar_usr = select_user(target_name);
+
+				tmp = Sender::privmsg_p2p_message(cur_usr, tar_usr, msg);
+				ret.insert(tmp);
+			}
+			else
+			{
+				tmp = Sender::privmsg_no_user_error_message(cur_usr, target_name);
+				ret.insert(tmp);
+			}
+			//유저 메시지
+		}
+	}
 	return ret;
 }
 
-/// @brief
-// quit을 실행하는 함수
-// Event	Database::command_quit(User& leaver, const std::string& leave_msg)
-// {
-// 	Event	ret;
 
-// 	delete_user(leaver);
-// 	if (leave_msg.empty())
-// 	{
-// 		ret = Sender::quit_lobby_message(leaver, "");
-// 		return ret;
-// 	}
-// 	ret = Sender::quit_lobby_message(leaver, leave_msg);
-// 	return ret;
-// }
+Udata		Database::command_kick(const uintptr_t &ident, const std::string& target_name, std::string& chan_name, std::string& msg)
+{
+	Event	tmp;
+	Udata	ret;
+
+	tmp = valid_user_checker_(ident, "KICK");
+	if (tmp.second.size())
+	{
+		ret.insert(tmp);
+		return ret;
+	}
+	if (is_user(ident))
+	{
+		User& kicker = select_user(ident);
+
+		if (is_user(target_name))
+		{
+			User& target = select_user(target_name);
+			ret = kick_channel(kicker, target, chan_name, msg);
+		}
+		else
+		{
+			tmp = Sender::no_user_message(kicker, target_name);
+			ret.insert(tmp);
+		}
+	}
+	return ret;
+}
+
+
 
 /// @brief
 // user를 실행하는 함수 (command_user는 Event 반환)

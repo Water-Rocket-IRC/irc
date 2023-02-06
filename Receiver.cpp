@@ -122,11 +122,13 @@ int	Receiver::clientReadEventHandler_(struct kevent &cur_event)
 
 void	Receiver::clientWriteEventHandler_(struct kevent &cur_event)
 {
+
 	Udata_iter	target = udata_.find(cur_event.ident);
 
 	std::cout << BOLDGREEN
-				<< "socket: " << target->first << "\nmsg: " << target->second
+				<< "socket: " << target->first << "\nmsg:\n" << target->second
 				<< RESET << std::endl;
+	// target->second += "\r\n";
 	send(cur_event.ident, target->second.c_str(), target->second.length(), 0);
 	udata_.erase(target);
 }

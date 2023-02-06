@@ -82,10 +82,10 @@ Udata Channel::send_all(User& sender, User& target, std::string msg, int remocon
 	Udata			ret;
 	std::vector<User>::iterator it;
 
-	if (is_user(sender) == false)
-	{
-		// Sender::error_message(sender.client_sock_, "")
-	}
+	// if (is_user(sender) == false)
+	// {
+	// 	// Sender::error_message(sender.client_sock_, "")
+	// }
 	for (it = connectors_.begin(); it != connectors_.end(); it++)
 	{
 		Event packet;
@@ -165,10 +165,12 @@ void Channel::add_user(User& joiner)
 {
 	connectors_.push_back(joiner);
 }
+
 void Channel::set_host()
 {
 	this->host_ = connectors_[0];
 }
+
 void Channel::set_channel_name(std::string& chan_name)
 {
 	this->name_ = chan_name;

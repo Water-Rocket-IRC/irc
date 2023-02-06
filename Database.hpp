@@ -15,7 +15,7 @@ class Database
 		Event					valid_user_checker_(const uintptr_t& ident, const std::string& command_type);
 	
 	// Channel
-		Udata					channel_msg(User& sender, std::string chan_name, std::string& msg);
+		Udata					channel_msg(User& sender, std::string chan_name, const std::string& msg);
 		Udata					channel_notice(User& sender, std::string chan_name, std::string& msg);
 		Udata					channel_wall(User& sender, std::string chan_name, std::string& msg);
 
@@ -28,11 +28,10 @@ class Database
 
 		Udata					set_topic(User& sender, std::string& chan_name, std::string& topic);
 		Udata					kick_channel(User& host, User& target, std::string& chan_name, std::string& msg);
-		Udata					quit_channel(User& target, std::string msg);
 		Udata				 	join_channel(User& joiner, const std::string& chan_name_);
-		Udata					command_join(const uintptr_t& ident, const std::string& chan_name);
+		Udata					part_channel(User&leaver, std::string& chan_name, const std::string& msg_);
 
-		Udata					leave_channel(User&leaver, std::string& chan_name, const std::string& msg_);
+		Udata					quit_channel(User&leaver, std::string& chan_name, const std::string& msg_);
 		Udata					nick_channel(User& who, std::string& new_nick);
 		Udata					mode_channel(User& moder, std::string& chan_name, bool vaild);
 		Udata					who_channel(User& asker, std::string& chan_name);//(const uintptr_t& sock, std::string& chan_name);
@@ -46,9 +45,11 @@ class Database
 		// Udata	command_quit(User& leaver, const std::string& leave_msg);
 		Udata	command_quit(const uintptr_t& ident, const std::string& chan_name);
 
+		Udata	command_privmsg(const uintptr_t& ident, const std::string &target_name, const std::string &msg);
 		Event	command_privmsg(std::string &target_name, std::string &line, const uintptr_t& ident);
 		Event	command_mode(std::string &target_name, int flag);
-		Udata	command_join();
+		Udata	command_join(const uintptr_t& ident, const std::string& chan_name);
+		Udata	command_kick(const uintptr_t &ident, const std::string& target_name, std::string& chan_name, std::string& msg);
 
 		bool	is_user(const uintptr_t& ident);
 		bool	is_user(const std::string& nickname);

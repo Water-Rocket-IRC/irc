@@ -17,30 +17,30 @@ class Parser
 		const std::string&	password_;
 
 		static const std::string	commands[N_COMMAND];
-		static void (Parser::*func_ptr[N_COMMAND])(const uintptr_t&, std::stringstream&, std::string&, const std::string&);
+		static void (Parser::*func_ptr[N_COMMAND])(const uintptr_t&, std::stringstream&, std::string&);
 
-		std::string			set_message_(std::string &msg, size_t start, size_t end);
-		std::string			message_resize_(std::string& tmp, std::string& to_send);
+		std::string			set_message_(std::string &msg, const std::size_t& start);
+		std::string			message_resize_(const std::string& tmp, const std::string& to_send);
 
 		void				push_write_event_(Event& tmp);
 		void				push_multiple_write_events_(Udata& tmp, const uintptr_t& ident);
 
-		void				parser_nick_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send, const std::string& cmd);
-		void				parser_pass_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send, const std::string& cmd);
-		void				parser_user_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send, const std::string& cmd);
-		void				parser_ping_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send, const std::string& cmd);
-		void				parser_quit_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send, const std::string& cmd);
-		void				parser_privmsg_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send, const std::string& cmd);
-		void				parser_notice_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send, const std::string& cmd);
-		void				parser_wall_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send, const std::string& cmd);
-		void				parser_join_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send, const std::string& cmd);
-		void				parser_mode_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send, const std::string& cmd);
-		void				parser_who_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send, const std::string& cmd);
-		void				parser_part_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send, const std::string& cmd);
-		void				parser_topic_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send, const std::string& cmd);
-		void				parser_kick_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send, const std::string& cmd);
+		void				parser_nick_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send);
+		void				parser_pass_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send);
+		void				parser_user_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send);
+		void				parser_ping_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send);
+		void				parser_quit_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send);
+		void				parser_privmsg_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send);
+		void				parser_notice_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send);
+		void				parser_wall_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send);
+		void				parser_join_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send);
+		void				parser_mode_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send);
+		void				parser_who_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send);
+		void				parser_part_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send);
+		void				parser_topic_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send);
+		void				parser_kick_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send);
+		void 				print_title(const std::string& title);
 
-		void				valid_user_checker_(const uintptr_t& ident, const std::string& cmd);
 		const std::string	command_toupper(const char* command);
 
 	public:
