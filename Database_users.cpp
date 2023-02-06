@@ -30,15 +30,15 @@ Event	Database::valid_user_checker_(const uintptr_t& ident, const std::string& c
 
 
 
-/// @brief 
-// ident 즉 socket을 이용해 지금 명령어 친 user가 누군 지 알아낸다. 
+/// @brief
+// ident 즉 socket을 이용해 지금 명령어 친 user가 누군 지 알아낸다.
 User&	Database::select_user(const uintptr_t& ident)
 {
 	std::vector<User>::iterator	it;
 
 	for (it = user_list_.begin(); it != user_list_.end(); it++)
 	{
-		if (it->client_sock_ == ident) // 닉네임 바꿔야할 유저를 찾을 상태 !!! 
+		if (it->client_sock_ == ident) // 닉네임 바꿔야할 유저를 찾을 상태 !!!
 		{
 			return (*it);
 		}
@@ -371,8 +371,8 @@ Udata	Database::command_quit(const uintptr_t& ident, const std::string& msg)
 	else if (is_user(ident))
 	{
 		User&	cur_usr = select_user(ident);
-		
-		if (is_user_in_channel(cur_usr)) // 채널에 있으면  
+
+		if (is_user_in_channel(cur_usr)) // 채널에 있으면
 		{
 			// msg가 있으면 확인하고 분기점
 			Channel&	cur_chan = select_channel(cur_usr);
@@ -390,7 +390,7 @@ Udata	Database::command_quit(const uintptr_t& ident, const std::string& msg)
 
 /***************************************************************************************************/
 
-/// @brief 
+/// @brief
 //	이 command에는 privmsg가 정상작동 될 때만 존재
 Udata	Database::command_privmsg(const uintptr_t& ident, const std::string &target_name, const std::string &msg)
 {
@@ -405,7 +405,7 @@ Udata	Database::command_privmsg(const uintptr_t& ident, const std::string &targe
 		ret.insert(tmp);
 		return ret;
 	}
-		
+
 	// static Event	privmsg_p2p_message(const User& sender, const User& target, const std::string& msg);
 	// ret = Sender::privmsg_p2p_message(sender_user, target_user, line);
 	if (is_user(ident))
@@ -471,17 +471,17 @@ Udata		Database::command_kick(const uintptr_t &ident, const std::string& target_
 /// @brief
 // user를 실행하는 함수 (command_user는 Event 반환)
 
-/// @brief 
+/// @brief
 // nick을 실행하는 함복
 
 
-/// @brief 
+/// @brief
 // mode는 오류에 대한 것은 안 만들기로 함
 Event	Database::command_mode(std::string &target_name, int flag)
 {
 	Event	ret;
 
-	try 
+	try
 	{
 		// User&	sender = search_user_by_nick(target_name, 0);
 		// ret = Sender::connect_mode_message(sender);
@@ -501,7 +501,7 @@ void Database::print_all_user()
 
 	for (it = user_list_.begin(); it != user_list_.end(); ++it)
 	{
-		std::cout << "user " << it->nickname_ << std::endl; 
+		std::cout << "user " << it->nickname_ << std::endl;
 		std::cout << "socket " << it->client_sock_ << std::endl;
 	}
 }

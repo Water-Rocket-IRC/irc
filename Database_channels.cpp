@@ -28,7 +28,7 @@ bool	Database::is_user_in_channel(User& leaver)
 			return true;
 		}
 	}
-	return false;	
+	return false;
 }
 
 void	Database::create_channel(User& joiner, std::string& chan_name, std::string chan_access)

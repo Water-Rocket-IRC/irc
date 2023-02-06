@@ -30,69 +30,69 @@ Event	Sender::pong(const uintptr_t& socket, const std::string& target, const std
 	Event ret;
 
 	const std::string& cur_target = target.empty() ? target : Sender::server_name_;
-	std::string pong_reply = ":" + Sender::server_name_ + " PONG " \
+	const std::string& pong_reply = ":" + Sender::server_name_ + " PONG " \
 		+ cur_target + " :" + msg;
-	ret = std::make_pair(socket, pong_reply);
+	ret = std::make_pair(socket, pong_reply + "\r\n");
 	return ret;
 }
 /// @brief 461
-Event	Sender::command_empty_argument_461(const User& sender, const std::string command)
+Event	Sender::command_empty_argument_461(const User& sender, const std::string& command)
 {
 	Event ret;
 
-	std::string error_message = ":" + Sender::server_name_ + " 461 " \
+	const std::string& error_message = ":" + Sender::server_name_ + " 461 " \
 		+ sender.nickname_ + " " + command  + " :Not enough parameters";
-	ret = std::make_pair(sender.client_sock_, error_message);
+	ret = std::make_pair(sender.client_sock_, error_message + "\r\n");
 	return ret;
 }
 /// @brief 461
-Event	Sender::command_empty_argument_461(const uintptr_t& sock, const std::string command)
+Event	Sender::command_empty_argument_461(const uintptr_t& sock, const std::string& command)
 {
 	Event ret;
 
-	std::string error_message = ":" + Sender::server_name_ + " 461 * " \
+	const std::string& error_message = ":" + Sender::server_name_ + " 461 * " \
 	+ command  + " :Not enough parameters";
-	ret = std::make_pair(sock, error_message);
+	ret = std::make_pair(sock, error_message + "\r\n");
 	return ret;
 }
 /// @brief 451
-Event	Sender::command_not_registered_451(const User& sender, const std::string command)
+Event	Sender::command_not_registered_451(const User& sender, const std::string& command)
 {
 	Event ret;
 
-	std::string error_message = ":" + Sender::server_name_ + " 451 " \
+	const std::string& error_message = ":" + Sender::server_name_ + " 451 " \
 		+ sender.nickname_ + " " + command  + " :You have not registered";
-	ret = std::make_pair(sender.client_sock_, error_message);
+	ret = std::make_pair(sender.client_sock_, error_message + "\r\n");
 	return ret;
 }
 /// @brief 451
-Event	Sender::command_not_registered_451(const uintptr_t& sock, const std::string command)
+Event	Sender::command_not_registered_451(const uintptr_t& sock, const std::string& command)
 {
 	Event ret;
 
-	std::string error_message = ":" + Sender::server_name_ + " 451 * " \
+	const std::string& error_message = ":" + Sender::server_name_ + " 451 * " \
 		+ " " + command  + " :You have not registered";
-	ret = std::make_pair(sock, error_message);
+	ret = std::make_pair(sock, error_message + "\r\n");
 	return ret;
 }
 /// @brief 409
-Event	Sender::command_no_origin_specified_409(const User& sender, const std::string command)
+Event	Sender::command_no_origin_specified_409(const User& sender, const std::string& command)
 {
 	Event ret;
 
-	std::string error_message = ":" + Sender::server_name_ + " 409 " \
+	const std::string& error_message = ":" + Sender::server_name_ + " 409 " \
 		+ sender.nickname_ + " " + command  + " :No origin specified";
-	ret = std::make_pair(sender.client_sock_, error_message);
+	ret = std::make_pair(sender.client_sock_, error_message + "\r\n");
 	return ret;
 }
 /// @brief 421
-Event	Sender::unknown_command_message_421(const User& sender, const std::string command)
+Event	Sender::unknown_command_message_421(const User& sender, const std::string& command)
 {
 	Event ret;
 
-	std::string error_message = ":" + Sender::server_name_ + " 421 " \
+	const std::string& error_message = ":" + Sender::server_name_ + " 421 " \
 		+ sender.nickname_ + " " + command  + " :Unknown command";
-	ret = std::make_pair(sender.client_sock_, error_message);
+	ret = std::make_pair(sender.client_sock_, error_message + "\r\n");
 	return ret;
 }
 // /****************************       <NICK>       ****************************/
@@ -108,9 +108,9 @@ Event	Sender::nick_well_message(const User& sender, const User& receiver, const 
 {
 	Event	ret;
 
-	std::string nick_msg = ":" + sender.nickname_ + "!" + sender.username_ \
+	const std::string& nick_msg = ":" + sender.nickname_ + "!" + sender.username_ \
 					+ "@" + sender.unused_ + " NICK :" + new_nick;
-	ret = std::make_pair(receiver.client_sock_, nick_msg);
+	ret = std::make_pair(receiver.client_sock_, nick_msg + "\r\n");
 	return ret;
 }
 
@@ -119,9 +119,9 @@ Event	Sender::nick_error_message(const User& sender, const std::string& new_nick
 {
 	Event	ret;
 
-	std::string nick_msg = ":" + Sender::server_name_ + " 433 " + sender.nickname_ \
+	const std::string& nick_msg = ":" + Sender::server_name_ + " 433 " + sender.nickname_ \
 					+ " " + new_nick + " :Nickname is already in use.";
-	ret = std::make_pair(sender.client_sock_, nick_msg);
+	ret = std::make_pair(sender.client_sock_, nick_msg + "\r\n");
 	return ret;
 }
 
@@ -130,9 +130,9 @@ Event	Sender::nick_error_message2(const User& sender, const std::string& new_nic
 {
 	Event	ret;
 
-	std::string nick_msg = ":" + Sender::server_name_ + " 433 " + sender.nickname_ \
+	const std::string& nick_msg = ":" + Sender::server_name_ + " 433 " + sender.nickname_ \
 					+ " " + new_nick + " :Nickname overruled.";
-	ret = std::make_pair(sender.client_sock_, nick_msg);
+	ret = std::make_pair(sender.client_sock_, nick_msg + "\r\n");
 	return ret;
 }
 
@@ -141,9 +141,9 @@ Event	Sender::nick_error_message(const uintptr_t& sock, const std::string& new_n
 {
 	Event	ret;
 
-	std::string nick_msg = ":" + Sender::server_name_ + " 433 * " \
+	const std::string& nick_msg = ":" + Sender::server_name_ + " 433 * " \
 	+ new_nick + " :Nickname is already in use.";
-	ret = std::make_pair(sock, nick_msg);
+	ret = std::make_pair(sock, nick_msg + "\r\n");
 	return ret;
 }
 
@@ -152,9 +152,9 @@ Event	Sender::nick_wrong_message(const User& sender, const std::string& new_nick
 {
 	Event	ret;
 
-	std::string nick_msg = ":" + Sender::server_name_ + " 432 " + sender.nickname_ \
+	const std::string& nick_msg = ":" + Sender::server_name_ + " 432 " + sender.nickname_ \
 					+ " " + new_nick + "Erroneous Nickname.";
-	ret = std::make_pair(sender.client_sock_, nick_msg);
+	ret = std::make_pair(sender.client_sock_, nick_msg + "\r\n");
 	return ret;
 }
 
@@ -163,9 +163,9 @@ Event	Sender::nick_wrong_message(const uintptr_t& sock, const std::string& new_n
 {
 	Event	ret;
 
-	std::string nick_msg = ":" + Sender::server_name_ + " 432 " + " * " \
+	const std::string& nick_msg = ":" + Sender::server_name_ + " 432 " + " * " \
 					+ " " + new_nick + "Erroneous Nickname.";
-	ret = std::make_pair(sock, nick_msg);
+	ret = std::make_pair(sock, nick_msg + "\r\n");
 	return ret;
 }
 // /****************************       <Connect server || channel>       ****************************/
@@ -176,9 +176,9 @@ Event	Sender::welcome_message_connect(const User& sender) // 1st done
 {
 	Event ret; 
 
-	std::string msg001 = ":" + Sender::server_name_ + " 001 " + sender.nickname_ \
-	+ " :Welcome to the 42's irc network " + sender.nickname_ + "!" + sender.mode_;	
-	ret = std::make_pair(sender.client_sock_, msg001);
+	const std::string& msg001 = ":" + Sender::server_name_ + " 001 " + sender.nickname_ \
+	+ " :Welcome to the 42's irc network " + sender.nickname_ + "!" + sender.mode_;
+	ret = std::make_pair(sender.client_sock_, msg001 + "\r\n");
 	return ret;
 }
 
@@ -207,9 +207,9 @@ Event	Sender::quit_leaver_message(const User& sender, std::string leave_message)
 
 	std::cout << "realname : " << sender.nickname_ << "!" << std::endl;
 
-	std::string  quit_channel_message = "ERROR :Closing link: (" \
+	const std::string&  quit_channel_message = "ERROR :Closing link: (" \
 		+ sender.nickname_ + ") [Quit: " + leave_message + "]";
-	ret = std::make_pair(sender.client_sock_, quit_channel_message);
+	ret = std::make_pair(sender.client_sock_, quit_channel_message + "\r\n");
 	return ret;
 }
 
@@ -221,9 +221,9 @@ Event	Sender::quit_member_message(const User& sender, const User& receiver, std:
 	{
 		leave_message = "leaving";
 	}
-	std::string  quit_message = ":" + sender.nickname_ + "! " \
+	const std::string&  quit_message = ":" + sender.nickname_ + "! " \
 				+ sender.realname_ + " QUIT :Quit: " + leave_message;
-	ret = std::make_pair(receiver.client_sock_, quit_message);
+	ret = std::make_pair(receiver.client_sock_, quit_message + "\r\n");
 	return ret;
 }
 
@@ -251,7 +251,7 @@ Event	Sender::quit_member_message(const User& sender, const User& receiver, std:
 
 // /*
 //  @brief 채팅 시 메세지
-//  @param const user.event.indent const user 소캣 
+//  @param const user.event.indent const user 소캣
 //  @param nick 현재 닉네임
 //  @param const user 유저네임
 //  @param target 메세지를 받는 클라이언트
@@ -272,8 +272,8 @@ Event	Sender::join_message(const User& sender, const User& receiver, const std::
 {
 	Event	ret;
 
-	std::string  join_message = ":" + sender.nickname_ + "!" + sender.username_ + "@127.0.0.1 JOIN :" + channel + "\r\n";
-	ret = make_pair(receiver.client_sock_, join_message);
+	const std::string&  join_message = ":" + sender.nickname_ + "!" + sender.username_ + "@127.0.0.1 JOIN :" + channel;
+	ret = make_pair(receiver.client_sock_, join_message + "\r\n");
 	return ret;
 }
 /******** TODO: join_op_message // join_normal_message 2개로 오버로딩 하여 오퍼레이터와 일반 유저를 각각 처리하게 만들어야 됨.... ********/
@@ -283,10 +283,10 @@ Event	Sender::join_invaild_channel_name_message(const User& sender, const std::s
 {
 	Event ret;
 
-	std::string error_message = ":" + Sender::server_name_ + " 476 " \
+	const std::string&	error_message = ":" + Sender::server_name_ + " 476 " \
 		+ sender.nickname_ + " " + invaild_channel  + " :Invaild channel name";
-	ret = std::make_pair(sender.client_sock_, error_message);
-	return ret;	
+	ret = std::make_pair(sender.client_sock_, error_message + "\r\n");
+	return ret;
 }
 
 /*
@@ -299,11 +299,12 @@ Event	Sender::join_invaild_channel_name_message(const User& sender, const std::s
     	ㄴ '@' : secret channel
 @example ":irc.local 353 one = #123 :one two"
 */
-std::string	Sender::join_353_message(const User& sender, const std::string& chan_name, const std::string& chan_access, const std::string& chan_user_list)
+std::string	Sender::join_353_message(const User& sender, const std::string& chan_name
+									, const std::string& chan_access, const std::string& chan_user_list)
 {
-	std::string  ret = ":" + Sender::server_name_ + " 353 "+ sender.nickname_
-				+ " " + chan_access + " " + chan_name + " :" + chan_user_list + "\r\n";
-	return ret;
+	const std::string& 	ret = ":" + Sender::server_name_ + " 353 "+ sender.nickname_
+							+ " " + chan_access + " " + chan_name + " :" + chan_user_list;
+	return ret + "\r\n";
 }
 
 
@@ -319,9 +320,9 @@ std::string	Sender::join_353_message(const User& sender, const std::string& chan
 */
 std::string	Sender::join_366_message(const User& sender, const std::string& chan_name)
 {
-	std::string  ret = ":" + Sender::server_name_ + " 366 "+ sender.nickname_
-				+ " " + chan_name + " :End of /NAMES list.";
-	return ret;
+	const std::string& 	ret = ":" + Sender::server_name_ + " 366 "+ sender.nickname_
+									+ " " + chan_name + " :End of /NAMES list.";
+	return ret + "\r\n";
 }
 
 // 127.000.000.001.45062-127.000.000.001.06667: JOIN #test
@@ -355,15 +356,15 @@ Event	Sender::mode_324_message(const User& sender, const std::string channel)
 {
 	Event	ret;
 
-	std::string  mode_message = ":" + Sender::server_name_ \
+	const std::string&  mode_message = ":" + Sender::server_name_ \
 			+ " 324 " + sender.nickname_ + " " + channel + ":+nt";
-	ret = std::make_pair(sender.client_sock_, mode_message);
+	ret = std::make_pair(sender.client_sock_, mode_message + "\r\n");
 	return ret;
 }
 /// @brief 329
 std::string	Sender::mode_329_message(const User& sender, const std::string channel, const std::string time_stamp)
 {
-	std::string ret = ":" + Sender::server_name_ + " 329 " \
+	const std::string& ret = ":" + Sender::server_name_ + " 329 " \
 			+ sender.nickname_ + " " + channel + " :" + time_stamp + "";
 	return ret;
 }
@@ -372,9 +373,9 @@ Event	Sender::mode_no_option_error_message(const User& sender, const std::string
 {
 	Event ret;
 
-	std::string mode_message = ":" + Sender::server_name_ + " 472 " + sender.nickname_ \
+	const std::string& mode_message = ":" + Sender::server_name_ + " 472 " + sender.nickname_ \
 		+ " " +channel + " :You must have channel op access or above to set channel mode p";
-	ret = std::make_pair(sender.client_sock_, mode_message);
+	ret = std::make_pair(sender.client_sock_, mode_message + "\r\n");
 	return ret;
 }
 /// @brief 482
@@ -382,9 +383,9 @@ Event	Sender::mode_not_operator_error_message(const User& sender, const std::str
 {
 	Event ret;
 
-	std::string mode_message = ":" + Sender::server_name_ + " 482 " + sender.nickname_ \
+	const std::string& mode_message = ":" + Sender::server_name_ + " 482 " + sender.nickname_ \
 		+ " " + wrong_option + " :is not a recognised channel mode";
-	ret = std::make_pair(sender.client_sock_, mode_message);
+	ret = std::make_pair(sender.client_sock_, mode_message + "\r\n");
 	return ret;
 }
 /* 
@@ -394,11 +395,11 @@ Event	Sender::who_joiner_352_message(const User& sender, const std::string chann
 {
 	Event ret;
 
-	std::string who_message = ":" + Sender::server_name_ + " 352 " + sender.nickname_ \
+	const std::string& who_message = ":" + Sender::server_name_ + " 352 " + sender.nickname_ \
 			+ " " + channel + " " + sender.username_ + " " + sender.mode_ + " " \
 			+ sender.unused_ + " " + sender.nickname_ + " H :0 root";
 	// who_352_target_message를 joiner 이외에 다른 사람들의 메세지로 이어 붙어야 한다.
-	ret = std::make_pair(sender.client_sock_, who_message);
+	ret = std::make_pair(sender.client_sock_, who_message + "\r\n");
 	return ret;
 }
 /*
@@ -406,7 +407,7 @@ Event	Sender::who_joiner_352_message(const User& sender, const std::string chann
 */ 
 std::string	Sender::who_352_target_message(const User& sender, const std::string channel, const std::string target)
 {
-	std::string ret = ":" + Sender::server_name_ + " 352 " + sender.nickname_ \
+	const std::string& ret = ":" + Sender::server_name_ + " 352 " + sender.nickname_ \
 			+ " " + channel + " " + sender.username_ + " " + sender.mode_ + " " \
 			+ sender.unused_ + " " + target + " H :0 root";
 	return ret;
@@ -417,12 +418,15 @@ std::string	Sender::who_352_target_message(const User& sender, const std::string
 */
 std::string	Sender::who_315_message(const User& sender, const std::string channel)
 {
-	std::string ret = ":" + Sender::server_name_ + " 315 " + sender.nickname_ \
+	const std::string& ret = ":" + Sender::server_name_ + " 315 " + sender.nickname_ \
 		+ " " + channel + " :End of /WHO list";
 	return ret;
 }
 
 /****************************       <PART>       ****************************/
+
+
+
 
 // 127.000.000.001.39544-127.000.000.001.06667: PART #test
 
@@ -432,13 +436,14 @@ std::string	Sender::who_315_message(const User& sender, const std::string channe
 
 // 127.000.000.001.06667-127.000.000.001.39548: :mypark!root@127.0.0.1 PART :#test
 
-Event	Sender::part_message(const User& sender, const User& receiver, const std::string& channel, const std::string& msg) // 2st done
+Event	Sender::part_message(const User& sender, const User& receiver
+							, const std::string& channel, const std::string& msg) // 2st done
 {
 	Event	ret;
 
-	std::string  part_message = ":" + sender.nickname_ + "!" \
+	const std::string&  part_message = ":" + sender.nickname_ + "!" \
 				+ sender.username_ + "@" + receiver.mode_ + " PART " + channel + " " + msg + "";
-	ret = std::make_pair(receiver.client_sock_, part_message);
+	ret = std::make_pair(receiver.client_sock_, part_message + "\r\n");
 	return ret;
 }
 
@@ -451,16 +456,20 @@ Event	Sender::part_message(const User& sender, const User& receiver, const std::
 // 127.000.000.001.06667-127.000.000.001.39552: :junoh!root@127.0.0.1 KICK #test mypark :
 
 // 127.000.000.001.06667-127.000.000.001.39546: :junoh!root@127.0.0.1 KICK #test mypark :
+//
+// 127.000.000.001.06667-127.000.000.001.55650: :hello!root@127.0.0.1 KICK #123 world :
+//												:hello!Minsu Kim@localhost KICK #123 world :
 
-Event	Sender::kick_message(const User& sender, const User& receiver, const std::string& target, const std::string& channel, const std::string& msg) // 1st done
+Event	Sender::kick_message(const User& sender, const User& receiver, const std::string& target
+								, const std::string& channel, const std::string& msg) // 1st done
 {
 	Event	ret;
 
-	std::string  kick_message = ":" + sender.nickname_ + "!" + \
+	const std::string&  kick_message = ":" + sender.nickname_ + "!" + \
 				sender.realname_ + '@' + sender.unused_ + " KICK " + channel + " " + target + " :" + msg + "";
 	// const std::string  kick_message = ":" + host + "!" + \
 	// 			sender.realname_ + " KICK " + channel + " " + subject + "";
-	ret = std::make_pair(receiver.client_sock_, kick_message);
+	ret = std::make_pair(receiver.client_sock_, kick_message + "\r\n");
 	return ret;
 }
 
@@ -470,10 +479,10 @@ Event	Sender::kick_error_not_op_message(const User& sender, const std::string& h
 {
 	Event	ret;
 
-	 std::string  kick_message = ":" + Sender::server_name_ + \
+	 const std::string&  kick_message = ":" + Sender::server_name_ + \
 	 	" 482 " + host + " " + channel + " :You must be a channel operator";
-	ret = std::make_pair(sender.client_sock_, kick_message);
-	return ret;	
+	ret = std::make_pair(sender.client_sock_, kick_message + "\r\n");
+	return ret;
 }
 
 //127.000.000.001.06667-127.000.000.001.39552: :irc.local 441 mypark junoh #ttt :They are not on that channel
@@ -482,9 +491,9 @@ Event	Sender::kick_error_no_user_message(const User& sender, const std::string& 
 {
 	Event	ret;
 
-	std::string  kick_message = ":" + Sender::server_name_ + \
+	const std::string&  kick_message = ":" + Sender::server_name_ + \
 		" 441 " + host + " " + subject + " " + channel + " :They are not on that channel";
-	ret = std::make_pair(sender.client_sock_, kick_message);
+	ret = std::make_pair(sender.client_sock_, kick_message + "\r\n");
 	return ret;
 }
 
@@ -493,9 +502,9 @@ Event	Sender::privmsg_p2p_message(const User& sender, const User& target, const 
 {
 	Event		ret;
 
-	std::string privmsg = ":" + sender.nickname_ + "@" + sender.unused_ + " PRIVMSG " + \
+	const std::string& privmsg = ":" + sender.nickname_ + "@" + sender.unused_ + " PRIVMSG " + \
 		target.nickname_ + " :" + msg;
-	ret = std::make_pair(target.client_sock_, privmsg);
+	ret = std::make_pair(target.client_sock_, privmsg + "\r\n");
 	return (ret);
 }
 
@@ -503,9 +512,9 @@ Event	Sender::privmsg_channel_message(const User& sender, const User& receiver, 
 {
 	Event		ret;
 
-	std::string privmsg = ":" + sender.nickname_ + "@" + sender.unused_ + " PRIVMSG " + \
+	const std::string& privmsg = ":" + sender.nickname_ + "@" + sender.unused_ + " PRIVMSG " + \
 		channel + " :" + msg;
-	ret = std::make_pair(receiver.client_sock_, privmsg);
+	ret = std::make_pair(receiver.client_sock_, privmsg + "\r\n");
 	return (ret);
 }
 /// @brief 401
@@ -513,9 +522,9 @@ Event	Sender::privmsg_no_user_error_message(const User& sender, const std::strin
 {
 	Event		ret;
 
-	std::string privmsg = ":" + sender.nickname_ + " 401 " + sender.nickname_ + " " + target \
+	const std::string& privmsg = ":" + sender.nickname_ + " 401 " + sender.nickname_ + " " + target \
 	+ " :No such nick";
-	ret = std::make_pair(sender.client_sock_, privmsg);
+	ret = std::make_pair(sender.client_sock_, privmsg + "\r\n");
 	return (ret);
 }
 /// @brief 404
@@ -523,9 +532,9 @@ Event	Sender::privmsg_external_error_message(const User& sender, const std::stri
 {
 	Event		ret;
 
-	std::string privmsg = ":" + sender.nickname_ + " 404 " + sender.nickname_ + " " + channel \
+	const std::string& privmsg = ":" + sender.nickname_ + " 404 " + sender.nickname_ + " " + channel \
 	+ " :You cannot send external messages to this channel whilist the +n (noextmsg) mode is set";
-	ret = std::make_pair(sender.client_sock_, privmsg);
+	ret = std::make_pair(sender.client_sock_, privmsg + "\r\n");
 	return (ret);
 }
 
@@ -534,9 +543,9 @@ Event	Sender::notice_p2p_message(const User& sender, const User& target, const s
 {
 	Event		ret;
 
-	std::string privmsg = ":" + sender.nickname_ + "@" + sender.unused_ + " NOTICE " + \
+	const std::string& privmsg = ":" + sender.nickname_ + "@" + sender.unused_ + " NOTICE " + \
 		target.nickname_ + " :" + msg;
-	ret = std::make_pair(target.client_sock_, privmsg);
+	ret = std::make_pair(target.client_sock_, privmsg + "\r\n");
 	return (ret);
 }
 
@@ -544,9 +553,9 @@ Event	Sender::notice_channel_message(const User& sender, const User& receiver, c
 {
 	Event		ret;
 
-	std::string privmsg = ":" + sender.nickname_ + "@" + sender.unused_ + " NOTICE " + \
+	const std::string& privmsg = ":" + sender.nickname_ + "@" + sender.unused_ + " NOTICE " + \
 		channel + " :" + msg;
-	ret = std::make_pair(receiver.client_sock_, privmsg);
+	ret = std::make_pair(receiver.client_sock_, privmsg + "\r\n");
 	return (ret);
 }
 
@@ -554,9 +563,9 @@ Event 	Sender::notice_no_nick_message(const User& sender, const User& receiver)
 {
 	Event		ret;
 
-	std::string privmsg = ":" + Sender::server_name_ + " 401 " + sender.nickname_ + " " + receiver.username_ + \
+	const std::string& privmsg = ":" + Sender::server_name_ + " 401 " + sender.nickname_ + " " + receiver.username_ + \
 	" No such nick";
-	ret = std::make_pair(sender.client_sock_, privmsg);
+	ret = std::make_pair(sender.client_sock_, privmsg + "\r\n");
 	return (ret);
 }
 
@@ -564,9 +573,9 @@ Event	Sender::wall_message(const User& sender, const User& receiver, const std::
 {
 	Event		ret;
 
-	std::string privmsg = ":" + sender.nickname_ + "!" + sender.username_ + "@" + receiver.unused_ + \
+	const std::string& privmsg = ":" + sender.nickname_ + "!" + sender.username_ + "@" + receiver.unused_ + \
 	" NOTICE @" + channel + " :" + msg;
-	ret = std::make_pair(receiver.client_sock_, privmsg);
+	ret = std::make_pair(receiver.client_sock_, privmsg + "\r\n");
 	return (ret);
 }
 /****************************       <TOPIC>       ****************************/
@@ -574,9 +583,9 @@ Event	Sender::topic_message(const User& sender, const User& receiver, const std:
 {
 	Event		ret;
 
-	std::string topic_msg = ":" + sender.unused_ + "!" + sender.username_ + " TOPIC " + \
+	const std::string& topic_msg = ":" + sender.unused_ + "!" + sender.username_ + " TOPIC " + \
 		channel + " " + topic;
-	ret = std::make_pair(receiver.client_sock_, topic_msg);
+	ret = std::make_pair(receiver.client_sock_, topic_msg + "\r\n");
 	return (ret);
 }
 /// @brief 482
@@ -584,9 +593,9 @@ Event	Sender::topic_error_message(const User& sender, const std::string& channel
 {
 	Event		ret;
 
-	std::string topic_msg = ":" + Sender::server_name_ + " 482 " + sender.nickname_ + " " + \
+	const std::string& topic_msg = ":" + Sender::server_name_ + " 482 " + sender.nickname_ + " " + \
 		channel + " " + "You do not have access to change the topic on this channel";
-	ret = std::make_pair(sender.client_sock_, topic_msg);
+	ret = std::make_pair(sender.client_sock_, topic_msg + "\r\n");
 	return (ret);
 }
 
@@ -595,8 +604,8 @@ Event	Sender::topic_error_message(const User& sender, const std::string& channel
 /// @brief 403
 Event	Sender::no_channel_message(const User& sender, const std::string& channel)
 {
-	Event		ret;
-	std::string no_msg;
+	Event			ret;
+	std::string		no_msg;
 
 	if (channel == "#")
 	{
@@ -608,7 +617,7 @@ Event	Sender::no_channel_message(const User& sender, const std::string& channel)
 		no_msg = ":" + Sender::server_name_ + " 403 " + sender.nickname_ + " " + \
 			channel + " " + ":No such channel";
 	}
-	ret = std::make_pair(sender.client_sock_, no_msg);
+	ret = std::make_pair(sender.client_sock_, no_msg + "\r\n");
 	return (ret);
 }
 
@@ -618,8 +627,8 @@ Event	Sender::no_user_message(const User& sender, const std::string& target)
 {
 	Event		ret;
 
-	std::string no_msg = ":" + Sender::server_name_ + " 401 " + sender.nickname_ + " " + \
+	const std::string& no_msg = ":" + Sender::server_name_ + " 401 " + sender.nickname_ + " " + \
 		target + " " + ":No such const user";
-	ret = std::make_pair(sender.client_sock_, no_msg);
+	ret = std::make_pair(sender.client_sock_, no_msg + "\r\n");
 	return (ret);
 }

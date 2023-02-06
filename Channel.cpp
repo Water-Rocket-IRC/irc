@@ -42,7 +42,7 @@ std::vector<User>	Channel::sort_users(void)
 		return ret;
 	for (std::vector<User>::iterator it = connectors_.begin()
 		 ; it != connectors_.end(); ++it)
-	{	
+	{
 		std::vector<User>::iterator ret_it = ret.begin();
 		for (; ret_it != ret.end(); ++ret_it)
 		{
@@ -54,7 +54,7 @@ std::vector<User>	Channel::sort_users(void)
 			{
 				break ;
 			}
-		} 
+		}
 		if (ret_it == ret.end() || *it != *ret_it)
 			ret.insert(ret_it, *it);
 	}
