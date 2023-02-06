@@ -221,7 +221,7 @@ Event	Database::command_user(const uintptr_t& ident
 	{
 		User&		cur_usr = select_user(ident);
 
-		cur_usr.input_user(username, mode, unused, realname)
+		cur_usr.input_user(username, mode, unused, realname);
 		ret = Sender::welcome_message_connect(cur_usr);;
 	}
 	else if (!is_user(ident))
@@ -229,7 +229,7 @@ Event	Database::command_user(const uintptr_t& ident
 		User		tmp_usr;
 
 		tmp_usr.client_sock_ = ident;
-		tmp_user.input_user(username, mode, unused, realname);
+		tmp_usr.input_user(username, mode, unused, realname);
 		user_list_.push_back(tmp_usr);
 	}
 	return ret;
