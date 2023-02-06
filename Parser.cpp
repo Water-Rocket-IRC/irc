@@ -411,7 +411,6 @@ void	Parser::push_multiple_write_events_(Udata& ret, const uintptr_t& ident)
 		{
 			return ;
 		}
-		// target->second += "\r\n";
 		parser_udata_.insert(*target);
 		Receiver::get_Kevent_Handler().set_write(target->first);
 	}
@@ -422,7 +421,6 @@ void	Parser::push_multiple_write_events_(Udata& ret, const uintptr_t& ident)
 		{
 			continue ;
 		}
-		// iter->second += "\r\n";
 		parser_udata_.insert(*iter);
 		(Receiver::get_Kevent_Handler()).set_write(iter->first);
 	}

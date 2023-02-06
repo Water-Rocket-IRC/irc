@@ -28,8 +28,8 @@ const std::string	Sender::server_name_ = "irc.local";
 Event	Sender::pong(const uintptr_t& socket, const std::string& target, const std::string& msg) // 1st done
 {
 	Event ret;
-	
-	const std::string& cur_target = target.empty() ? target : Sender::server_name_; 
+
+	const std::string& cur_target = target.empty() ? target : Sender::server_name_;
 	std::string pong_reply = ":" + Sender::server_name_ + " PONG " \
 		+ cur_target + " :" + msg;
 	ret = std::make_pair(socket, pong_reply);
@@ -93,12 +93,12 @@ Event	Sender::unknown_command_message_421(const User& sender, const std::string 
 	std::string error_message = ":" + Sender::server_name_ + " 421 " \
 		+ sender.nickname_ + " " + command  + " :Unknown command";
 	ret = std::make_pair(sender.client_sock_, error_message);
-	return ret;	
+	return ret;
 }
 // /****************************       <NICK>       ****************************/
 // /*
 //  @brief NICK명령 시 정상 적으로 작동
-//  @param const user.event.indent const user& 소캣 
+//  @param const user.event.indent const user& 소캣
 //  @param nick 현재 닉네임
 //  @param user_name 유저 네임
 //  @param host 호스트네임
@@ -191,7 +191,7 @@ Event	Sender::welcome_message_connect(const User& sender) // 1st done
 // // 127.000.000.001.06667-127.000.000.001.39466: :root_!root@127.0.0.1 QUIT :Quit: byby
 
 // /*
-//  @brief quit 명령 시 메세지 - quit을 한 유저가 아닌 다른 유저들 
+//  @brief quit 명령 시 메세지 - quit을 한 유저가 아닌 다른 유저들
 //  @param const user.event.indent const user& 소캣
 //  @param nick 현재 닉네임
 //  @param leave_message quit 할 때 사용자가 입력할 수도 있는 메세지
@@ -272,10 +272,7 @@ Event	Sender::join_message(const User& sender, const User& receiver, const std::
 {
 	Event	ret;
 
-	// std::cout << "Sender's nickname -> "<< sender.nickname_ << " " << std::endl;
-	// std::string  join_message = ":" + sender.nickname_ + "!" + sender.realname_ + "@" + sender.unused_ + " JOIN " + channel + "";
-	std::string  join_message = ":" + sender.nickname_ + "!" + sender.realname_ + "@127.0.0.1 JOIN :" + channel + "\r\n";
-	// std::cout << join_message << std::endl;
+	std::string  join_message = ":" + sender.nickname_ + "!" + sender.username_ + "@127.0.0.1 JOIN :" + channel + "\r\n";
 	ret = make_pair(receiver.client_sock_, join_message);
 	return ret;
 }
@@ -376,7 +373,7 @@ Event	Sender::mode_no_option_error_message(const User& sender, const std::string
 	Event ret;
 
 	std::string mode_message = ":" + Sender::server_name_ + " 472 " + sender.nickname_ \
-		+ " " +channel + " :You must have channel op access or above to set channel mode p"; 
+		+ " " +channel + " :You must have channel op access or above to set channel mode p";
 	ret = std::make_pair(sender.client_sock_, mode_message);
 	return ret;
 }
@@ -386,7 +383,7 @@ Event	Sender::mode_not_operator_error_message(const User& sender, const std::str
 	Event ret;
 
 	std::string mode_message = ":" + Sender::server_name_ + " 482 " + sender.nickname_ \
-		+ " " + wrong_option + " :is not a recognised channel mode"; 
+		+ " " + wrong_option + " :is not a recognised channel mode";
 	ret = std::make_pair(sender.client_sock_, mode_message);
 	return ret;
 }

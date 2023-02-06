@@ -129,11 +129,6 @@ void	Receiver::clientWriteEventHandler_(struct kevent &cur_event)
 				<< "socket: " << target->first << "\nmsg:\n" << target->second
 				<< RESET << std::endl;
 	target->second += "\r\n";
-	std::cout << "\n----------------------------------------\n";
-	for (size_t i(0); i < target->second.size(); ++i)
-		std::cout << static_cast<int>(target->second[i]) << " ";
-	std::cout << "\n----------------------------------------\n";
-
 	send(cur_event.ident, target->second.c_str(), target->second.size(), 0);
 	udata_.erase(target);
 }
