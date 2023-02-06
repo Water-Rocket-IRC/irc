@@ -114,10 +114,11 @@ Udata	Database::join_channel(User& joiner, const std::string& chan_name_)
 	return ret;
 }
 
-Udata	Database::leave_channel(User&leaver, std::string& chan_name, std::string& msg)
+Udata	Database::leave_channel(User&leaver, std::string& chan_name, const std::string& msg_)
 {
 	Event				tmp;
 	Udata				ret;
+	std::string			msg(msg_);
 
 	if (is_channel(chan_name) == false)
 	{
@@ -136,7 +137,7 @@ Udata	Database::leave_channel(User&leaver, std::string& chan_name, std::string& 
 	std::vector<User> users = chan.get_users();
 	int user_size = users.size();
 	//PART하면, 그 내역은 모두에게 보내진다. 나간 사람 포함한다.
-	ret = chan.send_all(leaver, leaver, msg, PART);
+	ret = chan.send_all(leaver, leaver, msg, QUIT);
 	chan.delete_user(leaver);
 
 	if (user_size == 1) //채널 잘 삭제되는 것 확인

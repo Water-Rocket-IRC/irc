@@ -196,7 +196,7 @@ Event	Sender::welcome_message_connect(const User& sender) // 1st done
 //  @param nick 현재 닉네임
 //  @param leave_message quit 할 때 사용자가 입력할 수도 있는 메세지
 // */
-Event	Sender::quit_channel_message(const User& sender, const User& receiver, std::string leave_message) // 2st done
+Event	Sender::quit_leaver_message(const User& sender, std::string leave_message) // 2st done
 {
 	Event	ret;
 
@@ -204,13 +204,16 @@ Event	Sender::quit_channel_message(const User& sender, const User& receiver, std
 	{
 		leave_message = "leaving";
 	}
+
+	std::cout << "realname : " << sender.nickname_ << "!" << std::endl;
+
 	std::string  quit_channel_message = "ERROR :Closing link: (" \
-		+ sender.realname_ + ") [Quit: " + leave_message + "\r\n"; 
-	ret = std::make_pair(receiver.client_sock_, quit_channel_message);
+		+ sender.nickname_ + ") [Quit: " + leave_message + "\r\n";
+	ret = std::make_pair(sender.client_sock_, quit_channel_message);
 	return ret;
 }
-// // @brief quit을 입력한 유저는 채팅방 속 다른 유저들과 다른 메세지를 호출함
-Event	Sender::quit_lobby_message(const User& sender, std::string leave_message) // 2st done
+
+Event	Sender::quit_member_message(const User& sender, const User& receiver, std::string leave_message) // 2st done
 {
 	Event	ret;
 
@@ -220,9 +223,24 @@ Event	Sender::quit_lobby_message(const User& sender, std::string leave_message) 
 	}
 	std::string  quit_message = ":" + sender.nickname_ + "! " \
 				+ sender.realname_ + " QUIT :Quit: " + leave_message + "\r\n";
-	ret = std::make_pair(sender.client_sock_, quit_message);
+	ret = std::make_pair(receiver.client_sock_, quit_message);
 	return ret;
 }
+
+// // @brief quit을 입력한 유저는 채팅방 속 다른 유저들과 다른 메세지를 호출함
+// Event	Sender::quit_lobby_message(const User& sender, std::string leave_message) // 2st done
+// {
+// 	Event	ret;
+
+// 	if (leave_message.empty())
+// 	{
+// 		leave_message = "leaving";
+// 	}
+// 	std::string  quit_message = ":" + sender.nickname_ + "! " \
+// 				+ sender.realname_ + " QUIT :Quit: " + leave_message + "\r\n";
+// 	ret = std::make_pair(sender.client_sock_, quit_message);
+// 	return ret;
+// }
 // /****************************       <JOIN>       ****************************/
 
 // // 127.000.000.001.39548-127.000.000.001.06667: PRIVMSG #test :hihi
@@ -254,9 +272,9 @@ Event	Sender::join_message(const User& sender, const User& receiver, const std::
 {
 	Event	ret;
 
-	std::cout << "Sender's nickname -> "<< sender.nickname_ << " " << std::endl;
+	// std::cout << "Sender's nickname -> "<< sender.nickname_ << " " << std::endl;
 	std::string  join_message = ":" + sender.nickname_ + "!" + sender.realname_ + "@" + sender.unused_ + " JOIN " + channel + "\r\n";
-	std::cout << join_message << std::endl;
+	// std::cout << join_message << std::endl;
 	ret = make_pair(receiver.client_sock_, join_message);
 	return ret;
 }

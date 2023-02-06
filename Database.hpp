@@ -2,6 +2,7 @@
 
 #include "Channel.hpp"
 #include "Sender.hpp"
+#include "Udata.hpp"
 
 /*********************** TODO: 왜 채널의 기본 생성자가 없다고 뜨죠...?? *********************/
 class Database
@@ -31,7 +32,7 @@ class Database
 		Udata				 	join_channel(User& joiner, const std::string& chan_name_);
 		Udata					command_join(const uintptr_t& ident, const std::string& chan_name);
 
-		Udata					leave_channel(User&leaver, std::string& chan_name, std::string& msg);
+		Udata					leave_channel(User&leaver, std::string& chan_name, const std::string& msg_);
 		Udata					nick_channel(User& who, std::string& new_nick);
 		Udata					mode_channel(User& moder, std::string& chan_name, bool vaild);
 		Udata					who_channel(User& asker, std::string& chan_name);//(const uintptr_t& sock, std::string& chan_name);
@@ -42,7 +43,9 @@ class Database
 		Event	command_user(const uintptr_t& ident, const std::string& username, const std::string& mode,
 							const std::string& unused, const std::string& realname);
 		Event	command_pong(const uintptr_t& ident, const std::string& target, const std::string& msg);
-		Event	command_quit(User& leaver, const std::string& leave_msg);
+		// Udata	command_quit(User& leaver, const std::string& leave_msg);
+		Udata	command_quit(const uintptr_t& ident, const std::string& chan_name);
+
 		Event	command_privmsg(std::string &target_name, std::string &line, const uintptr_t& ident);
 		Event	command_mode(std::string &target_name, int flag);
 		Udata	command_join();

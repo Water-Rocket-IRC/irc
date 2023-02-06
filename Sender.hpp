@@ -21,8 +21,10 @@ class Sender
 		static Event		nick_error_message(const uintptr_t& sock, const std::string& new_nick);
 		static Event		nick_wrong_message(const User& sender, const std::string& new_nick);
 		static Event		nick_wrong_message(const uintptr_t& sock, const std::string& new_nick);
-		static Event		quit_channel_message(const User& sender, const User& receiver, std::string leave_message);
-		static Event		quit_lobby_message(const User& sender, std::string leave_message);
+		// static Event		quit_channel_message(const User& sender, const User& receiver, std::string leave_message);
+		// static Event		quit_lobby_message(const User& sender, std::string leave_message);
+		static Event		quit_leaver_message(const User& sender, std::string leave_message);
+		static Event		quit_member_message(const User& sender, const User& receiver, std::string leave_message);		
 		static Event		privmsg_p2p_message(const User& sender, const User& target, const std::string& msg);
 		static Event		privmsg_channel_message(const User& sender, const User& receiver, const std::string& channel, const std::string& msg);
 		static Event		privmsg_no_user_error_message(const User& sender, const std::string& target);

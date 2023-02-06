@@ -20,7 +20,7 @@ class Parser
 		static void (Parser::*func_ptr[N_COMMAND])(const uintptr_t&, std::stringstream&, std::string&, const std::string&);
 
 		std::string			set_message_(std::string &msg, size_t start, size_t end);
-		std::string			message_resize_(std::stringstream& line_ss, std::string& to_send);
+		std::string			message_resize_(std::string& tmp, std::string& to_send);
 
 		void				push_write_event_(Event& tmp);
 		void				push_multiple_write_events_(Udata& tmp, const uintptr_t& ident);

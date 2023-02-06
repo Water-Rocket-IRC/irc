@@ -109,7 +109,8 @@ Udata Channel::send_all(User& sender, User& target, std::string msg, int remocon
 				packet = Sender::kick_message(sender, *it, target.nickname_, this->get_name(), msg);
 				break ;
 			case QUIT:
-				packet = Sender::quit_channel_message(sender, *it, msg);
+				packet = (sender == *it) ? Sender::quit_leaver_message(sender, msg)
+										 : Sender::quit_member_message(sender, *it, msg);
 				break ;
 			case NOTICE:
 				if (sender == *it)

@@ -354,6 +354,37 @@ Udata	Database::command_join(const uintptr_t& ident, const std::string& chan_nam
 	return ret;
 }
 
+Udata	Database::command_quit(const uintptr_t& ident, const std::string& msg)
+{
+	Udata	ret;
+	Event	tmp;
+
+	tmp = valid_user_checker_(ident, "QUIT");
+	if (tmp.second.size())
+	{
+		ret.insert(tmp);
+		return ret;
+	}
+	else if (is_user(ident))
+	{
+		User&	cur_usr = select_user(ident);
+		
+		if (is_user_in_channel(cur_usr)) // 채널에 있으면  
+		{
+			// msg가 있으면 확인하고 분기점
+			Channel&	cur_chan = select_channel(cur_usr);
+			ret = leave_channel(cur_usr, cur_chan.get_name(), msg);
+			return ret;
+		}
+		else // 채널에 없으면 (= 로비)
+		{
+			tmp = Sender::quit_leaver_message(cur_usr, msg);
+			ret.insert(tmp);
+		}
+	}
+	return ret;
+}
+
 /***************************************************************************************************/
 
 /// @brief 
@@ -372,19 +403,19 @@ Event	Database::command_privmsg(std::string &target_name, std::string &line, con
 
 /// @brief
 // quit을 실행하는 함수
-Event	Database::command_quit(User& leaver, const std::string& leave_msg)
-{
-	Event	ret;
+// Event	Database::command_quit(User& leaver, const std::string& leave_msg)
+// {
+// 	Event	ret;
 
-	delete_user(leaver);
-	if (leave_msg.empty())
-	{
-		ret = Sender::quit_lobby_message(leaver, "");
-		return ret;
-	}
-	ret = Sender::quit_lobby_message(leaver, leave_msg);
-	return ret;
-}
+// 	delete_user(leaver);
+// 	if (leave_msg.empty())
+// 	{
+// 		ret = Sender::quit_lobby_message(leaver, "");
+// 		return ret;
+// 	}
+// 	ret = Sender::quit_lobby_message(leaver, leave_msg);
+// 	return ret;
+// }
 
 /// @brief
 // user를 실행하는 함수 (command_user는 Event 반환)
