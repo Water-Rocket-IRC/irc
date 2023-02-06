@@ -126,6 +126,17 @@ Event	Sender::nick_error_message(const User& sender, const std::string& new_nick
 }
 
 /// @brief 433
+Event	Sender::nick_error_message2(const User& sender, const std::string& new_nick) // 1st done
+{
+	Event	ret;
+
+	std::string nick_msg = ":" + Sender::server_name_ + " 433 " + sender.nickname_ \
+					+ " " + new_nick + " :Nickname overruled.\r\n";
+	ret = std::make_pair(sender.client_sock_, nick_msg);
+	return ret;
+}
+
+/// @brief 433
 Event	Sender::nick_error_message(const uintptr_t& sock, const std::string& new_nick)
 {
 	Event	ret;
