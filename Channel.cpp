@@ -126,7 +126,7 @@ Udata Channel::send_all(User& sender, User& target, std::string msg, int remocon
 				}
 				packet = Sender::wall_message(sender, this->get_host(), this->get_name(), msg);
 			case TOPIC:
-				//Sender::
+				packet = Sender::topic_message(sender, *it, this->get_name(), msg);
 				break ;
 			case NICK:
 				if (sender == *it)

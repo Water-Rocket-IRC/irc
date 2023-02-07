@@ -1,9 +1,5 @@
 #include "Database.hpp"
 #include "Udata.hpp"
-#include <locale>
-#include <cctype>
-#include <new>
-#include <sys/_select.h>
 #include "debug.hpp"
 
 Event	Database::valid_user_checker_(const uintptr_t& ident, const std::string& command_type)
@@ -63,32 +59,6 @@ User&	Database::select_user(const std::string& nickname)
 	throw no_such_user_exception();
 	return (*it);
 }
-
-// bool	Database::is_duplicate_ident(const uintptr_t& ident)
-// {
-// 	try
-// 	{
-// 		User&	tmp_user = search_user_by_ident(ident, 0); //duplicate일 때 에러 넘버를 체크
-// 	}
-// 	catch (const std::exception& e)
-// 	{
-// 		return false;
-// 	}
-// 	return true;
-// }
-
-// bool	Database::is_duplicate_nick(std::string& nick_name)
-// {
-// 	try
-// 	{
-// 		User&	tmp_user = search_user_by_nick(nick_name, 0);
-// 	}
-// 	catch (std::exception&)
-// 	{
-// 		return false;
-// 	}
-// 	return true;
-// }
 
 bool	Database::is_user(const uintptr_t& ident)
 {

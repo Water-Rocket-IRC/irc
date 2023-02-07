@@ -466,7 +466,7 @@ Event	Sender::kick_message(const User& sender, const User& receiver, const std::
 	Event	ret;
 
 	const std::string&  kick_message = ":" + sender.nickname_ + "!" + \
-				sender.realname_ + '@' + sender.unused_ + " KICK " + channel + " " + target + " :" + msg + "";
+				sender.username_ + '@' + sender.unused_ + " KICK " + channel + " " + target + " :" + msg + "";
 	// const std::string  kick_message = ":" + host + "!" + \
 	// 			sender.realname_ + " KICK " + channel + " " + subject + "";
 	ret = std::make_pair(receiver.client_sock_, kick_message + "\r\n");
@@ -502,7 +502,7 @@ Event	Sender::privmsg_p2p_message(const User& sender, const User& target, const 
 {
 	Event		ret;
 
-	const std::string& privmsg = ":" + sender.nickname_ + "@" + sender.unused_ + " PRIVMSG " + \
+	const std::string& privmsg = ":" + sender.nickname_ + "!" + sender.username_ + "@" + sender.unused_ + " PRIVMSG " + \
 		target.nickname_ + " :" + msg;
 	ret = std::make_pair(target.client_sock_, privmsg + "\r\n");
 	return (ret);
@@ -512,7 +512,7 @@ Event	Sender::privmsg_channel_message(const User& sender, const User& receiver, 
 {
 	Event		ret;
 
-	const std::string& privmsg = ":" + sender.nickname_ + "@" + sender.unused_ + " PRIVMSG " + \
+	const std::string& privmsg = ":" + sender.nickname_ + "!" + sender.username_ + "@" + sender.unused_ + " PRIVMSG " + \
 		channel + " :" + msg;
 	ret = std::make_pair(receiver.client_sock_, privmsg + "\r\n");
 	return (ret);
