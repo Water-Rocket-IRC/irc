@@ -87,7 +87,6 @@ void	Receiver::start()
 				{
 					clientWriteEventHandler_(cur_event);
 					uintptr_t	tmp_fd = cur_event.ident;
-
 					kq_.delete_event(cur_event);
 					kq_.set_read(tmp_fd);
 				}

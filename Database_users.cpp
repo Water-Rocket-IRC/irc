@@ -357,6 +357,29 @@ Udata	Database::command_quit(const uintptr_t& ident, const std::string& msg)
 
 /***************************************************************************************************/
 
+Event	Database::bot_privmsg(User&	cur_usr, const std::string &msg)
+{
+	Event		tmp;
+	std::string bot_msg;
+
+	if (msg == "!command")
+	{
+		bot_msg = "PASS, NICK, USER, PING, JOIN, QUIT, PRIVMSG, KICK, PART, TOPIC, NOTICE";
+	}
+	else if (msg == "!channel")
+	{
+		for (int i = 0; i < channel_list_.size(); ++i)
+			bot_msg += channel_list_[i].get_name() + " ";
+	}
+	else
+	{
+		bot_msg = "you can not build here!";
+	}
+	tmp = Sender::privmsg_bot_message(cur_usr, bot_msg);
+	return tmp;
+}
+
+
 /// @brief
 //	이 command에는 privmsg가 정상작동 될 때만 존재
 Udata	Database::command_privmsg(const uintptr_t& ident, const std::string &target_name, const std::string &msg)
@@ -372,7 +395,6 @@ Udata	Database::command_privmsg(const uintptr_t& ident, const std::string &targe
 		ret.insert(tmp);
 		return ret;
 	}
-
 	// static Event	privmsg_p2p_message(const User& sender, const User& target, const std::string& msg);
 	// ret = Sender::privmsg_p2p_message(sender_user, target_user, line);
 	if (is_user(ident))
@@ -385,7 +407,12 @@ Udata	Database::command_privmsg(const uintptr_t& ident, const std::string &targe
 		}
 		else
 		{
-			if (is_user(target_name))
+			if (target_name == "bot")
+			{
+				tmp = bot_privmsg(cur_usr, msg);
+				ret.insert(tmp);
+			}
+			else if (is_user(target_name))
 			{
 				User&	tar_usr = select_user(target_name);
 
@@ -397,7 +424,6 @@ Udata	Database::command_privmsg(const uintptr_t& ident, const std::string &targe
 				tmp = Sender::privmsg_no_user_error_message(cur_usr, target_name);
 				ret.insert(tmp);
 			}
-			//유저 메시지
 		}
 	}
 	return ret;

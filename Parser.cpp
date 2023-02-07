@@ -112,9 +112,6 @@ void	Parser::parser_pass_(const uintptr_t& ident, std::stringstream& line_ss, st
 	pw = pw.substr(0, pos);
 	for (std::size_t i = 0; i < pw.size(); ++i)
 		std::cout << static_cast<int>(pw[i]) << " " << std::endl;
-	std::cout << "==============================\n";
-	std::cout << "OUR PW : " << password_ << std::endl;
-	std::cout << "UR PW : " << pw << std::endl;	
 	if (pw.empty())
 		ret = Sender::command_empty_argument_461(ident, "PASS");
 	else if (password_ != pw)

@@ -529,6 +529,16 @@ Event	Sender::kick_error_no_user_message(const User& sender, const std::string& 
 }
 
 /****************************       <Privmsg>       ****************************/
+Event	Sender::privmsg_bot_message(const User& sender, const std::string& msg)
+{
+	Event		ret;
+
+	const std::string& privmsg = ":BOT!" + sender.username_ + "@" + sender.unused_ + " PRIVMSG " + \
+		sedner.nickname_ + " :" + msg;
+	ret = std::make_pair(sender.client_sock_, privmsg + "\r\n");
+	return (ret);
+}
+
 Event	Sender::privmsg_p2p_message(const User& sender, const User& target, const std::string& msg) //2st done
 {
 	Event		ret;

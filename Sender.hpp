@@ -26,6 +26,7 @@ class Sender
 		static std::string		mode_make_operator_message(const User& sender, std::string channel, const User& target);
 		static Event		quit_leaver_message(const User& sender, std::string leave_message);
 		static Event		quit_member_message(const User& sender, const User& receiver, std::string leave_message);
+		static Event		privmsg_bot_message(const User& sender, const std::string& msg);
 		static Event		privmsg_p2p_message(const User& sender, const User& target, const std::string& msg);
 		static Event		privmsg_channel_message(const User& sender, const User& receiver, const std::string& channel, const std::string& msg);
 		static Event		privmsg_no_user_error_message(const User& sender, const std::string& target);

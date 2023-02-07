@@ -66,6 +66,10 @@ class Database
 		bool	does_has_username(const uintptr_t& ident);
 		bool	is_valid_nick(std::string& new_nick);
 
+
+		// bot
+		Event	bot_privmsg(User&	cur_usr, const std::string &msg);
+
 		void	print_all_user(); //debug
 
 		class no_such_user_exception : public std::exception
