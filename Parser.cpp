@@ -7,11 +7,10 @@
 #include <string>
 #include <sys/_types/_size_t.h>
 
-const std::string Parser::commands[N_COMMAND] = {"NICK", "USER", "PING", "JOIN", "QUIT", "PRIVMSG", "KICK", "PART", "TOPIC"};//, "NOTICE", "WALL", "MODE", "WHO"};
+const std::string Parser::commands[N_COMMAND] = {"PASS", "NICK", "USER", "PING", "JOIN", "QUIT", "PRIVMSG", "KICK", "PART", "TOPIC", "NOTICE"};
 void (Parser::*Parser::func_ptr[N_COMMAND])(const uintptr_t&, std::stringstream&, std::string&) = \
-								{&Parser::parser_nick_, &Parser::parser_user_, &Parser::parser_ping_, &Parser::parser_join_, &Parser::parser_quit_, &Parser::parser_privmsg_, \
-								&Parser::parser_kick_, &Parser::parser_part_, &Parser::parser_topic_};
-								//, &Parser::parser_notice_, &Parser::parser_wall_, &Parser::parser_mode_, &Parser::parser_who_,  };
+								{&Parser::parser_pass_, &Parser::parser_nick_, &Parser::parser_user_, &Parser::parser_ping_, &Parser::parser_join_, &Parser::parser_quit_, &Parser::parser_privmsg_, \
+								&Parser::parser_kick_, &Parser::parser_part_, &Parser::parser_topic_, &Parser::parser_notice_};
 
 const std::string Parser::command_toupper(const char* command)
 {
@@ -101,11 +100,27 @@ void	Parser::command_parser(const uintptr_t& ident, std::string& command)
 	}
 }
 
+void	Parser::parser_pass_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send)
+{
+	std::string	pw;
+	Event		ret;
 
-// void	Parser::parser_pass_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send)
-// {
-// 	// TODO: have to make this
-// }
+	line_ss >> std::ws;
+	ret.first = ident;
+	getline(line_ss, pw);
+	std::size_t	pos = pw.find('\r');
+	pw = pw.substr(0, pos);
+	for (std::size_t i = 0; i < pw.size(); ++i)
+		std::cout << static_cast<int>(pw[i]) << " " << std::endl;
+	std::cout << "==============================\n";
+	std::cout << "OUR PW : " << password_ << std::endl;
+	std::cout << "UR PW : " << pw << std::endl;	
+	if (pw.empty())
+		ret = Sender::command_empty_argument_461(ident, "PASS");
+	else if (password_ != pw)
+		ret = Sender::password_incorrect_904(ident);
+	push_write_event_(ret);
+}
 
 
 //check_argument(2, )
@@ -204,78 +219,27 @@ void	Parser::parser_privmsg_(const uintptr_t& ident, std::stringstream& line_ss,
 	push_multiple_write_events_(ret, ident);
 }
 
-// // TODO : not yet
-// void	Parser::parser_notice_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send)
-// {
-// 	valid_user_checker_(ident, cmd);
-// 	std::string target;
+void	Parser::parser_notice_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send)
+{
+	std::string	target, msg;
+	Udata		ret;
 
-// 	line_ss >> target;
-// 	const std::string msg = message_resize_(line_ss, to_send);
-
-// 	if (target.at(0) == '#')
-// 	{
-// 		try
-// 		{
-// 			user&	sender = users_.search_user_by_ident(ident); // USER is unregistered
-			
-// 			try
-// 			{
-// 				Database&	ret_chan = Database::select_channel(sender); // TODO: user is not in channel
-// 				// if success
-// 				std::vector<Udata>	udata_events = channels_.channel_notice(sender, target, msg);
-// 				push_multiple_write_events_(udata_events);
-// 			}
-// 			catch(const std::exception& e)
-// 			{
-// 				Udata	ret = Sender::notice_no_user_error_message(sender, target); // TODO: no user found with notice
-// 				push_write_event_(ret, ident);
-// 			}
-			
-// 		}
-// 		catch(const std::exception& e)
-// 		{
-// 			Udata	ret = Sender::notice_no_user_error_message_in_channel(); // TODO: no user in channel
-// 			push_write_event_(ret, ident);
-// 		}
-// 	}
-// 	else
-// 	{
-// 		Udata	ret = users_.command_notice(target, to_send, ident); // TODO: USER have to change logic
-// 		push_write_event_(ret, ident);
-// 	}
-// }
-// // TODO : not yet
-// void	Parser::parser_wall_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send)
-// {
-// 	valid_user_checker_(ident, cmd);
-// 	std::string chan_name;
-
-// 	line_ss >> chan_name;
-// 	const std::string msg = message_resize_(line_ss, to_send);
-// 	if (msg[0] != ':')
-// 	{
-// 		//오류
-// 	}
-// 	else
-// 	{
-// 		try
-// 		{
-// 			user sender = users_.search_user_by_ident(ident);
-
-// 			std::size_t	pos = line.find(':');
-// 			msg = set_message_(line, pos + 1, (line.length() - (pos + 2)));
-// 			(msg.size() > 510) ? msg.resize(510) : msg.resize(msg.size());
-
-// 			std::vector<Udata>	udata_events = channels_.channel_noticse(sender, chan_name, msg);
-// 			push_multiple_write_events_(udata_events);
-// 		}
-// 		catch (std::exception &e)
-// 		{
-// 			std::cout << "FUck" << std::endl;
-// 		}
-// 	}
-// }
+	line_ss >> target;
+	line_ss >> std::ws;
+	std::getline(line_ss, msg);
+	if (msg[0] != ':')
+	{
+		std::cout << "WHAT THE FUCK ARE YOU DOING?\n";
+		// Event	tmp = Sender::wall_argument_error();
+		// ret.insert(tmp);
+	}
+	else
+	{
+		msg = message_resize_(msg, to_send);
+		ret = database_.command_notice(ident, target, msg);
+	}
+	push_multiple_write_events_(ret, ident);
+}
 
 void	Parser::parser_join_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send)
 {
@@ -410,5 +374,3 @@ void	Parser::push_multiple_write_events_(Udata& ret, const uintptr_t& ident)
 	}
 
 }
-
-// 혹시 멀티플 write에서 빈 Udata를 해야되나?

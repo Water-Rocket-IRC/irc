@@ -1,6 +1,7 @@
 #include "Database.hpp"
 #include "Udata.hpp"
 #include "debug.hpp"
+#include <sys/_types/_ct_rune_t.h>
 
 Event	Database::valid_user_checker_(const uintptr_t& ident, const std::string& command_type)
 {
@@ -22,9 +23,6 @@ Event	Database::valid_user_checker_(const uintptr_t& ident, const std::string& c
 	}
 	return ret;
 }
-
-
-
 
 /// @brief
 // ident 즉 socket을 이용해 지금 명령어 친 user가 누군 지 알아낸다.
@@ -405,6 +403,44 @@ Udata	Database::command_privmsg(const uintptr_t& ident, const std::string &targe
 	return ret;
 }
 
+Udata	Database::command_notice(const uintptr_t& ident, const std::string &target_name, const std::string &msg)
+{
+	Event		tmp;
+	Udata		ret;
+	// User&	sender_user = search_user_by_ident(ident, 0);
+	// User&	target_user = search_user_by_nick(target_name, 0);
+
+	tmp = valid_user_checker_(ident, "NOTICE"); // is_user check here
+	if (tmp.second.size())
+	{
+		ret.insert(tmp);
+		return ret;
+	}
+
+	// static Event	privmsg_p2p_message(const User& sender, const User& target, const std::string& msg);
+	// ret = Sender::privmsg_p2p_message(sender_user, target_user, line);
+	User&	cur_usr = select_user(ident); // USER is unregistered
+	if (target_name.at(0) == '#') //normal notice in channel
+	{
+		ret = notice_channel(cur_usr, target_name, msg);
+	}
+	else
+	{
+		if (is_user(target_name))
+		{
+			User&	tar_usr = select_user(target_name);
+
+			tmp = Sender::notice_p2p_message(cur_usr, tar_usr, msg);
+			ret.insert(tmp);
+		}
+		else
+		{
+			tmp = Sender::notice_no_nick_message(cur_usr, cur_usr);
+			ret.insert(tmp);
+		}
+	}
+	return ret;
+}
 
 Udata		Database::command_kick(const uintptr_t &ident, const std::string& target_name, std::string& chan_name, std::string& msg)
 {

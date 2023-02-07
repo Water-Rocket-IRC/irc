@@ -16,8 +16,8 @@ class Database
 	
 	// Channel
 		Udata					channel_msg(User& sender, std::string chan_name, const std::string& msg);
-		Udata					channel_notice(User& sender, std::string chan_name, std::string& msg);
-		Udata					channel_wall(User& sender, std::string chan_name, std::string& msg);
+		Udata					notice_channel(User& sender, std::string chan_name, const std::string& msg);
+		Udata					wall_channel(User& sender, std::string chan_name, const std::string& msg);
 
 		bool					is_channel(std::string& chan_name);
 		bool					is_user_in_channel(User& leaver);
@@ -46,6 +46,9 @@ class Database
 		Udata	command_quit(const uintptr_t& ident, const std::string& chan_name);
 
 		Udata	command_privmsg(const uintptr_t& ident, const std::string &target_name, const std::string &msg);
+		Udata	command_notice(const uintptr_t& ident, const std::string &target_name, const std::string &msg);
+
+
 		Event	command_privmsg(std::string &target_name, std::string &line, const uintptr_t& ident);
 		Event	command_mode(std::string &target_name, int flag);
 		Udata	command_join(const uintptr_t& ident, const std::string& chan_name);

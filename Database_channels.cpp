@@ -1,8 +1,10 @@
 #include "Channel.hpp"
 #include "Database.hpp"
 #include "Udata.hpp"
+#include "User.hpp"
 #include "color.hpp"
 #include "debug.hpp"
+#include <sys/_types/_size_t.h>
 
 bool	Database::is_channel(std::string& chan_name)
 {
@@ -218,7 +220,7 @@ Udata	Database::channel_msg(User& sender, std::string chan_name, const std::stri
 	return ret;
 }
 
-Udata	Database::channel_notice(User& sender, std::string chan_name, std::string& msg)
+Udata	Database::notice_channel(User& sender, std::string chan_name, const std::string& msg)
 {
 	Udata			ret;
 	Event			tmp;
@@ -231,29 +233,6 @@ Udata	Database::channel_notice(User& sender, std::string chan_name, std::string&
 	}
 	Channel&	channel = select_channel(chan_name); // 403 ERROR Sender::no_channel_message
 	ret = channel.send_all(sender, sender, msg, NOTICE);
-	return ret;
-}
-
-Udata	Database::channel_wall(User& sender, std::string chan_name, std::string& msg)
-{
-	Udata			ret;
-	Event			tmp;
-
-	if (is_channel(chan_name) == false)
-	{
-		tmp = Sender::no_channel_message(sender, chan_name);
-		ret.insert(tmp);
-		return ret;
-	}
-	Channel&	channel = select_channel(chan_name); // 403 ERROR Sender::no_channel_message
-	User	host = channel.get_host();
-	if (host == sender)
-	{
-		std::cout << "[Debug] " << "host == sender" << std::endl;
-		return ret;
-	}
-	tmp = Sender::wall_message(sender, channel.get_host(), chan_name, msg);
-	ret.insert(tmp);
 	return ret;
 }
 
