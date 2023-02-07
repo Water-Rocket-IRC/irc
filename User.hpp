@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+enum e_flags { F_PASS = 0b100, F_NICK = 0b010, F_USER = 0b001};
 
 struct User
 {
@@ -10,8 +11,8 @@ struct User
 	std::string mode_;
 	std::string unused_;
 	std::string realname_;
+	char		flag_;
 	uintptr_t	client_sock_;
-	int			mod;
 
 	User(void);
 	void	input_user(const std::string& username, const std::string& mode

@@ -105,6 +105,7 @@ int	Receiver::clientReadEventHandler_(struct kevent &cur_event)
 		uintptr_t	tmp_sock(cur_event.ident);
 		std::cout << "sock was fucked!" << std::endl;
 		kq_.delete_event(cur_event);
+		parser_.error_situation(tmp_sock);
 		close(tmp_sock);
 		return (1);
 	}

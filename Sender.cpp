@@ -136,11 +136,11 @@ Event	Sender::nick_well_message(const User& sender, const User& receiver, const 
 //	Password 오류 메세지 참고 : 
 //	irc.example.com 904 User :Password Incorrect
 /// @brief 904
-Event		Sender::password_incorrect_904(const uintptr_t& sock)
+Event		Sender::password_incorrect_464(const uintptr_t& sock)
 {
 	Event	ret;
 
-	const std::string& nick_msg = ":" + Sender::server_name_ + " 904 " + "User :Password Incorrect"; \
+	const std::string& nick_msg = ":" + Sender::server_name_ + " 464 " + "User :Password Incorrect"; \
 	ret = std::make_pair(sock, nick_msg + "\r\n");
 	return ret;	
 }

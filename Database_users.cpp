@@ -3,6 +3,16 @@
 #include "debug.hpp"
 #include <sys/_types/_ct_rune_t.h>
 
+void	Database::delete_error_user(User& cur_usr)
+{
+	if (is_user_in_channel(cur_usr))
+	{
+		Channel& cur_chan = select_channel(cur_usr);
+		quit_channel(cur_usr, cur_chan.get_name(), "unexpected kill");
+	}
+	user_list_.erase(remove(user_list_.begin(), user_list_.end(), cur_usr), user_list_.end()); // 순서 중요
+}
+
 Event	Database::valid_user_checker_(const uintptr_t& ident, const std::string& command_type)
 {
 	Event	ret;
@@ -163,14 +173,46 @@ bool	Database::is_valid_nick(std::string& new_nick)
 }
 
 /***************************************************************************************************/
+
+Event	Database::command_pass(const uintptr_t& ident)
+{
+	Event	tmp;
+
+	tmp.first = ident;
+	if (!is_user(ident))
+	{
+		User	tmp_user;
+		tmp_user.client_sock_ = ident;
+		tmp_user.flag_ |= F_PASS;
+		user_list_.push_back(tmp_user);
+	}
+	return tmp;
+}
+
+// is_user(ident) nc -> NICK && flag & PASS -> false not register 451? 
+// is_user(ident) && !has_nickname() && !has_username() -> 처음 들어온 상황
+// is_user(ident) && has_nickname() && has_username() -> 기존 유저가 닉네임 변경
+// is_user(ident) && !has_nickname() && has_username() -> user는 있는데 nick은 없으니 welcome message 출력
+// is_user(ident) && has_nickname() && !has_username() -> 닉네임만 바꾸면 됨
+
+// 무조건 PASS를 뚫고 왔기 때문에 
+// 처음들어온 놈은 없다! 
+
 Udata	Database::command_nick(const uintptr_t& ident, std::string& new_nick)
 {
 	Udata		ret;
 	Event		tmp;
 
+	if (!is_user(ident))
+		return ret;
+	User&	cur_usr = select_user(ident);
+	if (!(cur_usr.flag_ & F_PASS))
+	{ 
+		return ret;
+	}
 	if (!is_valid_nick(new_nick)) // TODO: hchang 특수문자로 시작하는 닉네임 등 유효성 체크하는 함수 만들 것
 	{
-		if (!is_user(ident))
+		if (cur_usr.nickname_.empty())
 		{
 			tmp = Sender::nick_wrong_message(ident, new_nick);
 		}
@@ -185,23 +227,15 @@ Udata	Database::command_nick(const uintptr_t& ident, std::string& new_nick)
 	if (is_user(new_nick))// 닉네임 중복된 상황 433 에러
 	{
 		User&		you_usr = select_user(new_nick);
-		// tmp = Sender::nick_error_message(you_usr, new_nick);
 		if (ident == you_usr.client_sock_)
 			return ret;
 		if (you_usr.username_.size())
 		{
-			if (is_user(ident)) // 질문 : 198번줄과 중복 검사 ?
-			{
-				User&	cur_usr = select_user(ident);
-				if (cur_usr.nickname_.empty())
-					tmp = Sender::nick_error_message(ident, new_nick); // 433
-				else
-					tmp = Sender::nick_error_message(cur_usr, new_nick); // 432
-			}
+			std::cout << "heyyhyyy\n";
+			if (cur_usr.nickname_.empty())
+				tmp = Sender::nick_error_message(ident, new_nick); // 433
 			else
-			{
-				tmp = Sender::nick_error_message(ident, new_nick);
-			}
+				tmp = Sender::nick_error_message(cur_usr, new_nick); // 432
 			ret.insert(tmp);
 			return ret;
 		}
@@ -209,36 +243,26 @@ Udata	Database::command_nick(const uintptr_t& ident, std::string& new_nick)
 		ret.insert(tmp);
 		user_list_.erase(remove(user_list_.begin(), user_list_.end(), you_usr), user_list_.end()); // 순서 중요
 	}
-	if (!does_has_nickname(ident) && does_has_username(ident))
+	if (!(cur_usr.flag_ & F_NICK)) // nick을 안해본 상황 
 	{
-		User&	cur_usr = select_user(ident);
-
 		cur_usr.nickname_ = new_nick;
-		tmp = Sender::welcome_message_connect(cur_usr);
-		ret.insert(tmp);
-	}
-	else if (!is_user(ident))
-	{
-		User		tmp_usr;
-
-		tmp_usr.client_sock_ = ident;
-		tmp_usr.nickname_ = new_nick;
-		user_list_.push_back(tmp_usr);
+		cur_usr.flag_ |= F_NICK;
+		if (cur_usr.flag_ & F_USER) // nick은 했는데 user는 해본 상황 -> nick만 되면 welcome이다.
+		{
+			tmp = Sender::welcome_message_connect(cur_usr);
+			ret.insert(tmp);
+		}
 	}
 	else// 기존 유저 닉네임 변경
 	{
-		User& cur_user = select_user(ident);
-		if (! (does_has_nickname(ident) && !does_has_username(ident)) )
-		{
-			tmp = Sender::nick_well_message(cur_user, cur_user, new_nick);
-			ret.insert(tmp);
-		}
 		//채널에 있지 않으니, 닉네임만 바꿈
-		if (is_user_in_channel(cur_user)) // 채널에 있는 유저의 닉네임 변경
+		if (is_user_in_channel(cur_usr)) // 채널에 있는 유저의 닉네임 변경
 		{
-			ret = nick_channel(cur_user, new_nick);
-			cur_user.nickname_ = new_nick;
+			ret = nick_channel(cur_usr, new_nick);
 		}
+		tmp = Sender::nick_well_message(cur_usr, cur_usr, new_nick);
+		cur_usr.nickname_ = new_nick;
+		ret.insert(tmp);
 	}
 	debug::showUsers(user_list_);
 	return ret;
@@ -250,33 +274,26 @@ Event	Database::command_user(const uintptr_t& ident
 {
 	Event	ret;
 
-	std::cout << "=========[command_user]========\n";
-	std::cout << "username : " << username << std::endl;
-	std::cout << "mode : " << mode << std::endl;
-	std::cout << "unuserd  : " << unused << std::endl;
-	std::cout << "realname : " << realname << std::endl;
-	std::cout << "=========[/command_user]========\n";
-
-
-
-	if (does_has_nickname(ident) && !does_has_username(ident))
+	if (!is_user(ident))
+		return ret;
+	User&		cur_usr = select_user(ident);
+	if (!(cur_usr.flag_ & F_PASS))
 	{
-		User&		cur_usr = select_user(ident);
-
+		return ret;
+	}
+	if (!(cur_usr.flag_ & F_USER))
+	{
+		cur_usr.flag_ |= F_USER;
 		cur_usr.input_user(username, mode, unused, realname);
-		ret = Sender::welcome_message_connect(cur_usr);
+		if (cur_usr.flag_ & F_NICK)
+		{
+			ret = Sender::welcome_message_connect(cur_usr);
+		}
 	}
-	else if (!is_user(ident))
-	{
-		User		tmp_usr;
-
-		tmp_usr.client_sock_ = ident;
-		tmp_usr.input_user(username, mode, unused, realname);
-		user_list_.push_back(tmp_usr);
-	}
+	std::cout << std::bitset<4>(cur_usr.flag_) << std::endl;
+	debug::showUsers(user_list_);
 	return ret;
 }
-
 Event	Database::command_pong(const uintptr_t& ident, const std::string& target, const std::string& msg)
 {
 	Event	ret;
@@ -374,7 +391,7 @@ Event	Database::bot_privmsg(User&	cur_usr, const std::string &msg)
 
 	if (msg == "!command")
 	{
-		bot_msg = "PASS, NICK, USER, PING, JOIN, QUIT, PRIVMSG, KICK, PART, TOPIC, NOTICE";
+		bot_msg = "F_PASS, NICK, USER, PING, JOIN, QUIT, PRIVMSG, KICK, PART, TOPIC, NOTICE";
 	}
 	else if (msg == "!channel")
 	{

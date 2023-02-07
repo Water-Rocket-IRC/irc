@@ -48,4 +48,5 @@ class Parser
 		~Parser();
 
 		void			command_parser(const uintptr_t& ident, std::string& command);
+		void			error_situation(const uintptr_t& ident);
 };

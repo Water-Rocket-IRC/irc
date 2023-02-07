@@ -103,23 +103,28 @@ void	Parser::command_parser(const uintptr_t& ident, std::string& command)
 
 void	Parser::parser_pass_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send)
 {
+	static_cast<void>(to_send);
 	std::string	pw;
 	Event		ret;
 
-	line_ss >> std::ws;
 	ret.first = ident;
 	getline(line_ss, pw);
 	std::size_t	pos = pw.find('\r');
-	pw = pw.substr(0, pos);
-	for (std::size_t i = 0; i < pw.size(); ++i)
-		std::cout << static_cast<int>(pw[i]) << " " << std::endl;
+	pw = pw.substr(1, pos);
 	if (pw.empty())
+	{
 		ret = Sender::command_empty_argument_461(ident, "PASS");
+	}
 	else if (password_ != pw)
-		ret = Sender::password_incorrect_904(ident);
+	{
+		ret = Sender::password_incorrect_464(ident);
+	}
+	else
+	{
+		ret = database_.command_pass(ident);
+	}
 	push_write_event_(ret);
 }
-
 
 //check_argument(2, )
 // NICK은 채널에 있을 때 모에게 NICK 변경되었음을 알리고, 로비에 있을 때는 본인에게만 알린다.
@@ -334,6 +339,13 @@ void	Parser::parser_kick_(const uintptr_t& ident, std::stringstream& line_ss, st
 	msg = message_resize_(msg, to_send);	
 	ret = database_.command_kick(ident, target_name, chan_name, to_send);
 	push_multiple_write_events_(ret, ident);
+}
+
+void	Parser::error_situation(const uintptr_t& ident)
+{
+	User&		tmp_usr = database_.select_user(ident);
+
+	database_.delete_error_user(tmp_usr);
 }
 
 void	Parser::push_write_event_(Event& ret)
