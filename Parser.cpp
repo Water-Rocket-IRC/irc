@@ -26,6 +26,7 @@ const std::string Parser::command_toupper(const char* command)
 Parser::Parser(Udata& serv_udata, const std::string& password)
 : parser_udata_(serv_udata), password_(password)
 {
+	database_.bot_maker("BOT");
 }
 
 Parser::~Parser()

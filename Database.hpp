@@ -69,6 +69,7 @@ class Database
 
 		// bot
 		Event	bot_privmsg(User&	cur_usr, const std::string &msg);
+		void	bot_maker(const std::string& name);
 
 		void	print_all_user(); //debug
 

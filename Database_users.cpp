@@ -24,6 +24,16 @@ Event	Database::valid_user_checker_(const uintptr_t& ident, const std::string& c
 	return ret;
 }
 
+void	Database::bot_maker(const std::string& name)
+{
+
+	User		tmp_usr;
+
+	tmp_usr.nickname_ = name;
+	tmp_usr.input_user("Dummy", "Dummy", "localhost", "Dummy");
+	user_list_.push_back(tmp_usr);
+}
+
 /// @brief
 // ident 즉 socket을 이용해 지금 명령어 친 user가 누군 지 알아낸다.
 User&	Database::select_user(const uintptr_t& ident)
@@ -368,8 +378,16 @@ Event	Database::bot_privmsg(User&	cur_usr, const std::string &msg)
 	}
 	else if (msg == "!channel")
 	{
-		for (int i = 0; i < channel_list_.size(); ++i)
-			bot_msg += channel_list_[i].get_name() + " ";
+		if (channel_list_.empty())
+		{
+			bot_msg = "NO CHANNEL IN THIS SERVER!";
+		}
+		else
+		{
+			bot_msg = "CHANNEL LIST\n";
+			for (int i = 0; i < channel_list_.size(); ++i)
+				bot_msg += channel_list_[i].get_name() + "\n";
+		}
 	}
 	else
 	{
@@ -401,6 +419,7 @@ Udata	Database::command_privmsg(const uintptr_t& ident, const std::string &targe
 	{
 		User&	cur_usr = select_user(ident); // USER is unregistered
 
+		tmp.first = ident;
 		if (target_name.at(0) == '#')
 		{
 			ret = channel_msg(cur_usr, target_name, msg);
