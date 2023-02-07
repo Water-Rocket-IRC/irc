@@ -188,6 +188,7 @@ Udata	Database::part_channel(User&leaver, std::string& chan_name, const std::str
 	{
 		if (leaver == chan.get_host())
 		{
+			Udata tmp_;
 			chan.set_host();
 		}
 	}
@@ -343,8 +344,8 @@ Udata	Database::nick_channel(User& nicker, std::string& send_msg)
 
 	Channel& channel = select_channel(nicker); // 401 no such nick
 
-	channel.change_nick(nicker, send_msg);
 	ret = channel.send_all(nicker, trash, send_msg, NICK);
+	channel.change_nick(nicker, send_msg);
 
 	return ret;
 }

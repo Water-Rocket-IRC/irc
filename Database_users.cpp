@@ -142,11 +142,11 @@ void	Database::delete_user(User& leaver)
 
 bool	Database::is_valid_nick(std::string& new_nick)
 {
-	if (!isalnum(new_nick[0]) && new_nick[0] != '_')
+	if (!isalpha(static_cast<int>(new_nick[0])) && static_cast<int>(new_nick[0]) != '_')
 		return false;
 	for (int i = 1; i < new_nick.size(); i++)
 	{
-		if (!isalpha(new_nick[i]) && new_nick[i] != '_')
+		if (!isalnum(static_cast<int>(new_nick[i])) && static_cast<int>(new_nick[i]) != '_')
 		{
 			return false;
 		}
@@ -225,12 +225,11 @@ Udata	Database::command_nick(const uintptr_t& ident, std::string& new_nick)
 			tmp = Sender::nick_well_message(cur_user, cur_user, new_nick);
 			ret.insert(tmp);
 		}
-
-		cur_user.nickname_ = new_nick;
 		//채널에 있지 않으니, 닉네임만 바꿈
 		if (is_user_in_channel(cur_user)) // 채널에 있는 유저의 닉네임 변경
 		{
 			ret = nick_channel(cur_user, new_nick);
+			cur_user.nickname_ = new_nick;
 		}
 	}
 	debug::showUsers(user_list_);

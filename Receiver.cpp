@@ -1,5 +1,6 @@
 #include "Receiver.hpp"
 #include "Udata.hpp"
+#include <sys/_types/_uintptr_t.h>
 
 void exit_with_perror(const std::string& msg);
 
@@ -102,9 +103,10 @@ int	Receiver::clientReadEventHandler_(struct kevent &cur_event)
 	memset(buffer, 0, sizeof(buffer));
 	if (cur_event.flags & EV_EOF)
 	{
+		uintptr_t	tmp_sock(cur_event.ident);
 		std::cout << "sock was fucked!" << std::endl;
 		kq_.delete_event(cur_event);
-		// TODO: delete User
+		close(tmp_sock);
 		return (1);
 	}
 	int byte_received = recv(cur_event.ident, buffer, sizeof(buffer), 0);

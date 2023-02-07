@@ -38,7 +38,6 @@ std::string	Parser::set_message_(std::string& msg, const std::size_t& start) // 
 	std::size_t	pos = msg.find('\r');
 	pos = (pos == std::string::npos) ? msg.length() - start : pos - start;
 	std::string	ret = msg.substr(start, pos);
-	std::cout << "SET MSG " << ret << std::endl;
 	return ret;
 }
 
@@ -81,13 +80,11 @@ void	Parser::command_parser(const uintptr_t& ident, std::string& command)
 		std::size_t 		i(0);
 
 		line_ss >> command_type;
-		std::cout << RED << "is here? " << RESET << std::endl;
 		command_type = command_toupper(command_type.c_str());
 		print_title(command_type);
 		for (; i < N_COMMAND && (command_type != Parser::commands[i]); ++i) { }
 		if (i < N_COMMAND)
 		{
-			std::cout << GREEN << "is here? " << RESET << std::endl;
 			std::size_t	pos(line.find(':'));
 			std::string	to_send;
 			if (pos == std::string::npos)

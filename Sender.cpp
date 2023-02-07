@@ -35,6 +35,25 @@ Event	Sender::pong(const uintptr_t& socket, const std::string& target, const std
 	ret = std::make_pair(socket, pong_reply + "\r\n");
 	return ret;
 }
+
+std::string	Sender::mode_make_operator_message(const User& sender, std::string channel, const User& target)
+{
+	Event		ret;
+
+	std::string mode_msg = ":" + sender.nickname_ + "!" + sender.mode_ \
+	+ " MODE " + channel + " +o :" + target.nickname_;
+	// if (sender.client_sock_ == target.client_sock_)
+	// {
+	// 	ret = std::make_pair(sender.client_sock_, mode_msg + "\r\n");
+	// }
+	// else
+	// {
+	// 	ret = std::make_pair(target.client_sock_, mode_msg + "\r\n");
+	// }
+	// return (ret);
+	return (mode_msg + "\r\n");
+}
+
 /// @brief 461
 Event	Sender::command_empty_argument_461(const User& sender, const std::string& command)
 {
