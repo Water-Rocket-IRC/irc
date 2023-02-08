@@ -184,7 +184,7 @@ Event	Sender::nick_wrong_message(const User& sender, const std::string& new_nick
 	Event	ret;
 
 	const std::string& nick_msg = ":" + Sender::server_name_ + " 432 " + sender.nickname_ \
-					+ " " + new_nick + "Erroneous Nickname.";
+					+ " " + new_nick + " Erroneous Nickname.";
 	ret = std::make_pair(sender.client_sock_, nick_msg + "\r\n");
 	return ret;
 }
@@ -195,7 +195,7 @@ Event	Sender::nick_wrong_message(const uintptr_t& sock, const std::string& new_n
 	Event	ret;
 
 	const std::string& nick_msg = ":" + Sender::server_name_ + " 432 " + " * " \
-					+ " " + new_nick + "Erroneous Nickname.";
+					+ " " + new_nick + " Erroneous Nickname.";
 	ret = std::make_pair(sock, nick_msg + "\r\n");
 	return ret;
 }

@@ -36,9 +36,7 @@ Parser::~Parser()
 // ctrl + c 눌렀을 때  지우는 것 
 void	Parser::error_situation(const uintptr_t& ident)
 {
-	User&		tmp_usr = database_.select_user(ident);
-
-	database_.delete_error_user(tmp_usr);
+	database_.delete_error_user(ident);
 }
 
 std::string	Parser::set_message_(std::string& msg, const std::size_t& start) // nl(10) is not included
@@ -264,48 +262,6 @@ void	Parser::parser_join_(const uintptr_t& ident, std::stringstream& line_ss, st
 	ret = database_.command_join(ident, chan_name);
 	push_multiple_write_events_(ret, ident, 2);
 }
-
-// void	Parser::parser_mode_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send)
-// {
-// 	static_cast<void>(to_send);
-// 	valid_user_checker_(ident, cmd);
-// 	std::string	target, mode;
-
-// 	line_ss >> target >> mode;
-// 	if (target.empty())
-// 	{
-// 		user&	tmp_user = users_.search_user_by_ident(ident, 461);	// <- '*' 461로 넣어야?
-// 		throw Sender::command_empty_argument_461(tmp_user, "MODE");
-// 	}
-// 	user	cur_user = users_.search_user_by_ident(ident, 451);
-// 	Udata	ret;
-// 	if (target.at(0) == '#')
-// 	{
-// 		ret = channels_.mode_channel(cur_user, target, (mode.size() == 1 && mode == "b"));
-// 	}
-// 	else
-// 	{
-// 		ret = users_.command_mode(target, (mode.size () == 2 && mode == "+i"));
-// 	}
-// 	push_multiple_write_events_(ret, ident);
-// }
-
-// void	Parser::parser_who_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send)
-// {
-// 	static_cast<void>(to_send);
-// 	valid_user_checker_(ident, cmd);
-// 	std::string	target;
-
-// 	line_ss	>> target;
-// 	if (target.empty())
-// 	{
-// 		user&	tmp_user = users_.search_user_by_ident(ident, 461);	// <- '*' 461로 넣어야?
-// 		throw Sender::command_empty_argument_461(tmp_user, "MODE");
-// 	}
-// 	user&	asker = users_.search_user_by_ident(ident, 461);
-// 	Udata	ret = channels_.who_channel(asker, target);
-// 	push_multiple_write_events_(ret, ident);
-// }
 
 void	Parser::parser_part_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send)
 {

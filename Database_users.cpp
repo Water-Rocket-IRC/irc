@@ -4,8 +4,13 @@
 #include "debug.hpp"
 #include <sys/_types/_ct_rune_t.h>
 
-void	Database::delete_error_user(User& cur_usr)
+void	Database::delete_error_user(const uintptr_t& ident)
 {
+	if (!is_user(ident))
+	{
+		return ;
+	}
+	User&		cur_usr = select_user(ident);
 	if (is_user_in_channel(cur_usr))
 	{
 		Channel& cur_chan = select_channel(cur_usr);
@@ -39,17 +44,24 @@ Event	Database::valid_user_checker_(const uintptr_t& ident, const std::string& c
 
 	if (!is_user(ident))
 	{
-		ret = Sender::command_not_registered_451(ident, command_type);
-		return ret;
+		return Sender::password_incorrect_464(ident);
 	}
 	User&	cur_user = select_user(ident);
+	if (!(cur_user.flag_ & F_PASS))
+	{
+		return Sender::password_incorrect_464(ident);
+	}
+	if (command_type == "NICK" || command_type == "USER")
+	{
+		return ret;
+	}
 	if (!(cur_user.flag_ & F_NICK))
 	{
-		ret = Sender::command_not_registered_451(ident, command_type);
+		return Sender::command_not_registered_451(ident, command_type);
 	}
-	else if (!(cur_user.flag_ & F_NICK))
+	if (!(cur_user.flag_ & F_USER))
 	{
-		ret = Sender::command_not_registered_451(cur_user, command_type);
+		return Sender::command_not_registered_451(cur_user, command_type);
 	}
 	return ret;
 }
@@ -225,6 +237,7 @@ Udata	Database::command_nick(const uintptr_t& ident, std::string& new_nick)
 	Udata		ret;
 	Event		tmp;
 
+	// ret = valid_user_checker_(ident, "");
 	if (!is_user(ident))
 	{
 		tmp = Sender::password_incorrect_464(ident);
@@ -240,13 +253,18 @@ Udata	Database::command_nick(const uintptr_t& ident, std::string& new_nick)
 	}
 	if (!is_valid_nick(new_nick)) // TODO: hchang 특수문자로 시작하는 닉네임 등 유효성 체크하는 함수 만들 것
 	{
+		std::cout << "what the hell " << std::endl;
+
 		if (cur_usr.nickname_.empty())
 		{
+			std::cout << "what the heck " << std::endl;
 			tmp = Sender::nick_wrong_message(ident, new_nick);
 		}
 		else
 		{
-			User&		you_usr = select_user(cur_usr.nickname_); //hchang 오면 물어보기-> 왜 new인지?
+		std::cout << "what the fuck " << std::endl;
+
+			User&		you_usr = select_user(cur_usr.nickname_);
 			tmp = Sender::nick_wrong_message(you_usr, new_nick);
 		}
 		ret.insert(tmp);
@@ -302,6 +320,7 @@ Event	Database::command_user(const uintptr_t& ident
 {
 	Event	ret;
 
+	ret.first = ident;
 	if (!is_user(ident))
 	{
 		return (Sender::password_incorrect_464(ident));
@@ -421,7 +440,7 @@ Event	Database::bot_privmsg(User&	cur_usr, const std::string &msg)
 
 	if (msg == "!command")
 	{
-		bot_msg = "F_PASS, NICK, USER, PING, JOIN, QUIT, PRIVMSG, KICK, PART, TOPIC, NOTICE";
+		bot_msg = "NICK, USER, PING, JOIN, QUIT, PRIVMSG, KICK, PART, TOPIC, NOTICE";
 	}
 	else if (msg == "!channel")
 	{
@@ -438,7 +457,7 @@ Event	Database::bot_privmsg(User&	cur_usr, const std::string &msg)
 	}
 	else
 	{
-		bot_msg = "you can not build here!";
+		bot_msg = "THAT IS NOT MY COMMAND\n YOU CAN USER : '!COMMANMD' & '!CHANNEL'\n";
 	}
 	tmp = Sender::privmsg_bot_message(cur_usr, bot_msg);
 	return tmp;

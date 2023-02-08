@@ -38,7 +38,7 @@ class Database
 		std::vector<Channel>&	get_channels() { return	channel_list_; };
 
 	//User
-		void	delete_error_user(User& cur_user);
+		void	delete_error_user(const uintptr_t& ident);
 		Event	command_pass(const uintptr_t& ident);
 		Udata	command_nick(const uintptr_t& ident, std::string& nick_name);
 		Event	command_user(const uintptr_t& ident, const std::string& username, const std::string& mode,
