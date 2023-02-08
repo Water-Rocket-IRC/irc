@@ -357,12 +357,16 @@ void	Parser::push_multiple_write_events_(Udata& ret, const uintptr_t& ident, con
 {
 	Udata_iter	target = ret.find(ident);
 
+	if (ret.empty())
+	{
+		Receiver::get_Kevent_Handler().set_read(ident);
+		return ;
+	}
 	if (target != ret.end())
 	{
 		if (target->second.empty() && flag == 0)
 		{
 			Receiver::get_Kevent_Handler().set_read(ident);
-			return ;
 		}
 		else if (flag == 1)
 		{

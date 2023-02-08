@@ -252,8 +252,8 @@ Event	Sender::quit_member_message(const User& sender, const User& receiver, std:
 	{
 		leave_message = "leaving";
 	}
-	const std::string&  quit_message = ":" + sender.nickname_ + "! " \
-				+ sender.realname_ + " QUIT :Quit: " + leave_message;
+	const std::string&  quit_message = ":" + sender.nickname_ + "!" \
+				+ sender.username_ + "@" + sender.unused_ + " QUIT :Quit: " + leave_message;
 	ret = std::make_pair(receiver.client_sock_, quit_message + "\r\n");
 	return ret;
 }

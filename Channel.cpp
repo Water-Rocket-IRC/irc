@@ -103,9 +103,13 @@ Udata Channel::send_all(User& sender, User& target, std::string msg, int remocon
 			case PRIV:
 				if (sender == *it)
 				{
-					continue ;
+					packet.first = sender.client_sock_;
+					packet.second = "";
 				}
-				packet = Sender::privmsg_channel_message(sender, *it, msg, this->get_name());
+				else
+				{
+					packet = Sender::privmsg_channel_message(sender, *it, msg, this->get_name());
+				}
 				break ;
 			case KICK:
 				packet = Sender::kick_message(sender, *it, target.nickname_, this->get_name(), msg);
@@ -117,9 +121,13 @@ Udata Channel::send_all(User& sender, User& target, std::string msg, int remocon
 			case NOTICE:
 				if (sender == *it)
 				{
-					continue ;
+					packet.first = sender.client_sock_;
+					packet.second = "";
 				}
-				packet = Sender::notice_channel_message(sender, *it, msg, this->get_name());
+				else
+				{
+					packet = Sender::notice_channel_message(sender, *it, msg, this->get_name());
+				}
 				break ;
 			case WALL:
 				if (sender == *it)

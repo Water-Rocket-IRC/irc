@@ -218,7 +218,7 @@ Udata	Database::command_nick(const uintptr_t& ident, std::string& new_nick)
 		}
 		else
 		{
-			User&		you_usr = select_user(new_nick);
+			User&		you_usr = select_user(cur_usr.nickname_); //hchang 오면 물어보기-> 왜 new인지?
 			tmp = Sender::nick_wrong_message(you_usr, new_nick);
 		}
 		ret.insert(tmp);
