@@ -40,7 +40,7 @@ const char*	Database::no_such_user_exception::what() const throw()
 
 Event	Database::valid_user_checker_(const uintptr_t& ident, const std::string& command_type)
 {
-	Event ret;
+	Event	ret;
 
 	ret.first = ident;
 	if (!is_user(ident))
@@ -90,7 +90,7 @@ User&	Database::select_user(const uintptr_t& ident)
 			return (*it);
 		}
 	}
-	throw no_such_user_exception();
+	throw std::exception();
 	return (*it);
 }
 
@@ -107,7 +107,7 @@ User&	Database::select_user(const std::string& nickname)
 			return (*it);
 		}
 	}
-	throw no_such_user_exception();
+	throw std::exception();
 	return (*it);
 }
 
@@ -238,10 +238,12 @@ Udata	Database::command_nick(const uintptr_t& ident, std::string& new_nick)
 	Udata		ret;
 	Event		tmp = valid_user_checker_(ident, "NICK");
 
+	std::cout << "command_nick" << std::endl;
 	if (tmp.second.size())
 	{
 		return ret;
 	}
+	std::cout << "/command_nick" << std::endl;
 	User&	cur_usr = select_user(ident);
 	/** 새로운 nickname '유효성' 검사 **/
 	if (!is_valid_nick(new_nick)) // TODO: hchang 특수문자로 시작하는 닉네임 등 유효성 체크하는 함수 만들 것
@@ -389,6 +391,21 @@ Udata	Database::command_join(const uintptr_t& ident, const std::string& chan_nam
 	return ret;
 }
 
+Udata	Database::command_part(const uintptr_t& ident, std::string& chan_name, const std::string& msg)
+{
+	Udata	ret;
+	Event	tmp = valid_user_checker_(ident, "PART");
+
+	if (tmp.second.size())
+	{
+		ret.insert(tmp);
+		return ret;
+	}
+	User& cur_usr = select_user(ident);
+	ret = part_channel(cur_usr, chan_name, msg);
+	return ret;
+}
+
 Udata	Database::command_quit(const uintptr_t& ident, const std::string& msg)
 {
 	Udata	ret;
@@ -505,7 +522,7 @@ Udata	Database::command_notice(const uintptr_t& ident, const std::string &target
 	// User&	sender_user = search_user_by_ident(ident, 0);
 	// User&	target_user = search_user_by_nick(target_name, 0);
 
-	/** 유효성검**/
+	/** 유효성 검사**/
 	if (tmp.second.size())
 	{
 		ret.insert(tmp);

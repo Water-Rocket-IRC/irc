@@ -119,12 +119,14 @@ void	Parser::parser_pass_(const uintptr_t& ident, std::stringstream& line_ss, st
 	ret.first = ident;
 	getline(line_ss, pw);
 	std::size_t	pos = pw.find('\r');
-	pw = pw.substr(1, pos - 1);
 	if (pw.empty())
 	{
 		ret = Sender::command_empty_argument_461(ident, "PASS");
+		push_write_event_(ret);
+		return ;
 	}
-	else if (password_ != pw)
+	pw = pw.substr(1, pos - 1);
+	if (password_ != pw)
 	{
 		ret = Sender::password_incorrect_464(ident);
 	}
@@ -273,11 +275,10 @@ void	Parser::parser_part_(const uintptr_t& ident, std::stringstream& line_ss, st
 	std::getline(line_ss, msg);
 	msg = message_resize_(msg, to_send);
 	User parter = database_.select_user(ident);
-	ret = database_.part_channel(parter, chan_name, to_send);
+	ret = database_.command_part(ident, chan_name, to_send);
 	
 	push_multiple_write_events_(ret, ident, 2);
 }
-
 
 void	Parser::parser_topic_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send)
 {

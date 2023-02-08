@@ -54,6 +54,7 @@ class Database
 		Event	command_privmsg(std::string &target_name, std::string &line, const uintptr_t& ident);
 		// Event	command_mode(std::string &target_name, int flag);
 		Udata	command_join(const uintptr_t& ident, const std::string& chan_name);
+		Udata	command_part(const uintptr_t& ident, std::string& chan_name, const std::string& msg);
 		Udata	command_kick(const uintptr_t &ident, const std::string& target_name, std::string& chan_name, std::string& msg);
 
 		bool	is_user(const uintptr_t& ident);
