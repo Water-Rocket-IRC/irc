@@ -40,8 +40,9 @@ const char*	Database::no_such_user_exception::what() const throw()
 
 Event	Database::valid_user_checker_(const uintptr_t& ident, const std::string& command_type)
 {
-	Event	ret;
+	Event ret;
 
+	ret.first = ident;
 	if (!is_user(ident))
 	{
 		return Sender::password_incorrect_464(ident);
@@ -235,22 +236,14 @@ Event	Database::command_pass(const uintptr_t& ident)
 Udata	Database::command_nick(const uintptr_t& ident, std::string& new_nick)
 {
 	Udata		ret;
-	Event		tmp;
+	Event		tmp = valid_user_checker_(ident, "NICK");
 
-	// ret = valid_user_checker_(ident, "");
-	if (!is_user(ident))
+	if (tmp.second.size())
 	{
-		tmp = Sender::password_incorrect_464(ident);
-		ret.insert(tmp);
 		return ret;
 	}
 	User&	cur_usr = select_user(ident);
-	if (!(cur_usr.flag_ & F_PASS))
-	{ 
-		tmp = Sender::password_incorrect_464(ident);
-		ret.insert(tmp);
-		return ret;
-	}
+	/** 새로운 nickname '유효성' 검사 **/
 	if (!is_valid_nick(new_nick)) // TODO: hchang 특수문자로 시작하는 닉네임 등 유효성 체크하는 함수 만들 것
 	{
 		std::cout << "what the hell " << std::endl;
@@ -270,7 +263,8 @@ Udata	Database::command_nick(const uintptr_t& ident, std::string& new_nick)
 		ret.insert(tmp);
 		return ret;
 	}
-	if (is_user(new_nick))// 닉네임 중복된 상황 433 에러
+	/** 새로운 nickname '중복' 검사 **/
+	if (is_user(new_nick))
 	{
 		User&		you_usr = select_user(new_nick);
 		if (ident == you_usr.client_sock_)
@@ -318,18 +312,13 @@ Event	Database::command_user(const uintptr_t& ident
 								, const std::string& username, const std::string& mode
 								, const std::string& unused, const std::string& realname)
 {
-	Event	ret;
+	Event	ret = valid_user_checker_(ident, "USER");
 
-	ret.first = ident;
-	if (!is_user(ident))
+	if (ret.second.size())
 	{
-		return (Sender::password_incorrect_464(ident));
+		return ret;
 	}
-	User&		cur_usr = select_user(ident);
-	if (!(cur_usr.flag_ & F_PASS))
-	{
-		return (Sender::password_incorrect_464(ident));
-	}
+	User&	cur_usr = select_user(ident);
 	if (!(cur_usr.flag_ & F_USER))
 	{
 		cur_usr.flag_ |= F_USER;
@@ -345,11 +334,12 @@ Event	Database::command_user(const uintptr_t& ident
 }
 Event	Database::command_pong(const uintptr_t& ident, const std::string& target, const std::string& msg)
 {
-	Event	ret;
+	Event	ret = valid_user_checker_(ident, "PING"); 
 
-	ret = valid_user_checker_(ident, "PING");
 	if (ret.second.size())
+	{
 		return ret;
+	}
 	User&	cur_user = select_user(ident);	// user가 있는 경우
 	if (msg.at(0) == ':')
 	{
@@ -363,9 +353,8 @@ Event	Database::command_pong(const uintptr_t& ident, const std::string& target, 
 Udata	Database::command_join(const uintptr_t& ident, const std::string& chan_name)
 {
 	Udata	ret;
-	Event	tmp;
+	Event	tmp = valid_user_checker_(ident, "JOIN");
 
-	tmp = valid_user_checker_(ident, "JOIN");
 	if (tmp.second.size())
 	{
 		ret.insert(tmp);
@@ -403,9 +392,8 @@ Udata	Database::command_join(const uintptr_t& ident, const std::string& chan_nam
 Udata	Database::command_quit(const uintptr_t& ident, const std::string& msg)
 {
 	Udata	ret;
-	Event	tmp;
+	Event	tmp = valid_user_checker_(ident, "QUIT");
 
-	tmp = valid_user_checker_(ident, "QUIT");
 	if (tmp.second.size())
 	{
 		ret.insert(tmp);
@@ -450,14 +438,14 @@ Event	Database::bot_privmsg(User&	cur_usr, const std::string &msg)
 		}
 		else
 		{
-			bot_msg = "CHANNEL LIST\n";
+			bot_msg = "● [CHANNEL LIST] : ";
 			for (std::size_t i(0); i < channel_list_.size(); ++i)
-				bot_msg += channel_list_[i].get_name() + "\n";
+				bot_msg += channel_list_[i].get_name() + " ";
 		}
 	}
 	else
 	{
-		bot_msg = "THAT IS NOT MY COMMAND\n YOU CAN USER : '!COMMANMD' & '!CHANNEL'\n";
+		bot_msg = "THAT IS NOT MY COMMAND. YOU CAN USE : '!COMMANMD' & '!CHANNEL'.";
 	}
 	tmp = Sender::privmsg_bot_message(cur_usr, bot_msg);
 	return tmp;
@@ -468,19 +456,14 @@ Event	Database::bot_privmsg(User&	cur_usr, const std::string &msg)
 //	이 command에는 privmsg가 정상작동 될 때만 존재
 Udata	Database::command_privmsg(const uintptr_t& ident, const std::string &target_name, const std::string &msg)
 {
-	Event		tmp;
 	Udata		ret;
-	// User&	sender_user = search_user_by_ident(ident, 0);
-	// User&	target_user = search_user_by_nick(target_name, 0);
-
-	tmp = valid_user_checker_(ident, "PRIVMSG");
+	Event		tmp = valid_user_checker_(ident, "PRIVMSG");
+	
 	if (tmp.second.size())
 	{
 		ret.insert(tmp);
 		return ret;
 	}
-	// static Event	privmsg_p2p_message(const User& sender, const User& target, const std::string& msg);
-	// ret = Sender::privmsg_p2p_message(sender_user, target_user, line);
 	if (is_user(ident))
 	{
 		User&	cur_usr = select_user(ident); // USER is unregistered
@@ -516,18 +499,18 @@ Udata	Database::command_privmsg(const uintptr_t& ident, const std::string &targe
 
 Udata	Database::command_notice(const uintptr_t& ident, const std::string &target_name, const std::string &msg)
 {
-	Event		tmp;
 	Udata		ret;
+	Event		tmp = valid_user_checker_(ident, "NOTICE"); 
+	// is_user check here
 	// User&	sender_user = search_user_by_ident(ident, 0);
 	// User&	target_user = search_user_by_nick(target_name, 0);
 
-	tmp = valid_user_checker_(ident, "NOTICE"); // is_user check here
+	/** 유효성검**/
 	if (tmp.second.size())
 	{
 		ret.insert(tmp);
 		return ret;
 	}
-
 	// static Event	privmsg_p2p_message(const User& sender, const User& target, const std::string& msg);
 	// ret = Sender::privmsg_p2p_message(sender_user, target_user, line);
 	User&	cur_usr = select_user(ident); // USER is unregistered
@@ -555,10 +538,9 @@ Udata	Database::command_notice(const uintptr_t& ident, const std::string &target
 
 Udata		Database::command_kick(const uintptr_t &ident, const std::string& target_name, std::string& chan_name, std::string& msg)
 {
-	Event	tmp;
+	Event	tmp = valid_user_checker_(ident, "KICK");
 	Udata	ret;
 
-	tmp = valid_user_checker_(ident, "KICK");
 	if (tmp.second.size())
 	{
 		ret.insert(tmp);
