@@ -90,7 +90,6 @@ User&	Database::select_user(const uintptr_t& ident)
 			return (*it);
 		}
 	}
-	throw std::exception();
 	return (*it);
 }
 
@@ -107,36 +106,31 @@ User&	Database::select_user(const std::string& nickname)
 			return (*it);
 		}
 	}
-	throw std::exception();
 	return (*it);
 }
 
 bool	Database::is_user(const uintptr_t& ident)
 {
-	try
+	for (std::vector<User>::iterator it = user_list_.begin(); it != user_list_.end(); it++)
 	{
-		User& tmp = select_user(ident);
-		static_cast<void>(tmp);
+		if (it->client_sock_ == ident) // 닉네임 바꿔야할 유저를 찾을 상태 !!!
+		{
+			return (true);
+		}
 	}
-	catch(const std::exception&)
-	{
-		return (false);
-	}
-	return (true);
+	return (false);
 }
 
 bool	Database::is_user(const std::string& nickname)
 {
-	try
+	for (std::vector<User>::iterator it = user_list_.begin(); it != user_list_.end(); it++)
 	{
-		User& tmp = select_user(nickname);
-		static_cast<void>(tmp);
+		if (it->nickname_ == nickname) // 닉네임 바꿔야할 유저를 찾을 상태 !!!
+		{
+			return (true);
+		}
 	}
-	catch(const std::exception&)
-	{
-		return false;
-	}
-	return true;
+	return (false);
 }
 
 /* @brief
@@ -241,6 +235,7 @@ Udata	Database::command_nick(const uintptr_t& ident, std::string& new_nick)
 	std::cout << "command_nick" << std::endl;
 	if (tmp.second.size())
 	{
+		ret.insert(tmp);
 		return ret;
 	}
 	std::cout << "/command_nick" << std::endl;
@@ -459,6 +454,12 @@ Event	Database::bot_privmsg(User&	cur_usr, const std::string &msg)
 			for (std::size_t i(0); i < channel_list_.size(); ++i)
 				bot_msg += channel_list_[i].get_name() + " ";
 		}
+	}
+	else if (msg == "!user")
+	{
+		bot_msg = "● [USER LIST] : ";
+		for (std::size_t i(1); i < user_list_.size(); ++i)
+			bot_msg += user_list_[i].nickname_ + " ";
 	}
 	else
 	{
