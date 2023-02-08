@@ -5,8 +5,7 @@
 
 void exit_with_perror(const std::string& msg);
 
-bool Receiver::end_server = true;
-KeventHandler	Receiver::kq_ = KeventHandler(end_server);
+KeventHandler	Receiver::kq_ = KeventHandler();
 
 KeventHandler&	Receiver::get_Kevent_Handler(void)
 {
@@ -26,13 +25,9 @@ Receiver::Receiver(Udata& serv_udata, const uintptr_t& port, const std::string& 
 
 void	Receiver::stop_receiver(void)
 {
-	// end_server = false;
 	parser_.clear_all();
-	std::cerr << "Parser clear all end\n";
 	close(server_sock_);
-	std::cerr << "close end\n";
 	kq_.delete_server(server_sock_);
-	std::cerr << "Receiver stop_receiver end\n";
 }
 
 void	Receiver::init_socket_(const uintptr_t& port)
@@ -64,7 +59,7 @@ void	Receiver::bind_socket_()
 
 void	Receiver::start()
 {
-	while (end_server)
+	while (true)
 	{
 		std::vector<struct kevent>	events = kq_.set_monitor();
 		for (std::size_t i(0); i < events.size(); ++i)

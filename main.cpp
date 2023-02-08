@@ -27,5 +27,3 @@ int main(int argc, char **argv)
 	Server::server_ptr_ = &server;
 	server.start();
 }
-
-// =============================================================================== //
