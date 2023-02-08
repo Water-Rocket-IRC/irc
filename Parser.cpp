@@ -29,8 +29,28 @@ Parser::Parser(Udata& serv_udata, const std::string& password)
 	database_.bot_maker("BOT");
 }
 
-Parser::~Parser()
+void	Parser::clear_all()
 {
+	Udata	to_delete;
+	to_delete.clear();
+	for (std::vector<User>::iterator it = database_.get_user_list().begin(); it != database_.get_user_list().end(); ++it)
+	{
+		if (it->client_sock_ == 0)
+			continue ;
+		Event	tmp = Sender::quit_leaver_message(*it, "");
+		to_delete.insert(tmp);
+		Receiver::get_Kevent_Handler().set_exit(it->client_sock_);
+	}
+	std::vector<struct kevent>	events = Receiver::get_Kevent_Handler().set_monitor();
+	for (std::size_t i(0); i < events.size(); ++i)
+	{
+		Udata_iter	target = to_delete.find(events[i].ident);
+		send(events[i].ident, target->second.c_str(), target->second.size(), 0);
+		uintptr_t	tmp_fd = events[i].ident;
+		Receiver::get_Kevent_Handler().delete_event(events[i]);
+		close(tmp_fd); 
+		to_delete.erase(target);
+	}
 }
 
 // ctrl + c 눌렀을 때  지우는 것 
@@ -335,9 +355,8 @@ void	Parser::push_multiple_write_events_(Udata& ret, const uintptr_t& ident, con
 		}
 		else if (flag == 1)
 		{
-			int	i(0);
 			parser_udata_.insert(*target);
-			Receiver::get_Kevent_Handler().set_exit(target->first, &i);
+			Receiver::get_Kevent_Handler().set_exit(target->first);
 		}
 		else
 		{

@@ -28,9 +28,11 @@ class Receiver
 		void					bind_socket_();
 
 	public:
+		static bool				end_server;
 		Receiver(Udata& serv_udata, const uintptr_t& port, const std::string& password);
-		~Receiver();
+		// ~Receiver();
 
+		void					stop_receiver();
 		void 					start();
 		static KeventHandler&	get_Kevent_Handler();
 };

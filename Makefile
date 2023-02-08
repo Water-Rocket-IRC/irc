@@ -11,7 +11,7 @@
 # **************************************************************************** #
 
 CXX			=	c++
-CXXFLAGS	=  -Wall -Wextra -Werror 
+CXXFLAGS	=  -Wall -Wextra -Werror -fsanitize=address -g3
 
 RM			=	rm -rf
 
@@ -22,6 +22,7 @@ SRCS		:=	$(wildcard *.cpp)
 OBJS		:=	$(addprefix $(OBJS_DIR), $(SRCS:.cpp=.o))
 DEPS		:=	$(addprefix $(DEPS_DIR), $(SRCS:.cpp=.d))
 NAME		:=	ircserv
+
 
 all : $(NAME)
 

@@ -3,7 +3,6 @@
 #include "Udata.hpp"
 #include "User.hpp"
 #include "color.hpp"
-#include "debug.hpp"
 #include <sys/_types/_size_t.h>
 
 bool	Database::is_channel(std::string& chan_name)
@@ -33,7 +32,7 @@ bool	Database::is_user_in_channel(User& leaver)
 	return false;
 }
 
-void	Database::create_channel(User& joiner, std::string& chan_name, std::string chan_access)
+Channel&	Database::create_channel(User& joiner, std::string& chan_name, std::string chan_access)
 {
 	Channel	tmp;
 
@@ -42,6 +41,7 @@ void	Database::create_channel(User& joiner, std::string& chan_name, std::string 
 	tmp.set_host();
 	tmp.set_access(chan_access);
 	channel_list_.push_back(tmp);
+	return channel_list_.back();
 }
  /*
  * operator 가 없을 때 (0 index가 비어있다면 삭제)
@@ -85,24 +85,32 @@ Channel&	Database::select_channel(User& connector) // 476 ERROR Sender::join_inv
 	return *it;
 }
 
-
-Udata	Database::join_channel(User& joiner, const std::string& chan_name_)
+/* 
+ * @brief 유저가 채널에 접속하는 함수
+ * @param User&					=> 접속하려는 사람
+ * @param const std::striing&	=> 채널 이름
+ */
+Udata	Database::join_channel(User& joiner, const std::string& tmp_chan_name)
 {
 	Udata		ret;
 	Event		tmp;
-	std::string	chan_name(chan_name_);
+	std::string	chan_name(tmp_chan_name);
 
+	/** 해당 이름의 채널이 없는 지 검사하기 **/
 	if (is_channel(chan_name) == false)
 	{
-		create_channel(joiner, chan_name, "="); // "="는 public으로 만드는 것
+		/** 만약에 없으면 채널 만들기 **/
+
+		Channel& chan = create_channel(joiner, chan_name, "=");
 		tmp = Sender::join_message(joiner, joiner, chan_name);
 		ret.insert(tmp);
-		Channel& chan = select_channel(chan_name);
+
+		/** 채널 내에  **/
+		// Channel& chan = select_channel(chan_name);
 		Udata_iter it = ret.find(joiner.client_sock_);
 		it->second += Sender::join_353_message(joiner, chan.get_name(), chan.get_access(), "@" + joiner.nickname_);
 		it->second += Sender::join_366_message(joiner, chan.get_name());
 		std::cout << BOLDMAGENTA << "(Channel)" << RESET << std::endl;
-		//debug::showUsers(chan.get_users());
 	}
 	else
 	{
@@ -114,9 +122,7 @@ Udata	Database::join_channel(User& joiner, const std::string& chan_name_)
 		it->second += Sender::join_353_message(joiner, chan.get_name(), chan.get_access(), chan_user_list);
 		it->second += Sender::join_366_message(joiner, chan.get_name());
 		std::cout << BOLDMAGENTA << "(Channel)" << RESET << std::endl;
-		// debug::showUsers(chan.get_users());
 	}
-	//debug::showChannels(channel_list_);
 	return ret;
 }
 

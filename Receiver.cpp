@@ -5,7 +5,8 @@
 
 void exit_with_perror(const std::string& msg);
 
-KeventHandler	Receiver::kq_ = KeventHandler();
+bool Receiver::end_server = true;
+KeventHandler	Receiver::kq_ = KeventHandler(end_server);
 
 KeventHandler&	Receiver::get_Kevent_Handler(void)
 {
@@ -23,11 +24,15 @@ Receiver::Receiver(Udata& serv_udata, const uintptr_t& port, const std::string& 
 	bind_socket_();
 }
 
-Receiver::~Receiver()
+void	Receiver::stop_receiver(void)
 {
-	// TODO: Have to add quit all client function
-	kq_.delete_server(server_sock_);
+	// end_server = false;
+	parser_.clear_all();
+	std::cerr << "Parser clear all end\n";
 	close(server_sock_);
+	std::cerr << "close end\n";
+	kq_.delete_server(server_sock_);
+	std::cerr << "Receiver stop_receiver end\n";
 }
 
 void	Receiver::init_socket_(const uintptr_t& port)
@@ -59,7 +64,7 @@ void	Receiver::bind_socket_()
 
 void	Receiver::start()
 {
-	while (true)
+	while (end_server)
 	{
 		std::vector<struct kevent>	events = kq_.set_monitor();
 		for (std::size_t i(0); i < events.size(); ++i)
@@ -139,7 +144,7 @@ int	Receiver::clientWriteEventHandler_(struct kevent &cur_event)
 	{
 		uintptr_t	tmp_fd = cur_event.ident;
 		kq_.delete_event(cur_event);
-		close(tmp_fd);
+		close(tmp_fd); 
 		udata_.erase(target);
 		return (1);
 	}

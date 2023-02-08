@@ -1,8 +1,13 @@
 #include "Database.hpp"
 #include "Udata.hpp"
 #include "User.hpp"
-#include "debug.hpp"
 #include <sys/_types/_ct_rune_t.h>
+
+
+std::vector<User>&	Database::get_user_list(void)
+{
+	return user_list_;
+}
 
 void	Database::delete_error_user(const uintptr_t& ident)
 {
@@ -18,7 +23,7 @@ void	Database::delete_error_user(const uintptr_t& ident)
 		std::vector<User>& users = cur_chan.get_users();
 		const int user_size = users.size();
 		cur_chan.delete_user(cur_usr);
-		if (user_size == 1) //채널 잘 삭제되는 것 확인
+		if (user_size == 1)
 		{
 			delete_channel(cur_chan.get_name());
 		}
@@ -30,12 +35,7 @@ void	Database::delete_error_user(const uintptr_t& ident)
 			}
 		}
 	}
-	user_list_.erase(remove(user_list_.begin(), user_list_.end(), cur_usr), user_list_.end()); // 순서 중요
-}
-
-const char*	Database::no_such_user_exception::what() const throw()
-{
-	return ("err: no such user");
+	user_list_.erase(remove(user_list_.begin(), user_list_.end(), cur_usr), user_list_.end());
 }
 
 Event	Database::valid_user_checker_(const uintptr_t& ident, const std::string& command_type)
@@ -85,7 +85,7 @@ User&	Database::select_user(const uintptr_t& ident)
 
 	for (it = user_list_.begin(); it != user_list_.end(); it++)
 	{
-		if (it->client_sock_ == ident) // 닉네임 바꿔야할 유저를 찾을 상태 !!!
+		if (it->client_sock_ == ident)
 		{
 			return (*it);
 		}
@@ -101,7 +101,7 @@ User&	Database::select_user(const std::string& nickname)
 
 	for (it = user_list_.begin(); it != user_list_.end(); it++)
 	{
-		if (it->nickname_ == nickname) // 닉네임 바꿔야할 유저를 찾을 상태 !!!
+		if (it->nickname_ == nickname)
 		{
 			return (*it);
 		}
@@ -113,7 +113,7 @@ bool	Database::is_user(const uintptr_t& ident)
 {
 	for (std::vector<User>::iterator it = user_list_.begin(); it != user_list_.end(); it++)
 	{
-		if (it->client_sock_ == ident) // 닉네임 바꿔야할 유저를 찾을 상태 !!!
+		if (it->client_sock_ == ident)
 		{
 			return (true);
 		}
@@ -125,7 +125,7 @@ bool	Database::is_user(const std::string& nickname)
 {
 	for (std::vector<User>::iterator it = user_list_.begin(); it != user_list_.end(); it++)
 	{
-		if (it->nickname_ == nickname) // 닉네임 바꿔야할 유저를 찾을 상태 !!!
+		if (it->nickname_ == nickname)
 		{
 			return (true);
 		}
@@ -133,9 +133,8 @@ bool	Database::is_user(const std::string& nickname)
 	return (false);
 }
 
-/* @brief
- *		ident로 찾고, nick이 있는 지 확인
- */
+/// @brief
+// ident로 찾고, nick이 있는 지 확인
 bool	Database::does_has_nickname(const uintptr_t& ident)
 {
 	try
@@ -151,9 +150,8 @@ bool	Database::does_has_nickname(const uintptr_t& ident)
 	return (true);
 }
 
-/* @brief
- *		ident로 찾고, username이 있는 지 확인
- */
+/// @brief
+// ident로 찾고, username이 있는 지 확인
 bool	Database::does_has_username(const uintptr_t& ident)
 {
 	try
@@ -168,8 +166,6 @@ bool	Database::does_has_username(const uintptr_t& ident)
 	}
 	return (true);
 }
-
-
 
 void	Database::delete_user(User& leaver)
 {
@@ -218,15 +214,6 @@ Event	Database::command_pass(const uintptr_t& ident)
 	return tmp;
 }
 
-// is_user(ident) nc -> NICK && flag & PASS -> false not register 451? 
-// is_user(ident) && !has_nickname() && !has_username() -> 처음 들어온 상황
-// is_user(ident) && has_nickname() && has_username() -> 기존 유저가 닉네임 변경
-// is_user(ident) && !has_nickname() && has_username() -> user는 있는데 nick은 없으니 welcome message 출력
-// is_user(ident) && has_nickname() && !has_username() -> 닉네임만 바꾸면 됨
-
-// 무조건 PASS를 뚫고 왔기 때문에 
-// 처음들어온 놈은 없다! 
-
 Udata	Database::command_nick(const uintptr_t& ident, std::string& new_nick)
 {
 	Udata		ret;
@@ -240,8 +227,9 @@ Udata	Database::command_nick(const uintptr_t& ident, std::string& new_nick)
 	}
 	std::cout << "/command_nick" << std::endl;
 	User&	cur_usr = select_user(ident);
+
 	/** 새로운 nickname '유효성' 검사 **/
-	if (!is_valid_nick(new_nick)) // TODO: hchang 특수문자로 시작하는 닉네임 등 유효성 체크하는 함수 만들 것
+	if (!is_valid_nick(new_nick))
 	{
 		std::cout << "what the hell " << std::endl;
 
@@ -260,6 +248,7 @@ Udata	Database::command_nick(const uintptr_t& ident, std::string& new_nick)
 		ret.insert(tmp);
 		return ret;
 	}
+
 	/** 새로운 nickname '중복' 검사 **/
 	if (is_user(new_nick))
 	{
@@ -484,7 +473,7 @@ Udata	Database::command_privmsg(const uintptr_t& ident, const std::string &targe
 	}
 	if (is_user(ident))
 	{
-		User&	cur_usr = select_user(ident); // USER is unregistered
+		User&	cur_usr = select_user(ident);
 
 		tmp.first = ident;
 		if (target_name.at(0) == '#')
@@ -519,9 +508,6 @@ Udata	Database::command_notice(const uintptr_t& ident, const std::string &target
 {
 	Udata		ret;
 	Event		tmp = valid_user_checker_(ident, "NOTICE"); 
-	// is_user check here
-	// User&	sender_user = search_user_by_ident(ident, 0);
-	// User&	target_user = search_user_by_nick(target_name, 0);
 
 	/** 유효성 검사**/
 	if (tmp.second.size())
@@ -529,10 +515,9 @@ Udata	Database::command_notice(const uintptr_t& ident, const std::string &target
 		ret.insert(tmp);
 		return ret;
 	}
-	// static Event	privmsg_p2p_message(const User& sender, const User& target, const std::string& msg);
-	// ret = Sender::privmsg_p2p_message(sender_user, target_user, line);
-	User&	cur_usr = select_user(ident); // USER is unregistered
-	if (target_name.at(0) == '#') //normal notice in channel
+
+	User&	cur_usr = select_user(ident);
+	if (target_name.at(0) == '#')
 	{
 		ret = notice_channel(cur_usr, target_name, msg);
 	}
@@ -580,44 +565,4 @@ Udata		Database::command_kick(const uintptr_t &ident, const std::string& target_
 		}
 	}
 	return ret;
-}
-
-
-
-/// @brief
-// user를 실행하는 함수 (command_user는 Event 반환)
-
-/// @brief
-// nick을 실행하는 함복
-
-
-/// @brief
-// mode는 오류에 대한 것은 안 만들기로 함
-// Event	Database::command_mode(std::string &target_name, int flag)
-// {
-// 	Event	ret;
-
-// 	try
-// 	{
-// 		// User&	sender = search_user_by_nick(target_name, 0);
-// 		// ret = Sender::connect_mode_message(sender);
-// 		return (ret);
-// 	}
-// 	catch(std::exception& e)
-// 	{
-// 		return (ret);
-// 	}
-// 	return (ret);
-// }
-
-//debug 함수
-void Database::print_all_user()
-{
-	std::vector<User>::iterator it;
-
-	for (it = user_list_.begin(); it != user_list_.end(); ++it)
-	{
-		std::cout << "user " << it->nickname_ << std::endl;
-		std::cout << "socket " << it->client_sock_ << std::endl;
-	}
 }

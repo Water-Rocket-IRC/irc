@@ -2,7 +2,8 @@
 
 void exit_with_perror(const std::string& msg);
 
-KeventHandler::KeventHandler()
+KeventHandler::KeventHandler(bool& flag)
+: server_flag(flag)
 {
 	kq_ = kqueue();
 	if (kq_ < 0)
@@ -33,8 +34,9 @@ std::vector<struct kevent>	KeventHandler::set_monitor()
 	std::vector<struct kevent>	res;
 
 	int	event_num = -1;
-	while (event_num < 0)
+	while ((event_num < 0) && server_flag)
 	{
+
 		event_num = kevent(kq_, &(change_list_[0]), (int)change_list_.size(), event_list, 10, NULL);
 	}
 	for (int i(0); i < event_num; ++i)
@@ -60,9 +62,10 @@ void	KeventHandler::set_write(uintptr_t ident)
 	kevent_init_(ident, EVFILT_WRITE, EV_ADD, 0, 0, NULL);
 }
 
-void	KeventHandler::set_exit(uintptr_t ident, void* flag)
+void	KeventHandler::set_exit(uintptr_t ident)
 {
-	kevent_init_(ident, EVFILT_WRITE, EV_ADD, 0, 0, flag);
+	char	k(0);
+	kevent_init_(ident, EVFILT_WRITE, EV_ADD, 0, 0, &k);
 }
 
 void	KeventHandler::delete_event(const struct kevent &event)

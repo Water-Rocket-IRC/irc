@@ -12,6 +12,7 @@ class Database
 		std::vector<User>		user_list_;
 
 	public:
+		std::vector<User>&		get_user_list(void);
 		Event					valid_user_checker_(const uintptr_t& ident, const std::string& command_type);
 	
 	// Channel
@@ -21,7 +22,7 @@ class Database
 
 		bool					is_channel(std::string& chan_name);
 		bool					is_user_in_channel(User& leaver);
-		void 					create_channel(User& joiner, std::string& chan_name, std::string chan_access);
+		Channel& 				create_channel(User& joiner, std::string& chan_name, std::string chan_access);
 		void 					delete_channel(std::string& chan_name);
 		Channel&				select_channel(std::string& chan_name);
 		Channel&				select_channel(User& connector);
@@ -44,7 +45,6 @@ class Database
 		Event	command_user(const uintptr_t& ident, const std::string& username, const std::string& mode,
 							const std::string& unused, const std::string& realname);
 		Event	command_pong(const uintptr_t& ident, const std::string& target, const std::string& msg);
-		// Udata	command_quit(User& leaver, const std::string& leave_msg);
 		Udata	command_quit(const uintptr_t& ident, const std::string& chan_name);
 
 		Udata	command_privmsg(const uintptr_t& ident, const std::string &target_name, const std::string &msg);
@@ -52,7 +52,6 @@ class Database
 
 
 		Event	command_privmsg(std::string &target_name, std::string &line, const uintptr_t& ident);
-		// Event	command_mode(std::string &target_name, int flag);
 		Udata	command_join(const uintptr_t& ident, const std::string& chan_name);
 		Udata	command_part(const uintptr_t& ident, std::string& chan_name, const std::string& msg);
 		Udata	command_kick(const uintptr_t &ident, const std::string& target_name, std::string& chan_name, std::string& msg);
@@ -69,15 +68,7 @@ class Database
 		bool	does_has_username(const uintptr_t& ident);
 		bool	is_valid_nick(std::string& new_nick);
 
-
-		// bot
+	// bot
 		Event	bot_privmsg(User&	cur_usr, const std::string &msg);
 		void	bot_maker(const std::string& name);
-
-		void	print_all_user(); //debug
-
-		class no_such_user_exception : public std::exception
-		{
-			const char* what() const throw();
-		};
 };

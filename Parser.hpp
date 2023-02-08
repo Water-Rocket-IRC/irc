@@ -45,8 +45,9 @@ class Parser
 
 	public:
 		Parser(Udata& serv_udata, const std::string& password);
-		~Parser();
+		// ~Parser();
 
+		void			clear_all();
 		void			command_parser(const uintptr_t& ident, std::string& command);
 		void			error_situation(const uintptr_t& ident);
 };
