@@ -45,14 +45,24 @@ std::vector<struct kevent>	KeventHandler::set_monitor()
 	return (res);
 }
 
-void	KeventHandler::set_read(uintptr_t ident)
+void	KeventHandler::set_server(uintptr_t ident)
 {
 	kevent_init_(ident, EVFILT_READ, EV_ADD, 0, 0, NULL);
+}
+
+void	KeventHandler::set_read(uintptr_t ident)
+{
+	kevent_init_(ident, EVFILT_READ, EV_ADD | EV_ONESHOT, 0, 0, NULL);
 }
 
 void	KeventHandler::set_write(uintptr_t ident)
 {
 	kevent_init_(ident, EVFILT_WRITE, EV_ADD, 0, 0, NULL);
+}
+
+void	KeventHandler::set_exit(uintptr_t ident, void* flag)
+{
+	kevent_init_(ident, EVFILT_WRITE, EV_ADD, 0, 0, flag);
 }
 
 void	KeventHandler::delete_event(const struct kevent &event)

@@ -7,7 +7,7 @@
 
 class Receiver;
 
-enum e_val { N_COMMAND = 12 };
+enum e_val { N_COMMAND = 11 };
 
 class Parser
 {
@@ -19,12 +19,12 @@ class Parser
 		static const std::string	commands[N_COMMAND];
 		static void (Parser::*func_ptr[N_COMMAND])(const uintptr_t&, std::stringstream&, std::string&);
 
+
 		std::string			set_message_(std::string &msg, const std::size_t& start);
 		std::string			message_resize_(const std::string& tmp, const std::string& to_send);
 
 		void				push_write_event_(Event& tmp);
-		void				push_multiple_write_events_(Udata& tmp, const uintptr_t& ident);
-
+		void				push_multiple_write_events_(Udata& tmp, const uintptr_t& ident, const int flag);
 		void				parser_pass_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send);
 		void				parser_nick_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send);
 		void				parser_user_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send);

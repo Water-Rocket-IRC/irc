@@ -20,7 +20,9 @@ class KeventHandler
 
 		std::vector<struct kevent>	set_monitor();
 		void						set_read(uintptr_t ident);
+		void						set_server(uintptr_t ident);
 		void						set_write(uintptr_t ident);
+		void						set_exit(uintptr_t ident, void* flag);
 		void						delete_event(const struct kevent &event);
 		void						delete_server(uintptr_t serv_sock);
 };

@@ -53,7 +53,7 @@ void	Receiver::bind_socket_()
 		std::cerr << "error" << std::endl;
 	}
 	// TODO: Have to arrange 5 (Max queue)
-	kq_.set_read(server_sock_);
+	kq_.set_server(server_sock_);
 }
 
 void	Receiver::start()
@@ -85,7 +85,10 @@ void	Receiver::start()
 				}
 				else if (cur_event.filter == EVFILT_WRITE)
 				{
-					clientWriteEventHandler_(cur_event);
+					if (clientWriteEventHandler_(cur_event))
+					{
+						continue ;
+					}
 					uintptr_t	tmp_fd = cur_event.ident;
 					kq_.delete_event(cur_event);
 					kq_.set_read(tmp_fd);
@@ -103,9 +106,8 @@ int	Receiver::clientReadEventHandler_(struct kevent &cur_event)
 	if (cur_event.flags & EV_EOF)
 	{
 		uintptr_t	tmp_sock(cur_event.ident);
-		std::cout << "sock was fucked!" << std::endl;
+		std::cout << tmp_sock << " sock was fucked!" << std::endl;
 		kq_.delete_event(cur_event);
-		parser_.error_situation(tmp_sock);
 		close(tmp_sock);
 		return (1);
 	}
@@ -122,7 +124,7 @@ int	Receiver::clientReadEventHandler_(struct kevent &cur_event)
 	return (0);
 }
 
-void	Receiver::clientWriteEventHandler_(struct kevent &cur_event)
+int	Receiver::clientWriteEventHandler_(struct kevent &cur_event)
 {
 
 	Udata_iter	target = udata_.find(cur_event.ident);
@@ -130,7 +132,15 @@ void	Receiver::clientWriteEventHandler_(struct kevent &cur_event)
 	std::cout << BOLDGREEN
 				<< "socket: " << target->first << "\nmsg:\n" << target->second
 				<< RESET << std::endl;
-	// target->second += "\r\n";
 	send(cur_event.ident, target->second.c_str(), target->second.size(), 0);
+	if (cur_event.udata)
+	{
+		uintptr_t	tmp_fd = cur_event.ident;
+		kq_.delete_event(cur_event);
+		close(tmp_fd);
+		udata_.erase(target);
+		return (1);
+	}
 	udata_.erase(target);
+	return (0);
 }
