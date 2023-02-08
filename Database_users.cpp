@@ -1,21 +1,36 @@
 #include "Database.hpp"
 #include "Udata.hpp"
+#include "User.hpp"
 #include "debug.hpp"
 #include <sys/_types/_ct_rune_t.h>
-
-const char*	Database::no_such_user_exception::what() const throw()
-{
-	return ("err: no such user");
-}
 
 void	Database::delete_error_user(User& cur_usr)
 {
 	if (is_user_in_channel(cur_usr))
 	{
 		Channel& cur_chan = select_channel(cur_usr);
-		quit_channel(cur_usr, cur_chan.get_name(), "unexpected kill");
+
+		std::vector<User>& users = cur_chan.get_users();
+		const int user_size = users.size();
+		cur_chan.delete_user(cur_usr);
+		if (user_size == 1) //채널 잘 삭제되는 것 확인
+		{
+			delete_channel(cur_chan.get_name());
+		}
+		else
+		{
+			if (cur_usr == cur_chan.get_host())
+			{
+				cur_chan.set_host();
+			}
+		}
 	}
 	user_list_.erase(remove(user_list_.begin(), user_list_.end(), cur_usr), user_list_.end()); // 순서 중요
+}
+
+const char*	Database::no_such_user_exception::what() const throw()
+{
+	return ("err: no such user");
 }
 
 Event	Database::valid_user_checker_(const uintptr_t& ident, const std::string& command_type)
@@ -28,11 +43,11 @@ Event	Database::valid_user_checker_(const uintptr_t& ident, const std::string& c
 		return ret;
 	}
 	User&	cur_user = select_user(ident);
-	if (!does_has_nickname(ident))
+	if (!(cur_user.flag_ & F_NICK))
 	{
 		ret = Sender::command_not_registered_451(ident, command_type);
 	}
-	else if (!does_has_username(ident))
+	else if (!(cur_user.flag_ & F_NICK))
 	{
 		ret = Sender::command_not_registered_451(cur_user, command_type);
 	}
@@ -211,10 +226,16 @@ Udata	Database::command_nick(const uintptr_t& ident, std::string& new_nick)
 	Event		tmp;
 
 	if (!is_user(ident))
+	{
+		tmp = Sender::password_incorrect_464(ident);
+		ret.insert(tmp);
 		return ret;
+	}
 	User&	cur_usr = select_user(ident);
 	if (!(cur_usr.flag_ & F_PASS))
 	{ 
+		tmp = Sender::password_incorrect_464(ident);
+		ret.insert(tmp);
 		return ret;
 	}
 	if (!is_valid_nick(new_nick)) // TODO: hchang 특수문자로 시작하는 닉네임 등 유효성 체크하는 함수 만들 것
@@ -282,11 +303,13 @@ Event	Database::command_user(const uintptr_t& ident
 	Event	ret;
 
 	if (!is_user(ident))
-		return ret;
+	{
+		return (Sender::password_incorrect_464(ident));
+	}
 	User&		cur_usr = select_user(ident);
 	if (!(cur_usr.flag_ & F_PASS))
 	{
-		return ret;
+		return (Sender::password_incorrect_464(ident));
 	}
 	if (!(cur_usr.flag_ & F_USER))
 	{
@@ -294,8 +317,8 @@ Event	Database::command_user(const uintptr_t& ident
 		cur_usr.input_user(username, mode, unused, realname);
 		if (cur_usr.flag_ & F_NICK)
 		{
-			ret = Sender::welcome_message_connect(cur_usr);
-		}
+			ret = Sender::welcome_message_connect(cur_usr); 
+		} 
 	}
 	std::cout << std::bitset<4>(cur_usr.flag_) << std::endl;
 	// debug::showUsers(user_list_);

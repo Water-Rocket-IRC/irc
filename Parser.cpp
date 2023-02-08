@@ -33,6 +33,14 @@ Parser::~Parser()
 {
 }
 
+// ctrl + c 눌렀을 때  지우는 것 
+void	Parser::error_situation(const uintptr_t& ident)
+{
+	User&		tmp_usr = database_.select_user(ident);
+
+	database_.delete_error_user(tmp_usr);
+}
+
 std::string	Parser::set_message_(std::string& msg, const std::size_t& start) // nl(10) is not included
 {
 	std::size_t	pos = msg.find('\r');

@@ -140,7 +140,7 @@ Event		Sender::password_incorrect_464(const uintptr_t& sock)
 {
 	Event	ret;
 
-	const std::string& nick_msg = ":" + Sender::server_name_ + " 464 " + "User :Password Incorrect"; \
+	const std::string& nick_msg = ":" + Sender::server_name_ + " 464 " + "User :Password Incorrect, Server disconnected"; \
 	ret = std::make_pair(sock, nick_msg + "\r\n");
 	return ret;	
 }
