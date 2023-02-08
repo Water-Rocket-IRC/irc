@@ -102,7 +102,7 @@ Udata	Database::join_channel(User& joiner, const std::string& chan_name_)
 		it->second += Sender::join_353_message(joiner, chan.get_name(), chan.get_access(), "@" + joiner.nickname_);
 		it->second += Sender::join_366_message(joiner, chan.get_name());
 		std::cout << BOLDMAGENTA << "(Channel)" << RESET << std::endl;
-		debug::showUsers(chan.get_users());
+		//debug::showUsers(chan.get_users());
 	}
 	else
 	{
@@ -114,9 +114,9 @@ Udata	Database::join_channel(User& joiner, const std::string& chan_name_)
 		it->second += Sender::join_353_message(joiner, chan.get_name(), chan.get_access(), chan_user_list);
 		it->second += Sender::join_366_message(joiner, chan.get_name());
 		std::cout << BOLDMAGENTA << "(Channel)" << RESET << std::endl;
-		debug::showUsers(chan.get_users());
+		// debug::showUsers(chan.get_users());
 	}
-	debug::showChannels(channel_list_);
+	//debug::showChannels(channel_list_);
 	return ret;
 }
 
@@ -280,7 +280,7 @@ Udata	Database::who_channel(User& asker, std::string& chan_name)
 		ret.insert(tmp);
 		return ret;
 	}
-	Channel& chan = select_channel(chan_name); // 315 -> end of list만 보낸다.
+	//Channel& chan = select_channel(chan_name); // 315 -> end of list만 보낸다.
 	tmp = Sender::who_joiner_352_message(asker, chan_name);
 	tmp.second += Sender::who_315_message(asker, chan_name);
 

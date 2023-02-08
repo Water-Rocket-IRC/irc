@@ -52,7 +52,7 @@ class Database
 
 
 		Event	command_privmsg(std::string &target_name, std::string &line, const uintptr_t& ident);
-		Event	command_mode(std::string &target_name, int flag);
+		// Event	command_mode(std::string &target_name, int flag);
 		Udata	command_join(const uintptr_t& ident, const std::string& chan_name);
 		Udata	command_kick(const uintptr_t &ident, const std::string& target_name, std::string& chan_name, std::string& msg);
 
@@ -77,6 +77,7 @@ class Database
 
 		class no_such_user_exception : public std::exception
 		{
-			const char* what();
+			const char* what() const throw();
 		};
+		// 헤더에만 정의해 놓고 cpp 파일에 구현되어 있지 않음
 };

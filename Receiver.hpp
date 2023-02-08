@@ -19,7 +19,6 @@ class Receiver
 		Parser					parser_;
 		Udata&					udata_;
 		sockaddr_in				server_addr_;
-		const uintptr_t			port_;
 		uintptr_t				server_sock_;
 
 		int						clientReadEventHandler_(struct kevent &cur_event);

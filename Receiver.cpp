@@ -16,7 +16,7 @@ KeventHandler&	Receiver::get_Kevent_Handler(void)
 /// @brief Receiver 생성자
 /// @param port 소켓을 생성할 포켓 번호
 Receiver::Receiver(Udata& serv_udata, const uintptr_t& port, const std::string& password)
-: parser_(serv_udata, password), udata_(serv_udata), port_(port)
+: parser_(serv_udata, password), udata_(serv_udata)
 {
 	init_socket_(port);
 	bind_socket_();

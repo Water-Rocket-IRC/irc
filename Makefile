@@ -6,13 +6,12 @@
 #    By: jinwoole <indibooks@naver.com>             +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/01/27 10:57:54 by sesim             #+#    #+#              #
-#    Updated: 2023/02/06 15:44:59 by jinwoole         ###   ########.fr        #
+#    Updated: 2023/02/08 13:41:38 by jinwoole         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 CXX			=	c++
-CXXFLAGS	=	-fsanitize=address -g3 #-Wall -Wextra -Werror 
-# CXXFLAGS	=	-g3
+CXXFLAGS	=  -Wall -Wextra -Werror 
 
 RM			=	rm -rf
 

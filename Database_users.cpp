@@ -3,6 +3,11 @@
 #include "debug.hpp"
 #include <sys/_types/_ct_rune_t.h>
 
+const char*	Database::no_such_user_exception::what() const throw()
+{
+	return ("err: no such user");
+}
+
 void	Database::delete_error_user(User& cur_usr)
 {
 	if (is_user_in_channel(cur_usr))
@@ -83,6 +88,7 @@ bool	Database::is_user(const uintptr_t& ident)
 	try
 	{
 		User& tmp = select_user(ident);
+		static_cast<void>(tmp);
 	}
 	catch(const std::exception&)
 	{
@@ -96,6 +102,7 @@ bool	Database::is_user(const std::string& nickname)
 	try
 	{
 		User& tmp = select_user(nickname);
+		static_cast<void>(tmp);
 	}
 	catch(const std::exception&)
 	{
@@ -162,7 +169,7 @@ bool	Database::is_valid_nick(std::string& new_nick)
 {
 	if (!isalpha(static_cast<int>(new_nick[0])) && static_cast<int>(new_nick[0]) != '_')
 		return false;
-	for (int i = 1; i < new_nick.size(); i++)
+	for (std::size_t i(1); i < new_nick.size(); i++)
 	{
 		if (!isalnum(static_cast<int>(new_nick[i])) && static_cast<int>(new_nick[i]) != '_')
 		{
@@ -264,7 +271,7 @@ Udata	Database::command_nick(const uintptr_t& ident, std::string& new_nick)
 		cur_usr.nickname_ = new_nick;
 		ret.insert(tmp);
 	}
-	debug::showUsers(user_list_);
+	// debug::showUsers(user_list_);
 	return ret;
 }
 
@@ -291,7 +298,7 @@ Event	Database::command_user(const uintptr_t& ident
 		}
 	}
 	std::cout << std::bitset<4>(cur_usr.flag_) << std::endl;
-	debug::showUsers(user_list_);
+	// debug::showUsers(user_list_);
 	return ret;
 }
 Event	Database::command_pong(const uintptr_t& ident, const std::string& target, const std::string& msg)
@@ -402,7 +409,7 @@ Event	Database::bot_privmsg(User&	cur_usr, const std::string &msg)
 		else
 		{
 			bot_msg = "CHANNEL LIST\n";
-			for (int i = 0; i < channel_list_.size(); ++i)
+			for (std::size_t i(0); i < channel_list_.size(); ++i)
 				bot_msg += channel_list_[i].get_name() + "\n";
 		}
 	}
@@ -544,22 +551,22 @@ Udata		Database::command_kick(const uintptr_t &ident, const std::string& target_
 
 /// @brief
 // mode는 오류에 대한 것은 안 만들기로 함
-Event	Database::command_mode(std::string &target_name, int flag)
-{
-	Event	ret;
+// Event	Database::command_mode(std::string &target_name, int flag)
+// {
+// 	Event	ret;
 
-	try
-	{
-		// User&	sender = search_user_by_nick(target_name, 0);
-		// ret = Sender::connect_mode_message(sender);
-		return (ret);
-	}
-	catch(std::exception& e)
-	{
-		return (ret);
-	}
-	return (ret);
-}
+// 	try
+// 	{
+// 		// User&	sender = search_user_by_nick(target_name, 0);
+// 		// ret = Sender::connect_mode_message(sender);
+// 		return (ret);
+// 	}
+// 	catch(std::exception& e)
+// 	{
+// 		return (ret);
+// 	}
+// 	return (ret);
+// }
 
 //debug 함수
 void Database::print_all_user()
