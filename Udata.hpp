@@ -1,9 +1,10 @@
 #pragma once
 
-#include <string>
+#include <iostream>
+#include <map>
+#include <utility>
+#include <sys/_types/_uintptr_t.h>
 
-struct Udata
-{
-	uintptr_t	sock_fd;
-	std::string	msg;
-};
+typedef std::map<uintptr_t, std::string>			Udata;
+typedef std::pair<uintptr_t, std::string> 			Event;
+typedef std::map<uintptr_t, std::string>::iterator	Udata_iter;

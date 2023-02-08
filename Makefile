@@ -6,38 +6,32 @@
 #    By: jinwoole <indibooks@naver.com>             +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/01/27 10:57:54 by sesim             #+#    #+#              #
-#    Updated: 2023/01/29 15:49:46 by jinwoole         ###   ########.fr        #
+#    Updated: 2023/02/08 13:41:38 by jinwoole         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 CXX			=	c++
-CXXFLAGS	=	-g3 -Wall -Wextra -Werror -fsanitize=address
-CXXFLAGS_TMP	=	-g3 #-fsanitize=address 
+CXXFLAGS	=  -Wall -Wextra -Werror 
+
 RM			=	rm -rf
 
 OBJS_DIR	:=	objs/
 DEPS_DIR	:=	deps/
 
-# SRCS		:=	$(wildcard *.cpp)
-SRCS		:=	main.cpp
+SRCS		:=	$(wildcard *.cpp)
 OBJS		:=	$(addprefix $(OBJS_DIR), $(SRCS:.cpp=.o))
 DEPS		:=	$(addprefix $(DEPS_DIR), $(SRCS:.cpp=.d))
 NAME		:=	ircserv
 
-all :
-	$(CXX) $(CXXFLAGS_TMP) $(SRCS) -o $(NAME)
-
-tmp : $(NAME)
+all : $(NAME)
 
 $(NAME) : $(OBJS)
 	$(CXX) $(CXXFLAGS) $^ -o $@
-# $(CXX) $^ -o $@
 
 $(OBJS_DIR)%.o : %.cpp
 	@mkdir -p $(dir $@)
 	@mkdir -p $(DEPS_DIR)
 	$(CXX) $(CXXFLAGS) $< -c -o $@ -MMD
-# $(CXX) $< -c -o $@ -MMD
 	mv $(@:.o=.d) $(DEPS_DIR)
 
 clean:
@@ -46,8 +40,10 @@ clean:
 
 fclean: clean
 	$(RM) $(NAME)
+	$(RM) ircserv.dSYM
 
-re: | fclean all
+re: fclean 
+	@make all
 
 -include $(DEPS)
 
