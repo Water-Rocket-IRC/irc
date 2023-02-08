@@ -443,7 +443,7 @@ Udata	Database::command_privmsg(const uintptr_t& ident, const std::string &targe
 		}
 		else
 		{
-			if (target_name == "bot")
+			if (target_name == "BOT")
 			{
 				tmp = bot_privmsg(cur_usr, msg);
 				ret.insert(tmp);
