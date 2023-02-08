@@ -79,5 +79,4 @@ class Database
 		{
 			const char* what() const throw();
 		};
-		// 헤더에만 정의해 놓고 cpp 파일에 구현되어 있지 않음
 };
