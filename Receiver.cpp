@@ -130,7 +130,6 @@ int	Receiver::client_read_event_handler_(struct kevent &cur_event)
 		std::cerr << "err: receiving data" << std::endl;
 		return (1);
 	}
-	std::cout << BOLDYELLOW << "Received: " << cur_event.ident << "\n" << buffer << RESET<< std::endl;
 	std::string			command(buffer, byte_received);
 
 	parser_.command_parser(cur_event.ident, command);
@@ -144,9 +143,6 @@ int	Receiver::client_write_event_handler_(struct kevent &cur_event)
 {
 	Udata_iter	target = udata_.find(cur_event.ident);
 
-	std::cout << BOLDGREEN
-				<< "socket: " << target->first << "\nmsg:\n" << target->second
-				<< RESET << std::endl;
 	send(cur_event.ident, target->second.c_str(), target->second.size(), 0);
 	/**   해당 클라이언트가 종료를 요청한 경우 클라이언트 삭제 처리   **/
 	if (cur_event.udata)

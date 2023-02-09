@@ -576,7 +576,7 @@ Event	Database::bot_privmsg(User&	cur_usr, const std::string &msg)
 			bot_msg = "● [CHANNEL LIST] : ";
 			for (std::size_t i(0); i < channel_list_.size(); ++i)
 			{
-				bot_msg += std::to_string(i) + ". " + channel_list_[i].get_name() + " : " + channel_list_[i].get_topic() + ((i == (channel_list_.size() - 1)) ? "": ",");
+				bot_msg += std::to_string(i + 1) + ". " + channel_list_[i].get_name() + " : " + channel_list_[i].get_topic() + ((i == (channel_list_.size() - 1)) ? "": ", ");
 			}
 		}
 	}
@@ -584,11 +584,11 @@ Event	Database::bot_privmsg(User&	cur_usr, const std::string &msg)
 	{
 		bot_msg = "● [USER LIST] : ";
 		for (std::size_t i(1); i < user_list_.size(); ++i)
-			bot_msg += std::to_string(i) + ". " + user_list_[i].nickname_ + ((i == (user_list_.size() - 1)) ? "": ",");
+			bot_msg += std::to_string(i) + ". " + user_list_[i].nickname_ + ((i == (user_list_.size() - 1)) ? "": ", ");
 	}
 	else
 	{
-		bot_msg = "THAT IS NOT MY COMMAND. YOU CAN USE : '!COMMANMD' & '!CHANNEL'.";
+		bot_msg = "THAT IS NOT MY COMMAND. YOU CAN USE : '!command' & '!channel' & !user.";
 	}
 	tmp = Sender::privmsg_bot_message(cur_usr, bot_msg);
 	return tmp;

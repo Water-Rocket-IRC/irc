@@ -93,22 +93,6 @@ std::string	Parser::message_resize_(const std::string& tmp, const std::string& t
 	return ret;
 }
 
-void Parser::print_title(const std::string& title)
-{
-	std::string  under_bar = "____";
-	std::string  over_bar =  "‾‾‾‾";
-
-	for (std::size_t i(0); i < title.length(); ++i)
-	{
-		under_bar += "_";
-		over_bar += "‾";
-	}
-	std::cout << BOLDCYAN << under_bar
-			  << std::endl << "| " << title << " |"
-			  << std::endl << over_bar
-			  << RESET << std::endl;
-}
-
 /**		command_parser   **/
 /**		@brief 클라이언트가 보낸 명령어를 개행을 기준으로 한 줄씩 파싱하여 처리하는 함수   **/
 /**		@param ident 클라이언트의 소켓   **/
@@ -126,7 +110,6 @@ void	Parser::command_parser(const uintptr_t& ident, std::string& command)
 
 		line_ss >> command_type;
 		command_type = command_toupper(command_type.c_str());
-		print_title(command_type);                                                                // <- sesim에게 물어 볼 것 : 살릴 것sdf
 		for (; i < N_COMMAND && (command_type != Parser::commands[i]); ++i) { }
 		if (i < N_COMMAND)
 		{
@@ -140,7 +123,6 @@ void	Parser::command_parser(const uintptr_t& ident, std::string& command)
 		}
 		else
 		{
-			std::cerr << BOLDRED << "We don't support these : \n" << RESET << command_type << std::endl;
 			Event	tmp;
 			tmp.first = ident;
 			push_write_event_(tmp);

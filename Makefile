@@ -6,12 +6,12 @@
 #    By: sesim <sesim@student.42seoul.kr>           +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/01/27 10:57:54 by sesim             #+#    #+#              #
-#    Updated: 2023/02/09 11:10:05 by sesim            ###   ########.fr        #
+#    Updated: 2023/02/09 14:56:30 by sesim            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 CXX			=	c++
-CXXFLAGS	=  -Wall -Wextra -Werror #-fsanitize=address -g3
+CXXFLAGS	=	-Wall -Wextra -Werror -std=c++98
 
 RM			=	rm -rf
 
@@ -41,7 +41,6 @@ clean:
 
 fclean: clean
 	$(RM) $(NAME)
-	$(RM) ircserv.dSYM
 
 re: fclean 
 	@make all

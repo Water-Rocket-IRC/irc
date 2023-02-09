@@ -25,6 +25,7 @@ class Channel
 		std::string&		get_topic(void);
 		User&				get_host(void);
 		void				set_host(void);
+		void				set_host(User& new_host);
 		std::string&		get_access(void);
 		void				set_access(const std::string& access);
 		void				set_topic(std::string& topic);

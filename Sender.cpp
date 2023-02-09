@@ -381,7 +381,7 @@ Event	Sender::privmsg_bot_message(const User& sender, const std::string& msg)
 {
 	Event		ret;
 
-	const std::string& privmsg = ":BOT!" + sender.username_ + "@" + sender.unused_ + " PRIVMSG " + \
+	const std::string& privmsg = ":BOT!dummy@" + sender.unused_ + " PRIVMSG " + \
 		sender.nickname_ + " :" + msg;
 	ret = std::make_pair(sender.client_sock_, privmsg + "\r\n");
 	return (ret);

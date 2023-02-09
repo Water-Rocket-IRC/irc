@@ -92,6 +92,16 @@ Udata	Database::join_channel(User& joiner, const std::string& tmp_chan_name)
 	Event		tmp;
 	std::string	chan_name(tmp_chan_name);
 
+
+	if (is_user_in_channel(joiner))
+	{
+		Event	tmp2;
+		tmp = Sender::join_message(joiner, joiner, chan_name);
+		tmp2 = Sender::part_message(joiner, joiner, chan_name, "invaild : No Double join");
+		tmp.second += tmp2.second;
+		ret.insert(tmp);
+		return ret;
+	}
 	/** 해당 이름의 채널이 없는 지 검사하기 **/
 	if (is_channel(chan_name) == false)
 	{
@@ -102,7 +112,6 @@ Udata	Database::join_channel(User& joiner, const std::string& tmp_chan_name)
 		Udata_iter it = ret.find(joiner.client_sock_);
 		it->second += Sender::join_353_message(joiner, chan.get_name(), chan.get_access(), "@" + joiner.nickname_);
 		it->second += Sender::join_366_message(joiner, chan.get_name());
-		std::cout << BOLDMAGENTA << "(Channel)" << RESET << std::endl;
 	}
 	else
 	{
@@ -113,7 +122,6 @@ Udata	Database::join_channel(User& joiner, const std::string& tmp_chan_name)
 		Udata_iter it = ret.find(joiner.client_sock_);
 		it->second += Sender::join_353_message(joiner, chan.get_name(), chan.get_access(), chan_user_list);
 		it->second += Sender::join_366_message(joiner, chan.get_name());
-		std::cout << BOLDMAGENTA << "(Channel)" << RESET << std::endl;
 	}
 	return ret;
 }
@@ -281,6 +289,10 @@ Udata	Database::nick_channel(User& nicker, std::string& send_msg)
 	Channel& channel = select_channel(nicker);
 	ret = channel.send_all(nicker, trash, send_msg, NICK);
 	channel.change_nick(nicker, send_msg);
+	if (channel.get_host() == nicker)
+	{
+		channel.set_host(nicker);
+	}
 	return ret;
 }
 

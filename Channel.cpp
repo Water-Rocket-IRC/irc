@@ -10,7 +10,7 @@ void			Channel::change_nick(User& usr, std::string new_nick)
 	{
 		if (it->nickname_ == usr.nickname_)
 		{
-			usr.nickname_ = new_nick;
+			it->nickname_ = new_nick;
 			break ;
 		}
 	}
@@ -156,6 +156,12 @@ void Channel::set_host()
 {
 	this->host_ = connectors_[0];
 }
+
+void Channel::set_host(User& new_host)
+{
+	this->host_ = new_host;
+}
+
 
 void Channel::set_channel_name(std::string& chan_name)
 {
