@@ -102,7 +102,6 @@ Udata	Database::join_channel(User& joiner, const std::string& tmp_chan_name)
 		Udata_iter it = ret.find(joiner.client_sock_);
 		it->second += Sender::join_353_message(joiner, chan.get_name(), chan.get_access(), "@" + joiner.nickname_);
 		it->second += Sender::join_366_message(joiner, chan.get_name());
-		std::cout << BOLDMAGENTA << "(Channel)" << RESET << std::endl;
 	}
 	else
 	{
@@ -113,7 +112,6 @@ Udata	Database::join_channel(User& joiner, const std::string& tmp_chan_name)
 		Udata_iter it = ret.find(joiner.client_sock_);
 		it->second += Sender::join_353_message(joiner, chan.get_name(), chan.get_access(), chan_user_list);
 		it->second += Sender::join_366_message(joiner, chan.get_name());
-		std::cout << BOLDMAGENTA << "(Channel)" << RESET << std::endl;
 	}
 	return ret;
 }

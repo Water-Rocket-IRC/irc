@@ -32,16 +32,14 @@ class Database
 		Udata					quit_channel(User&leaver, std::string& chan_name, const std::string& msg_);
 		Udata					nick_channel(User& who, std::string& new_nick);
 		std::vector<Channel>&	get_channels() { return	channel_list_; };
-
 	/** User **/
 		void					delete_error_user(const uintptr_t& ident);
 		Event					command_pass(const uintptr_t& ident);
 		Udata					command_nick(const uintptr_t& ident, std::string& nick_name);
 		Event					command_user(const uintptr_t& ident, const std::string& username, const std::string& mode,
-									const std::string& unused, const std::string& realname);
+								const std::string& unused, const std::string& realname);
 		Event					command_pong(const uintptr_t& ident, const std::string& target, const std::string& msg);
 		Udata					command_quit(const uintptr_t& ident, const std::string& chan_name);
-
 		Udata					command_privmsg(const uintptr_t& ident, const std::string &target_name, const std::string &msg);
 		Udata					command_notice(const uintptr_t& ident, const std::string &target_name, const std::string &msg);
 		Event					command_privmsg(std::string &target_name, std::string &line, const uintptr_t& ident);
@@ -58,7 +56,6 @@ class Database
 		bool					does_has_nickname(const uintptr_t& ident);
 		bool					does_has_username(const uintptr_t& ident);
 		bool					is_valid_nick(std::string& new_nick);
-
 	/** bot **/
 		Event					bot_privmsg(User&	cur_usr, const std::string &msg);
 		void					bot_maker(const std::string& name);
