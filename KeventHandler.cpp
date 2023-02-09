@@ -27,15 +27,16 @@ void	KeventHandler::kevent_init_(uintptr_t ident, int16_t filter, uint16_t flags
 	change_list_.push_back(event);
 }
 
-std::vector<struct kevent>	KeventHandler::set_monitor()
+std::vector<struct kevent>	KeventHandler::set_monitor(const bool& end_signal)
 {
-	struct kevent	event_list[10];
 	std::vector<struct kevent>	res;
+	if (end_signal)
+		return res;
+	struct kevent	event_list[10];
 
 	int	event_num = -1;
 	while ((event_num < 0))
 	{
-
 		event_num = kevent(kq_, &(change_list_[0]), (int)change_list_.size(), event_list, 10, NULL);
 	}
 	for (int i(0); i < event_num; ++i)

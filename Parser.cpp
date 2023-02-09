@@ -41,7 +41,8 @@ void	Parser::clear_all()
 		to_delete.insert(tmp);
 		Receiver::get_Kevent_Handler().set_exit(it->client_sock_);
 	}
-	std::vector<struct kevent>	events = Receiver::get_Kevent_Handler().set_monitor();
+	const bool	flag = to_delete.size() ? false : true;
+	std::vector<struct kevent>	events = Receiver::get_Kevent_Handler().set_monitor(flag);
 	for (std::size_t i(0); i < events.size(); ++i)
 	{
 		Udata_iter	target = to_delete.find(events[i].ident);

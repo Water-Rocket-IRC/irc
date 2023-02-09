@@ -1,7 +1,5 @@
 #include "Server.hpp"
 
-
-
 void exit_with_perror(const std::string& msg);
 
 Server*		Server::server_ptr_ = NULL;
