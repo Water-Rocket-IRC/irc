@@ -22,6 +22,7 @@ bool	Database::is_channel(std::string& chan_name)
 bool	Database::is_user_in_channel(User& leaver)
 {
 	std::vector<Channel>::iterator it = channel_list_.begin();
+
 	for (; it != channel_list_.end(); ++it)
 	{
 		if (it->is_user(leaver))
@@ -43,9 +44,7 @@ Channel&	Database::create_channel(User& joiner, std::string& chan_name, std::str
 	channel_list_.push_back(tmp);
 	return channel_list_.back();
 }
- /*
- * operator 가 없을 때 (0 index가 비어있다면 삭제)
- */
+
 void	Database::delete_channel(std::string& chan_name)
 {
 	Channel tmp;
@@ -58,10 +57,10 @@ void	Database::delete_channel(std::string& chan_name)
 	this->channel_list_.erase(this->channel_list_.begin() + size);
 }
 
-/// @brief sender, command -> error_message에 보낼 정보
-Channel&	Database::select_channel(std::string& chan_name) // 403 ERROR Sender::no_channel_message
+Channel&	Database::select_channel(std::string& chan_name)
 {
 	std::vector<Channel>::iterator it = channel_list_.begin();
+
 	for (; it != channel_list_.end(); ++it)
 	{
 		if (it->get_name() == chan_name)
@@ -72,9 +71,10 @@ Channel&	Database::select_channel(std::string& chan_name) // 403 ERROR Sender::n
 	return *it;
 }
 
-Channel&	Database::select_channel(User& connector) // 476 ERROR Sender::join_invaild_channel_name_message
+Channel&	Database::select_channel(User& connector)
 {
 	std::vector<Channel>::iterator it = channel_list_.begin();
+
 	for (; it != channel_list_.end(); ++it)
 	{
 		if (it->is_user(connector))
@@ -85,11 +85,7 @@ Channel&	Database::select_channel(User& connector) // 476 ERROR Sender::join_inv
 	return *it;
 }
 
-/* 
- * @brief 유저가 채널에 접속하는 함수
- * @param User&					=> 접속하려는 사람
- * @param const std::striing&	=> 채널 이름
- */
+/** @brief join 요청을 받아 처리해주는 함수. 채널 생성과 입장을 처리한다 **/
 Udata	Database::join_channel(User& joiner, const std::string& tmp_chan_name)
 {
 	Udata		ret;
@@ -100,13 +96,9 @@ Udata	Database::join_channel(User& joiner, const std::string& tmp_chan_name)
 	if (is_channel(chan_name) == false)
 	{
 		/** 만약에 없으면 채널 만들기 **/
-
 		Channel& chan = create_channel(joiner, chan_name, "=");
 		tmp = Sender::join_message(joiner, joiner, chan_name);
 		ret.insert(tmp);
-
-		/** 채널 내에  **/
-		// Channel& chan = select_channel(chan_name);
 		Udata_iter it = ret.find(joiner.client_sock_);
 		it->second += Sender::join_353_message(joiner, chan.get_name(), chan.get_access(), "@" + joiner.nickname_);
 		it->second += Sender::join_366_message(joiner, chan.get_name());
@@ -126,6 +118,7 @@ Udata	Database::join_channel(User& joiner, const std::string& tmp_chan_name)
 	return ret;
 }
 
+/** @brief QUIT channel : quit할때 채널 내부 정보 정리 및 통지 **/
 Udata	Database::quit_channel(User&leaver, std::string& chan_name, const std::string& msg_)
 {
 	Event				tmp;
@@ -138,26 +131,25 @@ Udata	Database::quit_channel(User&leaver, std::string& chan_name, const std::str
 		ret.insert(tmp);
 		return ret;
 	}
-	Channel& chan = select_channel(chan_name); // 403 ERROR Sender::no_channel_message
-	//유저가 존재하지 않을 경우(로비에서 part하면 예외처리)
+	Channel& chan = select_channel(chan_name);
 	if (chan.is_user(leaver) == 0)
 	{
 		tmp = Sender::no_user_message(leaver, leaver.nickname_);
 		return ret;
 	}
-	//Msg전송 : PART 내용에 따라 전송 -> 아마 채널의 다른 유저들에게 떠났다고 알려줘야
+	/** Msg전송 : PART 내용에 따라 전송 -> 채널의 다른 유저들에게 떠났다고 알려줘야 **/
 	std::vector<User>& users = chan.get_users();
 	const int user_size = users.size();
-	//PART하면, 그 내역은 모두에게 보내진다. 나간 사람 포함한다.
 	ret = chan.send_all(leaver, leaver, msg, QUIT);
 	chan.delete_user(leaver);
 
-	if (user_size == 1) //채널 잘 삭제되는 것 확인
+	if (user_size == 1) /** quit 상황에서 user가 1명일때 채널 삭제 **/
 	{
 		delete_channel(chan_name);
 	}
 	else
 	{
+		/** 호스트가 퇴장했을 경우, 권한 이양. 플라잉더치맨은 항상 선장이 필요하다 **/
 		if (leaver == chan.get_host())
 		{
 			chan.set_host();
@@ -166,6 +158,7 @@ Udata	Database::quit_channel(User&leaver, std::string& chan_name, const std::str
 	return ret;
 }
 
+/** @brief PART 상황 처리, quit과 거의 같음 **/
 Udata	Database::part_channel(User&leaver, std::string& chan_name, const std::string& msg_)
 {
 	Event				tmp;
@@ -178,7 +171,7 @@ Udata	Database::part_channel(User&leaver, std::string& chan_name, const std::str
 		ret.insert(tmp);
 		return ret;
 	}
-	Channel& chan = select_channel(chan_name); // 403 ERROR Sender::no_channel_message
+	Channel& chan = select_channel(chan_name);
 	if (chan.is_user(leaver) == 0)
 	{
 		tmp = Sender::no_user_message(leaver, leaver.nickname_);
@@ -203,7 +196,7 @@ Udata	Database::part_channel(User&leaver, std::string& chan_name, const std::str
 	return ret;
 }
 
-/// @brief 채널 전체 유저에게 메시지 전달. 내외부 모두 사용됨
+/** @brief 채널 전체 유저에게 메시지 전달 -> join 상황에서 일반적 채팅 처리 **/
 Udata	Database::channel_msg(User& sender, std::string chan_name, const std::string& msg)
 {
 	Udata		ret;
@@ -215,7 +208,7 @@ Udata	Database::channel_msg(User& sender, std::string chan_name, const std::stri
 		ret.insert(tmp);
 		return ret;
 	}
-	Channel&	channel = select_channel(chan_name); // 403 ERROR Sender::no_channel_message
+	Channel&	channel = select_channel(chan_name);
 	if (channel.is_user(sender) == false)
 	{
 		tmp = Sender::no_user_message(sender, sender.nickname_);
@@ -226,6 +219,7 @@ Udata	Database::channel_msg(User& sender, std::string chan_name, const std::stri
 	return ret;
 }
 
+/** @brief 채널 notice 처리 : privmsg와 본질적으로 같지만, notice라는 다른 규격 사용 **/
 Udata	Database::notice_channel(User& sender, std::string chan_name, const std::string& msg)
 {
 	Udata			ret;
@@ -237,11 +231,12 @@ Udata	Database::notice_channel(User& sender, std::string chan_name, const std::s
 		ret.insert(tmp);
 		return ret;
 	}
-	Channel&	channel = select_channel(chan_name); // 403 ERROR Sender::no_channel_message
+	Channel&	channel = select_channel(chan_name);
 	ret = channel.send_all(sender, sender, msg, NOTICE);
 	return ret;
 }
 
+/** @brief kick 처리. 권한 확인, 실행, 통지 **/
 Udata	Database::kick_channel(User& host, User& target, std::string& chan_name, std::string& msg)
 {
 	Udata			ret;
@@ -253,7 +248,8 @@ Udata	Database::kick_channel(User& host, User& target, std::string& chan_name, s
 		ret.insert(tmp);
 		return ret;
 	}
-	Channel&	channel = select_channel(chan_name); // 403 ERROR Sender::no_channel_message
+	Channel&	channel = select_channel(chan_name);
+	/** 권한 확인 **/
 	if (channel.get_host() == host)
 	{
 		if (channel.is_user(target) == true)
@@ -275,66 +271,20 @@ Udata	Database::kick_channel(User& host, User& target, std::string& chan_name, s
 	return ret;
 }
 
-Udata	Database::who_channel(User& asker, std::string& chan_name)
-{
-	Udata	ret;
-	Event	tmp;
-
-	if (is_channel(chan_name) == false)
-	{
-		tmp = Sender::no_channel_message(asker, chan_name);
-		ret.insert(tmp);
-		return ret;
-	}
-	//Channel& chan = select_channel(chan_name); // 315 -> end of list만 보낸다.
-	tmp = Sender::who_joiner_352_message(asker, chan_name);
-	tmp.second += Sender::who_315_message(asker, chan_name);
-
-	ret.insert(tmp);
-	return ret;
-}
-
-Udata	Database::mode_channel(User& moder, std::string& chan_name, bool vaild)
-{
-	Udata	ret;
-	Event	tmp;
-
-	std::time_t result = std::time(NULL);
-	std::stringstream	ss;
-	ss << result;
-	const std::string& time_stamp(ss.str());
-
-	if (is_channel(chan_name) == false)
-	{
-		tmp = Sender::no_channel_message(moder, chan_name);
-		ret.insert(tmp);
-		return ret;
-	}
-
-	if (vaild)	// true
-	{
-		tmp = Sender::mode_324_message(moder, chan_name);
-		tmp.second += Sender::mode_329_message(moder, chan_name, time_stamp);
-		ret.insert(tmp);
-	}
-
-	return ret;
-}
-
+/**  @brief 유저의 리스트를 관리하고 있는 데이터베이스에 채널 구성원의 닉네임이 바뀌었음을 알려주어야 한다. **/
 Udata	Database::nick_channel(User& nicker, std::string& send_msg)
 {
 	Udata		ret;
 	Event		tmp;
 	User		trash;
 
-	Channel& channel = select_channel(nicker); // 401 no such nick
-
+	Channel& channel = select_channel(nicker);
 	ret = channel.send_all(nicker, trash, send_msg, NICK);
 	channel.change_nick(nicker, send_msg);
-
 	return ret;
 }
 
+/** @brief 채널의 topic을 설정한다. 호스트만 가능하다. topic은 봇을 통해 확인할 수 있다. **/
 Udata	Database::set_topic(User& sender, std::string& chan_name, std::string& topic)
 {
 	Udata			ret;
@@ -346,7 +296,7 @@ Udata	Database::set_topic(User& sender, std::string& chan_name, std::string& top
 		ret.insert(tmp);
 		return ret;
 	}
-	Channel& channel = select_channel(chan_name); // 403 ERROR Sender::no_channel_message
+	Channel& channel = select_channel(chan_name);
 	if (channel.get_host() == sender)
 	{
 		std::string topic_msg = "Topic was changed to " + topic;
@@ -355,7 +305,7 @@ Udata	Database::set_topic(User& sender, std::string& chan_name, std::string& top
 	}
 	else
 	{
-		std::string topic_msg = "You do not have access to change the topic on this channel";
+		std::string topic_msg = "You do not have the authority to change the topic on this channel";
 		ret = channel.send_all(sender, sender, topic_msg, TOPIC);
 	}
 	return	ret;

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Receiver.hpp"
-// class Reciever;
 
 class Server
 {
@@ -14,7 +13,6 @@ class Server
 	public:
 		static Server*				server_ptr_;
 		Server(const std::string& port, const std::string& password);
-		// ~Server();
 
 		void	server_sigint(void);
 		void	start();

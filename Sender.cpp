@@ -3,7 +3,7 @@
 const std::string	Sender::server_name_ = "irc.local";
 /****************************       <PING && PONG && USE && etc>       ****************************/
 
-/// @brief PING명령에 대한 응답으로 PONG 전송s
+/** @brief PING명령에 대한 응답으로 PONG 전송s **/
 Event	Sender::pong(const uintptr_t& socket, const std::string& target, const std::string& msg)
 {
 	Event ret;
@@ -14,7 +14,7 @@ Event	Sender::pong(const uintptr_t& socket, const std::string& target, const std
 	ret = std::make_pair(socket, pong_reply + "\r\n");
 	return ret;
 }
-
+/** @brief target을 operator로 만들 때 보내는 패킷 매시지 **/
 std::string	Sender::mode_make_operator_message(const User& sender, std::string channel, const User& target)
 {
 	Event		ret;
@@ -24,7 +24,7 @@ std::string	Sender::mode_make_operator_message(const User& sender, std::string c
 	return (mode_msg + "\r\n");
 }
 
-/// @brief 461
+/** @brief 461 - 충분한 수의 parameter가 오지 않았을 때 보내는 패킷 매세지 **/
 Event	Sender::command_empty_argument_461(const User& sender, const std::string& command)
 {
 	Event ret;
@@ -35,7 +35,7 @@ Event	Sender::command_empty_argument_461(const User& sender, const std::string& 
 	return ret;
 }
 
-/// @brief 461
+/** @brief 461 - 충분한 수의 parameter가 오지 않았을 때 보내는 패킷 메세지 **/
 Event	Sender::command_empty_argument_461(const uintptr_t& sock, const std::string& command)
 {
 	Event ret;
@@ -46,7 +46,7 @@ Event	Sender::command_empty_argument_461(const uintptr_t& sock, const std::strin
 	return ret;
 }
 
-/// @brief 451
+/** @brief 451 - 클라이언트가 등록되지 않았을 때 보내는 오류 패킷 메세지 **/
 Event	Sender::command_not_registered_451(const User& sender, const std::string& command)
 {
 	Event ret;
@@ -57,7 +57,7 @@ Event	Sender::command_not_registered_451(const User& sender, const std::string& 
 	return ret;
 }
 
-/// @brief 451
+/** @brief 451 - 클라이언트가 등록되지 않았을 때 보내는 오류 패킷 매세지 **/
 Event	Sender::command_not_registered_451(const uintptr_t& sock, const std::string& command)
 {
 	Event ret;
@@ -68,7 +68,7 @@ Event	Sender::command_not_registered_451(const uintptr_t& sock, const std::strin
 	return ret;
 }
 
-/// @brief 409
+/** @brief 409 - PING or PONG message missing the originator parameter **/
 Event	Sender::command_no_origin_specified_409(const User& sender, const std::string& command)
 {
 	Event ret;
@@ -79,7 +79,7 @@ Event	Sender::command_no_origin_specified_409(const User& sender, const std::str
 	return ret;
 }
 
-/// @brief 421
+/** @brief 421 -  서버에 등록되지 않은 명령어를 입력할 경우 보내는 오류 패킷 메세지 **/
 Event	Sender::unknown_command_message_421(const User& sender, const std::string& command)
 {
 	Event ret;
@@ -91,7 +91,7 @@ Event	Sender::unknown_command_message_421(const User& sender, const std::string&
 }
 // /****************************       <NICK>       ****************************/
 
-/// @brief NICK명령 시 정상 적으로 작동
+/** @brief nickname이 정상적으로 바뀌었을 때 보내는 패킷 메시지 **/
 Event	Sender::nick_well_message(const User& sender, const User& receiver, const std::string& new_nick) // 1st done
 {
 	Event	ret;
@@ -102,7 +102,7 @@ Event	Sender::nick_well_message(const User& sender, const User& receiver, const 
 	return ret;
 }
 
-/// @brief 904
+/** @brief 904 - 잘못된 패드워드를 입력하였을 때 보내는 오류 패킷 메세지 **/
 Event		Sender::password_incorrect_464(const uintptr_t& sock)
 {
 	Event	ret;
@@ -112,7 +112,7 @@ Event		Sender::password_incorrect_464(const uintptr_t& sock)
 	return ret;	
 }
 
-/// @brief 433
+/** @brief 433 - 이미 있는 nickname을 사용 혹은 그것으로 교체하려 할 때 보내는 오류 패킷 메세지 **/
 Event	Sender::nick_error_message(const User& sender, const std::string& new_nick) // 1st done
 {
 	Event	ret;
@@ -123,7 +123,7 @@ Event	Sender::nick_error_message(const User& sender, const std::string& new_nick
 	return ret;
 }
 
-/// @brief 433
+/** @brief 433 - nickname을 만드는 규칙에 위배될 때 보내는 오류 패킷 메세지 **/
 Event	Sender::nick_error_message2(const User& sender, const std::string& new_nick) // 1st done
 {
 	Event	ret;
@@ -134,7 +134,7 @@ Event	Sender::nick_error_message2(const User& sender, const std::string& new_nic
 	return ret;
 }
 
-/// @brief 433
+/** @brief 433 - 이미 있는 nickname을 사용 혹은 그것으로 교체하려 할 때 보내는 오류 패킷 메세지 **/
 Event	Sender::nick_error_message(const uintptr_t& sock, const std::string& new_nick)
 {
 	Event	ret;
@@ -145,7 +145,7 @@ Event	Sender::nick_error_message(const uintptr_t& sock, const std::string& new_n
 	return ret;
 }
 
-/// @brief 432
+/** @brief 432 - nickname을 만드는 규칙에 위배될 때 보내는 오류 패킷 메세지 **/
 Event	Sender::nick_wrong_message(const User& sender, const std::string& new_nick)
 {
 	Event	ret;
@@ -156,7 +156,7 @@ Event	Sender::nick_wrong_message(const User& sender, const std::string& new_nick
 	return ret;
 }
 
-/// @brief 432
+/** @brief 432 - nickname을 만드는 규칙에 위배될 때 보내는 오류 패킷 메세지 **/
 Event	Sender::nick_wrong_message(const uintptr_t& sock, const std::string& new_nick)
 {
 	Event	ret;
@@ -168,6 +168,7 @@ Event	Sender::nick_wrong_message(const uintptr_t& sock, const std::string& new_n
 }
 // /****************************       <Connect server || channel>       ****************************/
 
+/** @brief connect 시 보내는 환영 패킷 메세지 **/
 Event	Sender::welcome_message_connect(const User& sender)
 {
 	Event ret; 
@@ -181,7 +182,7 @@ Event	Sender::welcome_message_connect(const User& sender)
 // /****************************       <QUIT>       ****************************/
 
 
-/// @brief quit 명령 시 메세지 - quit을 한 유저가 아닌 다른 유저들
+/** @brief quit을 한 클라이언트에 보내는 패킷 메세지 **/
 Event	Sender::quit_leaver_message(const User& sender, std::string leave_message)
 {
 	Event	ret;
@@ -197,6 +198,7 @@ Event	Sender::quit_leaver_message(const User& sender, std::string leave_message)
 	return ret;
 }
 
+/** @brief quit을 한 클라이언트이외 같은 채널 내 다른 클라이언트들 보내는 패킷 메세지 **/
 Event	Sender::quit_member_message(const User& sender, const User& receiver, std::string leave_message)
 {
 	Event	ret;
@@ -213,11 +215,7 @@ Event	Sender::quit_member_message(const User& sender, const User& receiver, std:
 
 // /****************************       <JOIN>       ****************************/
 
-
-
-
-
-///  @brief join 시 메세지
+/**  @brief join 성공 시 보내는 패킷 메세지 **/
 Event	Sender::join_message(const User& sender, const User& receiver, const std::string& channel)
 {
 	Event	ret;
@@ -227,7 +225,7 @@ Event	Sender::join_message(const User& sender, const User& receiver, const std::
 	return ret;
 }
 
-/// @brief 476
+/** @brief 476 - join 할 때 invaild한 채널 이름을 만들 경우 보내는 오류 패킷 메세지 ex) "#" 과 같은 이름 **/
 Event	Sender::join_invaild_channel_name_message(const User& sender, const std::string invaild_channel)
 {
 	Event ret;
@@ -239,7 +237,7 @@ Event	Sender::join_invaild_channel_name_message(const User& sender, const std::s
 }
 
 
-//@brief RPL_NAMREPLY(353)
+/** @brief 353 - join 시 같이 보내는 패킷 메세지 **/
 std::string	Sender::join_353_message(const User& sender, const std::string& chan_name
 									, const std::string& chan_access, const std::string& chan_user_list)
 {
@@ -250,7 +248,7 @@ std::string	Sender::join_353_message(const User& sender, const std::string& chan
 
 
 
-// @brief RPL_NAMREPLY(353)
+/** @brief 366 - join 시 같이 보내는 패킷 메세지 **/
 std::string	Sender::join_366_message(const User& sender, const std::string& chan_name)
 {
 	const std::string& 	ret = ":" + Sender::server_name_ + " 366 "+ sender.nickname_
@@ -258,7 +256,7 @@ std::string	Sender::join_366_message(const User& sender, const std::string& chan
 	return ret + "\r\n";
 }
 
-/// @brief 324
+/** @brief 324 - join 할 때 mode 명령어 관련 패킷 메세지 **/
 Event	Sender::mode_324_message(const User& sender, const std::string channel)
 {
 	Event	ret;
@@ -268,14 +266,14 @@ Event	Sender::mode_324_message(const User& sender, const std::string channel)
 	ret = std::make_pair(sender.client_sock_, mode_message + "\r\n");
 	return ret;
 }
-/// @brief 329
+/** @brief 329 - join 할 때 mode 명령어 관련 패킷 메세지 **/
 std::string	Sender::mode_329_message(const User& sender, const std::string channel, const std::string time_stamp)
 {
 	const std::string& ret = ":" + Sender::server_name_ + " 329 " \
 			+ sender.nickname_ + " " + channel + " :" + time_stamp + "";
 	return ret;
 }
-/// @brief 472
+/** @brief 472 - mode 명령어 시 존재하지 않는 옵션을 넣을 때 보내는 오류 패킷 메세지 **/
 Event	Sender::mode_no_option_error_message(const User& sender, const std::string channel)
 {
 	Event ret;
@@ -285,7 +283,7 @@ Event	Sender::mode_no_option_error_message(const User& sender, const std::string
 	ret = std::make_pair(sender.client_sock_, mode_message + "\r\n");
 	return ret;
 }
-/// @brief 482
+/** @brief 482 - operator가 아닌 클라이언트가 operator 권한이 필요한 명령어를 사용하려 할 때 보내는 오류 패킷 메세지 **/
 Event	Sender::mode_not_operator_error_message(const User& sender, const std::string wrong_option)
 {
 	Event ret;
@@ -296,7 +294,7 @@ Event	Sender::mode_not_operator_error_message(const User& sender, const std::str
 	return ret;
 }
  
- ///@brief 352 join 할때 joiner(조인 하는 자신)에게도 메세지가 보내짐.
+ /** @brief 352 join 할때 joiner(조인 하는 자신)에게도 보내는 패킷 메세자 **/
 Event	Sender::who_joiner_352_message(const User& sender, const std::string channel)
 {
 	Event ret;
@@ -304,12 +302,11 @@ Event	Sender::who_joiner_352_message(const User& sender, const std::string chann
 	const std::string& who_message = ":" + Sender::server_name_ + " 352 " + sender.nickname_ \
 			+ " " + channel + " " + sender.username_ + " " + sender.mode_ + " " \
 			+ sender.unused_ + " " + sender.nickname_ + " H :0 root";
-	// who_352_target_message를 joiner 이외에 다른 사람들의 메세지로 이어 붙어야 한다.
 	ret = std::make_pair(sender.client_sock_, who_message + "\r\n");
 	return ret;
 }
 
-/// @brief 352 who_joiner_352_message 함수 호출 직후에 호출되는 함수
+/** @brief 352 who_joiner_352_message 함수 호출 직후에 같이 보내지는 패킷 메세지 **/
 std::string	Sender::who_352_target_message(const User& sender, const std::string channel, const std::string target)
 {
 	const std::string& ret = ":" + Sender::server_name_ + " 352 " + sender.nickname_ \
@@ -319,7 +316,7 @@ std::string	Sender::who_352_target_message(const User& sender, const std::string
 }
 
 
-/// @brief 315 who_352_target_message 함수 호출 직후에 호출되는 함수
+/** @brief 315 who_352_target_message 함수 호출 직후에 같이 보내지는 패킷 메세지 **/
 std::string	Sender::who_315_message(const User& sender, const std::string channel)
 {
 	const std::string& ret = ":" + Sender::server_name_ + " 315 " + sender.nickname_ \
@@ -329,6 +326,7 @@ std::string	Sender::who_315_message(const User& sender, const std::string channe
 
 /****************************       <PART>       ****************************/
 
+/** @brief part 할 때 leaver 외에 다른 클라이언트들에게도 보내는 패킷 메세지 **/
 Event	Sender::part_message(const User& sender, const User& receiver
 							, const std::string& channel, const std::string& msg)
 {
@@ -342,6 +340,7 @@ Event	Sender::part_message(const User& sender, const User& receiver
 
 /****************************       <KICK>       ****************************/
 
+/** @brief kick 할 때 target외에 다른 클라이언트들에게 보내지는 패킷 메세지 **/
 Event	Sender::kick_message(const User& sender, const User& receiver, const std::string& target
 								, const std::string& channel, const std::string& msg)
 {
@@ -349,13 +348,11 @@ Event	Sender::kick_message(const User& sender, const User& receiver, const std::
 
 	const std::string&  kick_message = ":" + sender.nickname_ + "!" + \
 				sender.username_ + '@' + sender.unused_ + " KICK " + channel + " " + target + " :" + msg + "";
-	// const std::string  kick_message = ":" + host + "!" + \
-	// 			sender.realname_ + " KICK " + channel + " " + subject + "";
 	ret = std::make_pair(receiver.client_sock_, kick_message + "\r\n");
 	return ret;
 }
 
-/// @brief 482
+/** @brief 482 - operator 권한이 없는 클라이언트가 kick 명령어를 사용하려 할 때 보내는 오류 메세지 **/
 Event	Sender::kick_error_not_op_message(const User& sender, const std::string& host, const std::string& channel)
 {
 	Event	ret;
@@ -366,19 +363,20 @@ Event	Sender::kick_error_not_op_message(const User& sender, const std::string& h
 	return ret;
 }
 
-/// @brief 441
-Event	Sender::kick_error_no_user_message(const User& sender, const std::string& host, const std::string& subject, const std::string& channel)
+/** @brief 441 - kick을 당할 target 클라이언트가 존재하지 않을 경우 보내는 오류 패킷 메세지 **/
+Event	Sender::kick_error_no_user_message(const User& sender, const std::string& host, const std::string& target, const std::string& channel)
 {
 	Event	ret;
 
 	const std::string&  kick_message = ":" + Sender::server_name_ + \
-		" 441 " + host + " " + subject + " " + channel + " :They are not on that channel";
+		" 441 " + host + " " + target + " " + channel + " :They are not on that channel";
 	ret = std::make_pair(sender.client_sock_, kick_message + "\r\n");
 	return ret;
 }
 
 /****************************       <Privmsg>       ****************************/
 
+/** @brief BOT을 call 했을 때 bot에게 보내는 패킷 메세지 **/
 Event	Sender::privmsg_bot_message(const User& sender, const std::string& msg)
 {
 	Event		ret;
@@ -389,6 +387,7 @@ Event	Sender::privmsg_bot_message(const User& sender, const std::string& msg)
 	return (ret);
 }
 
+/** @brief target에게 private message를 보낼 때 target 클라이언트에게 보내는 패킷 메세지 **/
 Event	Sender::privmsg_p2p_message(const User& sender, const User& target, const std::string& msg)
 {
 	Event		ret;
@@ -399,6 +398,7 @@ Event	Sender::privmsg_p2p_message(const User& sender, const User& target, const 
 	return (ret);
 }
 
+/** @brief target channel에 있는 receiver 클라이언트에게 private message를 보낼 때 클라이언트들에게 가는 패킷 메세지 **/ 
 Event	Sender::privmsg_channel_message(const User& sender, const User& receiver, const std::string& msg, const std::string& channel)
 {
 	Event		ret;
@@ -409,7 +409,7 @@ Event	Sender::privmsg_channel_message(const User& sender, const User& receiver, 
 	return (ret);
 }
 
-/// @brief 401
+/** @brief 401 - privmsg를 존재하지 않는 target에게 보낼 때 클라이언트에게 보내지는 오류 패킷 메세지 **/
 Event	Sender::privmsg_no_user_error_message(const User& sender, const std::string& target)
 {
 	Event		ret;
@@ -419,8 +419,8 @@ Event	Sender::privmsg_no_user_error_message(const User& sender, const std::strin
 	ret = std::make_pair(sender.client_sock_, privmsg + "\r\n");
 	return (ret);
 }
-
-/// @brief 404
+ 
+/** @brief 404 - 채널 외부에 있는 클라이언트가 nc로 특정 채널에 메세지를 보낼 때 클라이언트에게 보내지는 오류 패킷 메세지 **/ 
 Event	Sender::privmsg_external_error_message(const User& sender, const std::string channel)
 {
 	Event		ret;
@@ -433,6 +433,7 @@ Event	Sender::privmsg_external_error_message(const User& sender, const std::stri
 
 /****************************       <NOTICE && WALL>       ****************************/
 
+/** @brief target 클라이언트에게 notice 명령어를 사용할 때 target 클라이언트에게 보내지는 패킷 메세지 **/
 Event	Sender::notice_p2p_message(const User& sender, const User& target, const std::string& msg)
 {
 	Event		ret;
@@ -443,6 +444,7 @@ Event	Sender::notice_p2p_message(const User& sender, const User& target, const s
 	return (ret);
 }
 
+/** @brief target channel에게 notice 를 할 때 receiver 클라이언트에게 보내지는 패킷 메세지 **/
 Event	Sender::notice_channel_message(const User& sender, const User& receiver, const std::string& msg, const std::string& channel)
 {
 	Event		ret;
@@ -453,6 +455,7 @@ Event	Sender::notice_channel_message(const User& sender, const User& receiver, c
 	return (ret);
 }
 
+/** @brief  notice의 대상이 되는 receiver 클라이언트가 존재하지 않을 때 sender에게 보내는 패킷 메시지 **/
 Event 	Sender::notice_no_nick_message(const User& sender, const User& receiver)
 {
 	Event		ret;
@@ -463,6 +466,7 @@ Event 	Sender::notice_no_nick_message(const User& sender, const User& receiver)
 	return (ret);
 }
 
+/** @brief  wall 할 때 메세지를 받는 receiver 클라이언트들에게 보내지는 패킷 메세지 **/
 Event	Sender::wall_message(const User& sender, const User& receiver, const std::string& channel, const std::string& msg)
 {
 	Event		ret;
@@ -474,6 +478,8 @@ Event	Sender::wall_message(const User& sender, const User& receiver, const std::
 }
 
 /****************************       <TOPIC>       ****************************/
+
+/** @brief topic이 변경됬음을 알리는 패킷 메시지 **/
 Event	Sender::topic_message(const User& sender, const User& receiver, const std::string& channel, const std::string& topic)
 {
 	Event		ret;
@@ -484,7 +490,7 @@ Event	Sender::topic_message(const User& sender, const User& receiver, const std:
 	return (ret);
 }
 
-/// @brief 482
+/** @brief 482 operator 권한이 없는 클라이언트가 topic 명령어를 사용할 때 보내자는 패킷 메세지 **/
 Event	Sender::topic_error_message(const User& sender, const std::string& channel)
 {
 	Event		ret;
@@ -497,7 +503,7 @@ Event	Sender::topic_error_message(const User& sender, const std::string& channel
 
 /****************************       <NO ** message>       ****************************/
 
-/// @brief 403
+/** @brief 403 - 존재하지 않는 channel을 parameter로 했을 때 발생하는 패킷 메세지 **/
 Event	Sender::no_channel_message(const User& sender, const std::string& channel)
 {
 	Event			ret;
@@ -517,7 +523,7 @@ Event	Sender::no_channel_message(const User& sender, const std::string& channel)
 	return (ret);
 }
 
-/// @brief 401
+/** @brief 401 - 존재하지 않는 target 클라이언트를 parameter로 사용하려 할 때 보내는 패킷 메시지 **/
 Event	Sender::no_user_message(const User& sender, const std::string& target)
 {
 	Event		ret;

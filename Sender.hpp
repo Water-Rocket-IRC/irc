@@ -35,7 +35,7 @@ class Sender
 		static Event		part_message(const User& sender, const User& receiver, const std::string& channel, const std::string& msg);
 		static Event		kick_message(const User& sender, const User& receiver, const std::string& subject, const std::string& channel, const std::string& msg);
 		static Event		kick_error_not_op_message(const User& sender, const std::string& host, const std::string& channel);
-		static Event		kick_error_no_user_message(const User& sender, const std::string& host, const std::string& subject, const std::string& channel);
+		static Event		kick_error_no_user_message(const User& sender, const std::string& host, const std::string& target, const std::string& channel);
 		static Event		topic_message(const User& sender, const User& receiver, const std::string& channel, const std::string& topic);
 		static Event		topic_error_message(const User& sender, const std::string& channel);
 		static Event		notice_p2p_message(const User& sender, const User& target, const std::string& msg);

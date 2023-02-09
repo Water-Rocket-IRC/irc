@@ -1,26 +1,8 @@
 #include "Channel.hpp"
 #include "Udata.hpp"
 
-
-// void	DebugshowUsers(std::vector<User>& target) {
-// 	std::cout << YELLOW << "(begin) " << RESET << " ➜ ";
-// 	for (std::vector<User>::iterator it = target.begin(); it != target.end(); ++it) {
-// 		std::cout << (*it).nickname_ << " ➜ ";
-// 	}
-// 	std::cout << YELLOW << "(end)" << RESET << std::endl;
-// }
-
-// void	DebugshowChannels(std::vector<Chan>& target) {
-// 	std::cout << YELLOW << "(begin) " << RESET << " ➜ ";
-// 	for (std::vector<Chan>::iterator it = target.begin(); it != target.end(); ++it) {
-// 		std::cout << (*it).get_name() << " ➜ ";
-// 	}
-// 	std::cout << YELLOW << "(end)" << RESET << std::endl;
-// }
-
 std::string&	Channel::get_access(void) { return access_; }
 void			Channel::set_access(const std::string& access) { access_ = access; }
-
 void			Channel::change_nick(User& usr, std::string new_nick)
 {
 	std::vector<User>::iterator it;
@@ -74,19 +56,12 @@ std::string		Channel::get_user_list_str(void)
 	return ret;
 }
 
-/*
-///@ brief 기본형 : 나 빼고 다 보냄, flag 1 -> PART
-*/
-//TODO : Sender가 event를 잘 리턴하는지 파악해야 함
+/** 요청 처리 결과 서버가 전송할 타깃과 메시지를 전달해주는 함수 **/
 Udata Channel::send_all(User& sender, User& target, std::string msg, int remocon)
 {
 	Udata			ret;
 	std::vector<User>::iterator it;
 
-	// if (is_user(sender) == false)
-	// {
-	// 	// Sender::error_message(sender.client_sock_, "")
-	// }
 	for (it = connectors_.begin(); it != connectors_.end(); it++)
 	{
 		Event packet;
@@ -139,10 +114,6 @@ Udata Channel::send_all(User& sender, User& target, std::string msg, int remocon
 				packet = Sender::topic_message(sender, *it, this->get_name(), msg);
 				break ;
 			case NICK:
-				// if (sender == *it)
-				// {
-				// 	continue ;
-				// }
 				packet = Sender::nick_well_message(sender, *it, msg);
 				break ;
 			case WHO:
@@ -159,7 +130,11 @@ std::string&	Channel::get_name(void)
 	return this->name_;
 }
 
-/// @brief 있으면1, 없으면 0
+std::string&	Channel::get_topic(void)
+{
+	return this->topic_;
+}
+
 bool Channel::is_user(User& usr)
 {
 	std::vector<User>::iterator it;
@@ -211,16 +186,3 @@ User& Channel::get_host()
 {
 	return this->host_;
 }
-
-std::string Channel::get_info()
-{
-	std::string ret;
-	std::stringstream index_ss;
-	index_ss << connectors_.size();
-
-	ret =	"Channel's name  : " + name_ + "\n" +
-			"Channel's topic : " + topic_ + "\n" +
-			"Connected users : " + index_ss.str() + "\n" +
-			"Channel's host  : " + host_.nickname_;
-	return ret;
-} 

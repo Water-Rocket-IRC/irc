@@ -5,7 +5,7 @@ static void	_sigint_handler(int signum)
 {
 	if (signum == SIGINT)
 	{
-		std::cout << "is server dead?" << std::endl;
+		std::cout << BOLDCYAN << "Server Closed" << RESET << std::endl;
 		Server::server_ptr_->server_sigint();
 		exit(0);
 	}
@@ -17,7 +17,6 @@ int main(int argc, char **argv)
 	system("clear");
 	if (argc != 3)
 	{
-		//에러
 		std::cerr << RED << "err: Wrong Arguments" << RESET << std::endl;
 		exit(EXIT_FAILURE);
 	}
