@@ -289,6 +289,10 @@ Udata	Database::nick_channel(User& nicker, std::string& send_msg)
 	Channel& channel = select_channel(nicker);
 	ret = channel.send_all(nicker, trash, send_msg, NICK);
 	channel.change_nick(nicker, send_msg);
+	if (channel.get_host() == nicker)
+	{
+		channel.set_host(nicker);
+	}
 	return ret;
 }
 
