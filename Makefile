@@ -6,12 +6,12 @@
 #    By: sesim <sesim@student.42seoul.kr>           +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/01/27 10:57:54 by sesim             #+#    #+#              #
-#    Updated: 2023/02/09 14:56:30 by sesim            ###   ########.fr        #
+#    Updated: 2023/02/10 23:00:22 by sesim            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 CXX			=	c++
-CXXFLAGS	=	-Wall -Wextra -Werror -std=c++98
+CXXFLAGS	=	-g3 -Wall -Wextra -Werror -std=c++98
 
 RM			=	rm -rf
 

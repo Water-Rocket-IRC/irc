@@ -9,6 +9,7 @@
 
 #include "KeventHandler.hpp"
 #include "Parser.hpp"
+#include "Udata.hpp"
 
 class Parser;
 
@@ -18,6 +19,7 @@ class Receiver
 		static KeventHandler	kq_;
 		Parser					parser_;
 		Udata&					udata_;
+		Udata					carriage_backup_;
 		sockaddr_in				server_addr_;
 		uintptr_t				server_sock_;
 

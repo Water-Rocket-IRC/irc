@@ -1,6 +1,7 @@
 #include "Parser.hpp"
 #include "Receiver.hpp"
 #include "Udata.hpp"
+#include "color.hpp"
 
 #include <sstream>
 #include <string>
@@ -139,16 +140,21 @@ void	Parser::parser_pass_(const uintptr_t& ident, std::stringstream& line_ss, st
 	std::string	pw;
 	Event		ret;
 
+	line_ss >> pw;
 	ret.first = ident;
-	getline(line_ss, pw);
-	std::size_t	pos = pw.find('\r');
 	if (pw.empty())
 	{
 		ret = Sender::command_empty_argument_461(ident, "PASS");
 		push_write_event_(ret);
 		return ;
 	}
-	pw = pw.substr(1, pos - 1);
+	pw = set_message_(pw, 0);
+	std::cout << BOLDRED << "=============PASS=============\n";
+	for (size_t i(0); i < pw.size(); ++i)
+	{
+		std::cout << static_cast<int>(pw.at(i)) << " ";
+	}
+	std::cout << "\n==============================\n" << RESET;
 	if (password_ != pw)
 	{
 		ret = Sender::password_incorrect_464(ident);

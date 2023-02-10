@@ -1,6 +1,9 @@
 #include "Receiver.hpp"
 #include "Database.hpp"
 #include "Udata.hpp"
+#include "color.hpp"
+#include <atomic>
+#include <string>
 #include <sys/_types/_uintptr_t.h>
 
 void exit_with_perror(const std::string& msg);
@@ -105,6 +108,16 @@ void	Receiver::start()
 	}
 }
 
+std::string	carriage_remover(std::string to_remove, const bool has_endl)
+{
+	std::size_t	carriage_pos = to_remove.find('\r');
+
+	if (carriage_pos != std::string::npos)
+		to_remove.erase(carriage_pos, 1);
+	to_remove = has_endl ? to_remove + "\n" : to_remove;
+	return to_remove;
+}
+
 /**		client_read_event_handler   **/
 /**		@brief client 소켓으로 부터 패킷이 들어올 경우 처리하는 함수   **/
 /**		@param cur_event 현재 발생된 이벤트   **/
@@ -131,8 +144,35 @@ int	Receiver::client_read_event_handler_(struct kevent &cur_event)
 		return (1);
 	}
 	std::string			command(buffer, byte_received);
+	std::size_t			newline_pos = command.find('\n');
+	if (newline_pos == std::string::npos)
+	{
+		Udata_iter	cur_backup = carriage_backup_.find(cur_event.ident);
 
-	parser_.command_parser(cur_event.ident, command);
+		if (cur_backup == carriage_backup_.end())
+		{
+			Event	tmp;
+			tmp.first = cur_event.ident;
+			tmp.second = carriage_remover(command, false);
+			carriage_backup_.insert(tmp);
+		}
+		else
+		{
+			cur_backup->second += carriage_remover(command, false);
+		}
+		kq_.set_read(cur_event.ident);
+	}
+	else
+	{
+		Udata_iter	cur_backup = carriage_backup_.find(cur_event.ident);
+
+		if (cur_backup != carriage_backup_.end())
+		{
+			command.insert(0, cur_backup->second);
+			carriage_backup_.erase(cur_backup);
+		}
+		parser_.command_parser(cur_event.ident, command);
+	}
 	return (0);
 }
 
