@@ -367,6 +367,11 @@ Udata	Database::command_join(const uintptr_t& ident, const std::string& chan_nam
 			tmp = Sender::join_invaild_channel_name_message(cur_usr, chan_name);
 			ret.insert(tmp);
 		}
+		else if (chan_name.find(',') != std::string::npos)
+		{
+			tmp = Sender::join_invaild_channel_name_message(cur_usr, chan_name);
+			ret.insert(tmp);
+		}
 		else
 		{
 			ret = join_channel(cur_usr, chan_name);

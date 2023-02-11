@@ -30,10 +30,7 @@ class Parser
 		void				parser_quit_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send);
 		void				parser_privmsg_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send);
 		void				parser_notice_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send);
-		void				parser_wall_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send);
 		void				parser_join_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send);
-		void				parser_mode_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send);
-		void				parser_who_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send);
 		void				parser_part_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send);
 		void				parser_topic_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send);
 		void				parser_kick_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send);
