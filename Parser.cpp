@@ -65,19 +65,6 @@ void	Parser::error_situation(const uintptr_t& ident)
 	database_.delete_error_user(ident);
 }
 
-/**		set_message_   **/
-/**		@brief 캐리지 리턴(\r)을 찾아 필요한 만큼 다시 문자열을 할당해주는 함수   **/
-/**		@param msg 재할당할 문자열   **/
-/**		@param start 재할당할 때 시작할 부분   **/
-std::string	Parser::set_message_(std::string& msg, const std::size_t& start)
-{
-	std::size_t	pos = msg.find('\r');
-
-	pos = (pos == std::string::npos) ? msg.length() - start : pos - start;
-	std::string	ret = msg.substr(start, pos);
-	return ret;
-}
-
 /**		message_resize_   **/
 /**		@brief (:)이 있으면 to_send(이미 ':' 기준으로 잘린 문자열)을 사용하고, 510글자가 넘으면 510글자로 제한해주는 함수   **/
 /**		@param tmp line_ss로 받은 문자열   **/
@@ -117,9 +104,13 @@ void	Parser::command_parser(const uintptr_t& ident, std::string& command)
 			std::size_t	pos(line.find(':'));
 			std::string	to_send;
 			if (pos == std::string::npos)
+			{
 				to_send.clear();
+			}
 			else
-				to_send = set_message_(line, pos + 1);
+			{
+				to_send = line.substr(pos + 1, line.length() - (pos + 1));
+			}
 			(this->*Parser::func_ptr[i])(ident, line_ss, to_send);
 		}
 		else
@@ -148,7 +139,6 @@ void	Parser::parser_pass_(const uintptr_t& ident, std::stringstream& line_ss, st
 		push_write_event_(ret);
 		return ;
 	}
-	pw = set_message_(pw, 0);
 	std::cout << BOLDRED << "=============PASS=============\n";
 	for (size_t i(0); i < pw.size(); ++i)
 	{

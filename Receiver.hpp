@@ -27,6 +27,7 @@ class Receiver
 		int						client_write_event_handler_(struct kevent &cur_event);
 		void					init_socket_(const uintptr_t &port);
 		void					bind_socket_();
+		void					carriage_remover_(std::string& to_remove)
 
 	public:
 		static bool				end_server;
