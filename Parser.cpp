@@ -139,12 +139,6 @@ void	Parser::parser_pass_(const uintptr_t& ident, std::stringstream& line_ss, st
 		push_write_event_(ret);
 		return ;
 	}
-	std::cout << BOLDRED << "=============PASS=============\n";
-	for (size_t i(0); i < pw.size(); ++i)
-	{
-		std::cout << static_cast<int>(pw.at(i)) << " ";
-	}
-	std::cout << "\n==============================\n" << RESET;
 	if (password_ != pw)
 	{
 		ret = Sender::password_incorrect_464(ident);
