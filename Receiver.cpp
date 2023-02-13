@@ -119,6 +119,7 @@ int	Receiver::client_read_event_handler_(struct kevent &cur_event)
 		uintptr_t	tmp_sock(cur_event.ident);
 
 		kq_.delete_event(cur_event);
+		std::cerr << "sock was unexpected situation\n";
 		parser_.error_situation(tmp_sock);
 		close(tmp_sock);
 		return (1);

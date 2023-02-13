@@ -34,6 +34,7 @@ class Parser
 		void				parser_part_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send);
 		void				parser_topic_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send);
 		void				parser_kick_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send);
+		void 				print_title(const std::string& title);
 		const std::string	command_toupper(const char* command);
 
 	public:

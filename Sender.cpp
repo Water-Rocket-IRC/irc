@@ -117,7 +117,7 @@ Event	Sender::nick_error_message(const User& sender, const std::string& new_nick
 {
 	Event	ret;
 
-	const std::string& nick_msg = ":" + Sender::server_name_ + " 433 " + sender.nickname_ \
+	const std::string& nick_msg = ":" + Sender::server_name_ + " 432 " + sender.nickname_ \
 					+ " " + new_nick + " :Nickname is already in use.";
 	ret = std::make_pair(sender.client_sock_, nick_msg + "\r\n");
 	return ret;
@@ -164,6 +164,16 @@ Event	Sender::nick_wrong_message(const uintptr_t& sock, const std::string& new_n
 	const std::string& nick_msg = ":" + Sender::server_name_ + " 432 " + " * " \
 					+ " " + new_nick + " Erroneous Nickname.";
 	ret = std::make_pair(sock, nick_msg + "\r\n");
+	return ret;
+}
+
+Event	Sender::nick_steal_message(const User& sender, const std::string& new_nick)
+{
+	Event	ret;
+
+	const std::string& nick_msg = ":" + Sender::server_name_ + " 432 " + " * " \
+					+ " " + new_nick + " You steal someone's nickname.";
+	ret = std::make_pair(sender.client_sock_, nick_msg + "\r\n");
 	return ret;
 }
 // /****************************       <Connect server || channel>       ****************************/

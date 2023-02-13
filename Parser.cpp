@@ -59,6 +59,22 @@ void	Parser::clear_all()
 	}
 }
 
+void Parser::print_title(const std::string& title)
+{
+
+	std::string  under_bar = "____";
+	std::string  over_bar =  "‾‾‾‾";
+	for (std::size_t i = 0; i < title.length(); ++i)
+	{
+		under_bar += "_";
+		over_bar += "‾";
+	}
+	std::cout << BOLDCYAN << under_bar
+			  << std::endl << "| " << title << " |"
+			  << std::endl << over_bar
+			  << RESET << std::endl;
+}
+
 void	Parser::error_situation(const uintptr_t& ident)
 {
 	database_.delete_error_user(ident);
@@ -110,6 +126,7 @@ void	Parser::command_parser(const uintptr_t& ident, std::string& command)
 
 		line_ss >> command_type;
 		command_type = command_toupper(command_type.c_str());
+		print_title(command_type);
 		for (; i < N_COMMAND && (command_type != Parser::commands[i]); ++i) { }
 		if (i < N_COMMAND)
 		{
