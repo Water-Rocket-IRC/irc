@@ -143,7 +143,6 @@ int	Receiver::client_read_event_handler_(struct kevent &cur_event)
 int	Receiver::client_write_event_handler_(struct kevent &cur_event)
 {
 	Udata_iter	target = udata_.find(cur_event.ident);
-
 	send(cur_event.ident, target->second.c_str(), target->second.size(), 0);
 	/**   해당 클라이언트가 종료를 요청한 경우 클라이언트 삭제 처리   **/
 	if (cur_event.udata)

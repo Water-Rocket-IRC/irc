@@ -321,10 +321,15 @@ void	Parser::parser_notice_(const uintptr_t& ident, std::stringstream& line_ss, 
 void	Parser::parser_join_(const uintptr_t& ident, std::stringstream& line_ss, std::string& to_send)
 {
 	static_cast<void>(to_send);
-	std::string	chan_name;
 	Udata		ret;
-
+	std::string	chan_name;
 	line_ss >> chan_name;
+	std::size_t	pos = chan_name.find(',');
+
+
+
+	pos = (pos == std::string::npos) ? chan_name.length() : pos;
+	chan_name = chan_name.substr(0, pos); // pos, length
 	ret = database_.command_join(ident, chan_name);
 	push_multiple_write_events_(ret, ident, 2);
 }
