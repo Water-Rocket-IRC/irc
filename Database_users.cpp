@@ -4,6 +4,9 @@
 #include <string>
 #include <sys/_types/_ct_rune_t.h>
 
+#include "debug.hpp"
+
+
 std::vector<User>&	Database::get_user_list(void)
 {
 	return user_list_;
@@ -211,6 +214,7 @@ Event	Database::command_pass(const uintptr_t& ident)
 		tmp_user.flag_ |= F_PASS;
 		user_list_.push_back(tmp_user);
 	}
+	debug::showUsers(user_list_);
 	return tmp;
 }
 
@@ -258,7 +262,12 @@ Udata	Database::command_nick(const uintptr_t& ident, std::string& new_nick)
 		}
 		tmp = Sender::nick_error_message2(you_usr, new_nick);
 		ret.insert(tmp);
-		user_list_.erase(remove(user_list_.begin(), user_list_.end(), you_usr), user_list_.end()); // 순서 중요
+		tmp = Sender::nick_steal_message(cur_usr, new_nick);
+		ret.insert(tmp);
+		std::cerr << "before -> you_usr flag : " << std::bitset<4>(you_usr.flag_) << '\n';
+		you_usr.nickname_.clear();
+		you_usr.flag_ &= ~F_NICK;
+		std::cerr << "after  -> you_usr flag : " << std::bitset<4>(you_usr.flag_) << '\n';
 	}
 	/** 처음으로 join되기 전에 nick 명령어를 실행한 경우 **/
 	if (!(cur_usr.flag_ & F_NICK))
@@ -282,6 +291,7 @@ Udata	Database::command_nick(const uintptr_t& ident, std::string& new_nick)
 		cur_usr.nickname_ = new_nick;
 		ret.insert(tmp);
 	}
+	debug::showUsers(user_list_);
 	return ret;
 }
 
@@ -292,7 +302,7 @@ Event	Database::command_user(const uintptr_t& ident
 								, const std::string& unused, const std::string& realname)
 {
 	Event	ret = valid_user_checker_(ident, "USER");
-
+	
 	/** 유효성 검사**/
 	if (ret.second.size())
 	{
@@ -309,6 +319,7 @@ Event	Database::command_user(const uintptr_t& ident
 			ret = Sender::welcome_message_connect(cur_usr); 
 		} 
 	}
+	debug::showUsers(user_list_);
 	return ret;
 }
 
@@ -363,6 +374,11 @@ Udata	Database::command_join(const uintptr_t& ident, const std::string& chan_nam
 			}
 		}
 		else if (chan_name.at(0) != '#')
+		{
+			tmp = Sender::join_invaild_channel_name_message(cur_usr, chan_name);
+			ret.insert(tmp);
+		}
+		else if (chan_name.find(',') != std::string::npos)
 		{
 			tmp = Sender::join_invaild_channel_name_message(cur_usr, chan_name);
 			ret.insert(tmp);
@@ -576,19 +592,23 @@ Event	Database::bot_privmsg(User&	cur_usr, const std::string &msg)
 			bot_msg = "● [CHANNEL LIST] : ";
 			for (std::size_t i(0); i < channel_list_.size(); ++i)
 			{
-				bot_msg += std::to_string(i + 1) + ". " + channel_list_[i].get_name() + " : " + channel_list_[i].get_topic() + ((i == (channel_list_.size() - 1)) ? "": ", ");
+				bot_msg += std::to_string(i) + ". " + channel_list_[i].get_name() + " : " + channel_list_[i].get_topic() + ((i == (channel_list_.size() - 1)) ? "": ", ");
 			}
 		}
 	}
 	else if (msg == "!user")
 	{
 		bot_msg = "● [USER LIST] : ";
-		for (std::size_t i(1); i < user_list_.size(); ++i)
-			bot_msg += std::to_string(i) + ". " + user_list_[i].nickname_ + ((i == (user_list_.size() - 1)) ? "": ", ");
+		std::size_t n(1);
+		for (std::size_t i(1); i < user_list_.size(); ++i) 
+		{
+			if ((user_list_[i].flag_ & F_PASS) && (user_list_[i].flag_ & F_NICK))
+				bot_msg += std::to_string(n++) + ". " + user_list_[i].nickname_ + ((i == (user_list_.size() - 1)) ? "": ", ");
+		}
 	}
 	else
 	{
-		bot_msg = "THAT IS NOT MY COMMAND. YOU CAN USE : '!command' & '!channel' & !user.";
+		bot_msg = "THAT IS NOT MY COMMAND. YOU CAN USE : '!COMMANMD' & '!CHANNEL' & !user.";
 	}
 	tmp = Sender::privmsg_bot_message(cur_usr, bot_msg);
 	return tmp;

@@ -21,6 +21,7 @@ class Sender
 		static Event		nick_error_message(const uintptr_t& sock, const std::string& new_nick);
 		static Event		nick_wrong_message(const User& sender, const std::string& new_nick);
 		static Event		nick_wrong_message(const uintptr_t& sock, const std::string& new_nick);
+		static Event		nick_steal_message(const User& sender, const std::string& new_nick);
 		static Event		password_incorrect_464(const uintptr_t& sock);
 		static Event		password_not_yet_464(const uintptr_t& sock);
 		static Event		quit_leaver_message(const User& sender, std::string leave_message);

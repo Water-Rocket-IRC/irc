@@ -18,7 +18,6 @@ class Database
 	/** Channel **/
 		Udata					channel_msg(User& sender, std::string chan_name, const std::string& msg);
 		Udata					notice_channel(User& sender, std::string chan_name, const std::string& msg);
-		Udata					wall_channel(User& sender, std::string chan_name, const std::string& msg);
 		bool					is_channel(std::string& chan_name);
 		bool					is_user_in_channel(User& leaver);
 		Channel& 				create_channel(User& joiner, std::string& chan_name, std::string chan_access);
