@@ -475,6 +475,9 @@ Udata	Database::command_privmsg(const uintptr_t& ident, const std::string &targe
 				User&	tar_usr = select_user(target_name);
 				tmp = Sender::privmsg_p2p_message(cur_usr, tar_usr, msg);
 				ret.insert(tmp);
+				tmp.first = cur_usr.client_sock_;
+				tmp.second.clear();
+				ret.insert(tmp);
 			}
 			else /** 보내려는 유저가 없을 때 **/
 			{
@@ -608,7 +611,7 @@ Event	Database::bot_privmsg(User&	cur_usr, const std::string &msg)
 	}
 	else
 	{
-		bot_msg = "THAT IS NOT MY COMMAND. YOU CAN USE : '!COMMANMD' & '!CHANNEL' & !user.";
+		bot_msg = "THAT IS NOT MY COMMAND. YOU CAN USE : '!commanmd' & '!channel' & !user.";
 	}
 	tmp = Sender::privmsg_bot_message(cur_usr, bot_msg);
 	return tmp;

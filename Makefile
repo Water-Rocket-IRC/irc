@@ -11,7 +11,7 @@
 # **************************************************************************** #
 
 CXX			=	c++
-CXXFLAGS	=	-Wall -Wextra -Werror -std=c++98 -fsanitize=address -g3
+CXXFLAGS	=	-Wall -Wextra -Werror -std=c++98 #-fsanitize=address -g3
 
 RM			=	rm -rf
 
@@ -28,7 +28,7 @@ all : $(NAME)
 
 $(NAME) : $(OBJS)
 	$(CXX) $(CXXFLAGS) $^ -o $@
-
+	
 $(OBJS_DIR)%.o : %.cpp
 	@mkdir -p $(dir $@)
 	@mkdir -p $(DEPS_DIR)

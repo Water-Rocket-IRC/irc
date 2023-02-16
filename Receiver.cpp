@@ -151,6 +151,7 @@ int	Receiver::client_read_event_handler_(struct kevent &cur_event)
 	std::string			command(buffer, byte_received);
 	std::size_t			newline_pos = command.find('\n');
 
+
 	/*****   문자열의 모든 캐리지 리턴(\r)을 없앤다.   *****/
 	carriage_remover_(command);
 	
@@ -190,6 +191,8 @@ int	Receiver::client_read_event_handler_(struct kevent &cur_event)
 		}
 		/**   Parser를 호출하여 한 줄의 명령어를 처리한다.  **/
 		/**   Receiver에서 캐리지 리턴을 모두 제거하여 Parser에서의 캐리지 처리(set_message)함수는 제거되었음  **/
+		std::cout << BOLDYELLOW << "[RECV] :\t" << "socket(" << cur_event.ident << ")" << std::endl
+				  << "[CMD]  :\t" << command << RESET << std::endl << std::endl;
 		parser_.command_parser(cur_event.ident, command);
 	}
 	return (0);
@@ -202,6 +205,8 @@ int	Receiver::client_write_event_handler_(struct kevent &cur_event)
 {
 	Udata_iter	target = udata_.find(cur_event.ident);
 
+	std::cout << BOLDGREEN << "[SEND] :\t" << "socket(" << target->first << ")" << std::endl
+			  << "[MSG]  :\t" << target->second << RESET << std::endl;
 	int	send_bytes = send(cur_event.ident, target->second.c_str(), target->second.size(), 0);
 	if (send_bytes < 0)
 	{
