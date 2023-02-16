@@ -3,15 +3,15 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: sesim <sesim@student.42seoul.kr>           +#+  +:+       +#+         #
+#    By: jinwoole <indibooks@naver.com>             +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/01/27 10:57:54 by sesim             #+#    #+#              #
-#    Updated: 2023/02/09 14:56:30 by sesim            ###   ########.fr        #
+#    Updated: 2023/02/16 11:01:22 by jinwoole         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 CXX			=	c++
-CXXFLAGS	=	-Wall -Wextra -Werror -std=c++98 -fsanitize=address -g3
+CXXFLAGS	=	-Wall -Wextra -Werror -std=c++98
 
 RM			=	rm -rf
 

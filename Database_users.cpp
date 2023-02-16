@@ -4,9 +4,6 @@
 #include <string>
 #include <sys/_types/_ct_rune_t.h>
 
-#include "debug.hpp"
-
-
 std::vector<User>&	Database::get_user_list(void)
 {
 	return user_list_;
@@ -214,7 +211,6 @@ Event	Database::command_pass(const uintptr_t& ident)
 		tmp_user.flag_ |= F_PASS;
 		user_list_.push_back(tmp_user);
 	}
-	debug::showUsers(user_list_);
 	return tmp;
 }
 
@@ -291,7 +287,6 @@ Udata	Database::command_nick(const uintptr_t& ident, std::string& new_nick)
 		cur_usr.nickname_ = new_nick;
 		ret.insert(tmp);
 	}
-	debug::showUsers(user_list_);
 	return ret;
 }
 
@@ -319,7 +314,6 @@ Event	Database::command_user(const uintptr_t& ident
 			ret = Sender::welcome_message_connect(cur_usr); 
 		} 
 	}
-	debug::showUsers(user_list_);
 	return ret;
 }
 
